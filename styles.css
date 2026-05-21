@@ -117,6 +117,10 @@ button {
   color: currentColor;
 }
 
+.nav-item:first-child .nav-icon {
+  font-size: 22px;
+}
+
 .collapse-handle {
   position: absolute;
   right: -15px;
