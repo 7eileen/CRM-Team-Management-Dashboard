@@ -2,6 +2,7 @@ const state = {
   selectedMonth: "2026-05",
   activePage: "aggregate",
   aggregateMode: "person",
+  settlementSort: "desc",
   configTab: "tier",
   query: "",
   team: "all",
@@ -271,6 +272,8 @@ const els = {
   searchInput: document.getElementById("searchInput"),
   monthSelect: document.getElementById("monthSelect"),
   teamSelect: document.getElementById("teamSelect"),
+  settlementSortBtn: document.getElementById("settlementSortBtn"),
+  settlementSortIcon: document.getElementById("settlementSortIcon"),
   drawer: document.getElementById("detailDrawer"),
   drawerTitle: document.getElementById("drawerTitle"),
   drawerBody: document.getElementById("drawerBody"),
@@ -570,8 +573,19 @@ function renderMetrics() {
   `).join("");
 }
 
+function sortFinalAmountRows(rows) {
+  const direction = state.settlementSort === "asc" ? 1 : -1;
+  return [...rows].sort((a, b) => (a.finalAmount - b.finalAmount) * direction);
+}
+
+function renderSettlementSortIcon() {
+  if (!els.settlementSortIcon) return;
+  els.settlementSortIcon.textContent = state.settlementSort === "asc" ? "↑" : "↓";
+}
+
 function renderSettlement() {
-  const rows = getFilteredPeople();
+  const rows = sortFinalAmountRows(getFilteredPeople());
+  renderSettlementSortIcon();
   if (state.aggregateMode === "team") {
     renderTeamSettlement(rows);
     return;
@@ -600,7 +614,7 @@ function renderSettlement() {
 }
 
 function renderTeamSettlement(rows) {
-  const teams = Array.from(new Set(rows.map((person) => person.team))).map((team) => {
+  const teams = sortFinalAmountRows(Array.from(new Set(rows.map((person) => person.team))).map((team) => {
     const members = rows.filter((person) => person.team === team);
     return {
       team,
@@ -609,7 +623,7 @@ function renderTeamSettlement(rows) {
       count: members.length,
       leaders: members.filter((person) => person.role === "leader").map((person) => person.name).join("、") || "-",
     };
-  });
+  }));
 
   els.settlementBody.innerHTML = teams.length ? teams.map((team) => `
     <tr>
@@ -1123,6 +1137,12 @@ document.getElementById("moreFilterBtn").addEventListener("click", () => {
 document.getElementById("onlyInvalidBtn").addEventListener("click", () => {
   state.filterMode = state.filterMode === "invalid" ? "all" : "invalid";
   renderAll();
+});
+
+els.settlementSortBtn.addEventListener("click", () => {
+  state.settlementSort = state.settlementSort === "desc" ? "asc" : "desc";
+  renderSettlement();
+  showToast(state.settlementSort === "desc" ? "最终应发已按降序排序" : "最终应发已按升序排序");
 });
 
 document.getElementById("importBtn").addEventListener("click", () => {

@@ -80,11 +80,7 @@
           </label>
           <label class="field-select">
             <span>结算月：</span>
-            <select id="monthSelect">
-              <option value="2026-05">2026-05</option>
-              <option value="2026-04">2026-04</option>
-              <option value="2026-03">2026-03</option>
-            </select>
+            <input id="monthSelect" type="month" value="2026-05" />
           </label>
           <label class="field-select">
             <span>团队：</span>
@@ -121,7 +117,11 @@
                       <th>原始提成</th>
                       <th>绩效/分成</th>
                       <th>补发</th>
-                      <th>最终应发</th>
+                      <th>
+                        <button class="sort-button" id="settlementSortBtn" type="button">
+                          最终应发 <span id="settlementSortIcon">↓</span>
+                        </button>
+                      </th>
                       <th>说明</th>
                       <th>操作</th>
                     </tr>

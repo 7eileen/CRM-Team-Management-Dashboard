@@ -385,7 +385,8 @@ h1 {
 }
 
 .search-box input,
-.field-select select {
+.field-select select,
+.field-select input {
   min-width: 0;
   border: 0;
   outline: 0;
@@ -400,6 +401,15 @@ h1 {
 .field-select select {
   min-width: 122px;
   appearance: none;
+}
+
+.field-select input {
+  min-width: 122px;
+}
+
+.field-select input[type="month"] {
+  min-width: 132px;
+  cursor: pointer;
 }
 
 .page-view {
@@ -485,6 +495,32 @@ thead th {
   text-align: left;
   white-space: nowrap;
   padding: 0 16px;
+}
+
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  padding: 0;
+}
+
+.sort-button span {
+  width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--orange-soft);
+  color: var(--orange-dark);
+  font-size: 12px;
+}
+
+.sort-button:hover {
+  color: var(--orange);
 }
 
 tbody td {
