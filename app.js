@@ -264,7 +264,6 @@ const els = {
   metricFlow: document.getElementById("metricFlow"),
   settlementBody: document.getElementById("settlementBody"),
   transactionBody: document.getElementById("transactionBody"),
-  insightList: document.getElementById("insightList"),
   configPanel: document.getElementById("configPanel"),
   teamCards: document.getElementById("teamCards"),
   leaderRanking: document.getElementById("leaderRanking"),
@@ -665,40 +664,6 @@ function renderTransactions() {
   }).join("") : `<tr><td colspan="10"><div class="empty-state">暂无匹配的交易记录</div></td></tr>`;
 }
 
-function renderInsights() {
-  const { rows, personRows, teamBase } = getSettlement();
-  const topPerson = [...personRows].sort((a, b) => b.finalAmount - a.finalAmount)[0];
-  const invalidRows = rows.filter((row) => !row.computable || row.tierRate === 0);
-  const incentiveRows = rows.filter((row) => row.incentiveMultiplier > 1);
-  const topTeam = Object.entries(teamBase).sort((a, b) => b[1] - a[1])[0];
-
-  const insights = [
-    {
-      title: `本月最高结算：${topPerson?.name || "-"}`,
-      body: `最终应发 ${money(topPerson?.finalAmount || 0)}，口径为${topPerson?.role === "leader" ? "负责人团队分成" : "个人绩效结算"}。`,
-    },
-    {
-      title: `激励翻倍订单：${incentiveRows.length} 条`,
-      body: `气垫/素颜霜按 UID 汇总销售额超过 ${money(state.config.incentive.threshold)} 后，对应产品提成乘以 ${state.config.incentive.multiplier}。`,
-    },
-    {
-      title: `需复核记录：${invalidRows.length} 条`,
-      body: `包含达人归属异常、合作佣金缺失、A组杨洁表首播日期早于截止日，以及合作佣金大于 65% 的订单。`,
-    },
-    {
-      title: `团队基数最高：${topTeam?.[0] || "-"}`,
-      body: `团队原始提成基数为 ${money(topTeam?.[1] || 0)}，负责人结算会在此基础上乘以 ${pct(state.config.leaderShare)}。`,
-    },
-  ];
-
-  els.insightList.innerHTML = insights.map((item) => `
-    <div class="insight-item">
-      <strong>${item.title}</strong>
-      <span>${item.body}</span>
-    </div>
-  `).join("");
-}
-
 function renderConfigPanel() {
   const tab = state.configTab;
   if (tab === "tier") {
@@ -946,7 +911,6 @@ function renderAll() {
   renderMetrics();
   renderSettlement();
   renderTransactions();
-  renderInsights();
   renderConfigPanel();
   renderTeams();
   renderMiddle();
