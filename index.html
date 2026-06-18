@@ -114,7 +114,7 @@
                   <thead>
                     <tr>
                       <th>结算对象</th>
-                      <th>归属</th>
+                      <th>负责人</th>
                       <th>基础提成</th>
                       <th>团队提成</th>
                       <th>绩效系数</th>
@@ -139,7 +139,6 @@
               <div>
                 <h2>单条交易计算明细</h2>
               </div>
-              <button class="ghost-button" id="onlyInvalidBtn">只看异常</button>
             </div>
             <div class="table-wrap">
               <table>
@@ -267,6 +266,18 @@
       <div class="modal-actions">
         <button class="ghost-button" type="button" data-tier-modal-close>取消</button>
         <button class="primary-button" type="button" data-tier-modal-confirm>确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="baseDetailModal" aria-hidden="true">
+    <div class="base-detail-modal" role="dialog" aria-modal="true" aria-labelledby="baseDetailTitle">
+      <button class="modal-close" type="button" data-base-modal-close aria-label="关闭">×</button>
+      <h3 id="baseDetailTitle">基础提成明细</h3>
+      <div id="baseDetailBody" class="base-detail-body"></div>
+      <div class="base-detail-actions">
+        <button class="ghost-button" type="button" data-export-base-detail><span class="button-icon">⇩</span> 导出当前商务明细</button>
+        <button class="ghost-button" type="button" data-base-modal-close>关闭</button>
       </div>
     </div>
   </div>

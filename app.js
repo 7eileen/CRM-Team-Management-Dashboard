@@ -324,6 +324,10 @@ const els = {
   tierModal: document.getElementById("tierModal"),
   tierModalTitle: document.getElementById("tierModalTitle"),
   tierModalBody: document.getElementById("tierModalBody"),
+  baseDetailModal: document.getElementById("baseDetailModal"),
+  baseDetailTitle: document.getElementById("baseDetailTitle"),
+  baseDetailBody: document.getElementById("baseDetailBody"),
+  baseDetailExport: document.querySelector("[data-export-base-detail]"),
   toast: document.getElementById("toast"),
 };
 
@@ -331,8 +335,24 @@ function money(value) {
   return currency.format(Math.round(value || 0));
 }
 
+function decimalMoney(value) {
+  return Number(value || 0).toLocaleString("zh-CN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 function pct(value) {
   return `${trimNumber((value || 0) * 100)}%`;
+}
+
+function pctFixed(value) {
+  return `${decimalMoney((value || 0) * 100)}%`;
+}
+
+function monthLabel(month) {
+  const [year, monthIndex] = month.split("-");
+  return `${year}-${monthIndex}`;
 }
 
 function trimNumber(value) {
@@ -673,8 +693,16 @@ function renderSettlement() {
         </div>
       </td>
       <td><span class="tag ${person.team === "A组" ? "orange" : ""}">${person.team}</span></td>
-      <td class="money">${money(person.rawAmount)}</td>
-      <td class="money">${person.role === "leader" ? money(person.teamCommission) : "-"}</td>
+      <td class="money">
+        <button class="amount-link" type="button" data-base-detail="${escapeAttr(person.name)}">
+          ${money(person.rawAmount)}
+        </button>
+      </td>
+      <td class="money">
+        <button class="amount-link" type="button" data-team-commission-detail="${escapeAttr(person.name)}">
+          ${person.role === "leader" ? money(person.teamCommission) : "-"}
+        </button>
+      </td>
       <td>${person.performance}</td>
       <td class="money orange-text">${money(person.finalAmount)}</td>
       <td><button class="action-link" data-person-detail="${person.name}">查看明细</button></td>
@@ -1322,6 +1350,7 @@ function setPage(page) {
   });
   if (els.content) {
     els.content.classList.toggle("org-canvas-mode", page === "team");
+    els.content.classList.toggle("config-page-mode", page === "config");
   }
   if (els.filterRow) {
     els.filterRow.classList.toggle("month-only", page === "config");
@@ -1375,6 +1404,123 @@ function openDrawer(orderId) {
 function closeDrawer() {
   els.drawer.classList.remove("open");
   els.drawer.setAttribute("aria-hidden", "true");
+}
+
+function openBaseDetailModal(personName) {
+  if (!els.baseDetailModal || !els.baseDetailBody || !els.baseDetailTitle) return;
+  const rows = getCalculations().filter((row) => row.owner === personName);
+  const totalIncome = rows.reduce((sum, row) => sum + row.payment, 0);
+  const totalCommission = rows.reduce((sum, row) => sum + row.finalAmount, 0);
+  const belowThreshold = state.config.gsvThreshold > 0 && totalIncome < state.config.gsvThreshold;
+
+  if (els.baseDetailExport) els.baseDetailExport.hidden = false;
+  els.baseDetailTitle.textContent = `${personName} · ${monthLabel(state.selectedMonth)} 基础提成明细`;
+  els.baseDetailBody.innerHTML = `
+    <div class="base-summary">
+      <span>共 <strong>${rows.length}</strong> 条基础提成明细</span>
+      <span>合计收入：<strong class="blue-text">${decimalMoney(totalIncome)}</strong> 元</span>
+      <span>基础提成合计：<strong class="orange-text">${decimalMoney(totalCommission)}</strong> 元</span>
+      ${belowThreshold ? `<span class="base-warning">当月总 GSV 未达到门槛 ${decimalMoney(state.config.gsvThreshold)} 元，本月不计算提成</span>` : ""}
+    </div>
+    <div class="base-detail-table-wrap">
+      <table class="base-detail-table">
+        <thead>
+          <tr>
+            <th>达人名称</th>
+            <th>品类</th>
+            <th>当月收入（元）</th>
+            <th>佣金率</th>
+            <th>提成比例</th>
+            <th>新/老客</th>
+            <th>新老客系数</th>
+            <th>是否专场</th>
+            <th>专场系数</th>
+            <th>品类激励系数</th>
+            <th>小计提成</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.length ? rows.map((row) => `
+            <tr>
+              <td>${row.influencer}</td>
+              <td>${row.category}</td>
+              <td>${decimalMoney(row.payment)}</td>
+              <td><span class="base-pill">${row.commissionRate == null ? "#N/A" : pctFixed(row.commissionRate)}</span></td>
+              <td><span class="base-pill">${pct(row.tierRate)}</span></td>
+              <td><span class="base-pill ${row.newCustomer ? "blue" : ""}">${row.newCustomer ? "新客" : "老客"}</span></td>
+              <td>${row.customerCoef}</td>
+              <td><span class="base-pill">${row.isSpecial ? "专场" : "非专场"}</span></td>
+              <td>${row.specialCoef}</td>
+              <td>${row.categoryBoost}</td>
+              <td><strong>${decimalMoney(row.finalAmount)}</strong></td>
+            </tr>
+          `).join("") : `<tr><td colspan="11"><div class="empty-state">暂无基础提成明细</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  els.baseDetailModal.classList.add("open");
+  els.baseDetailModal.setAttribute("aria-hidden", "false");
+}
+
+function openTeamCommissionModal(personName) {
+  if (!els.baseDetailModal || !els.baseDetailBody || !els.baseDetailTitle) return;
+  const { personRows } = getSettlement();
+  const person = personRows.find((item) => item.name === personName);
+  const isLeader = person?.role === "leader";
+  const rows = isLeader
+    ? personRows
+      .filter((item) => item.team === person.team && item.name !== person.name && item.rawAmount > 0)
+      .map((item) => ({
+        name: item.name,
+        role: item.role === "leader" ? "团队负责人" : "普通成员",
+        base: item.rawAmount,
+        rate: state.config.leaderShare,
+        source: "团队成员基础提成 × 50%",
+        contribution: item.rawAmount * state.config.leaderShare,
+      }))
+    : [];
+  const total = rows.reduce((sum, row) => sum + row.contribution, 0);
+
+  if (els.baseDetailExport) els.baseDetailExport.hidden = true;
+  els.baseDetailTitle.textContent = `${personName} · ${monthLabel(state.selectedMonth)} 团队提成明细`;
+  els.baseDetailBody.innerHTML = `
+    <div class="team-detail-table-wrap">
+      <table class="team-detail-table">
+        <thead>
+          <tr>
+            <th>下级姓名</th>
+            <th>角色</th>
+            <th>计算基数（元）</th>
+            <th>抽成比例</th>
+            <th>来源说明</th>
+            <th>贡献金额（元）</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.length ? rows.map((row) => `
+            <tr>
+              <td>${row.name}</td>
+              <td>${row.role}</td>
+              <td>${decimalMoney(row.base)}</td>
+              <td>${pctFixed(row.rate)}</td>
+              <td>${row.source}</td>
+              <td><strong>${decimalMoney(row.contribution)}</strong></td>
+            </tr>
+          `).join("") : `<tr><td colspan="6"><div class="team-empty-state">暂无团队提成明细</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="team-total-strip">团队提成合计：<strong class="orange-text">${decimalMoney(total)}</strong> 元</div>
+  `;
+  els.baseDetailModal.classList.add("open");
+  els.baseDetailModal.setAttribute("aria-hidden", "false");
+}
+
+function closeBaseDetailModal() {
+  if (!els.baseDetailModal) return;
+  els.baseDetailModal.classList.remove("open");
+  els.baseDetailModal.setAttribute("aria-hidden", "true");
 }
 
 function updateConfig(target) {
@@ -1472,6 +1618,18 @@ document.addEventListener("click", (event) => {
   const confirmTier = event.target.closest("[data-tier-modal-confirm]");
   if (confirmTier) {
     confirmTierModal();
+    return;
+  }
+
+  const closeBaseDetail = event.target.closest("[data-base-modal-close]");
+  if (closeBaseDetail || event.target === els.baseDetailModal) {
+    closeBaseDetailModal();
+    return;
+  }
+
+  const exportBaseDetail = event.target.closest("[data-export-base-detail]");
+  if (exportBaseDetail) {
+    showToast("当前商务基础提成明细已准备导出");
     return;
   }
 
@@ -1625,6 +1783,18 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const baseDetail = event.target.closest("[data-base-detail]");
+  if (baseDetail) {
+    openBaseDetailModal(baseDetail.dataset.baseDetail);
+    return;
+  }
+
+  const teamCommissionDetail = event.target.closest("[data-team-commission-detail]");
+  if (teamCommissionDetail) {
+    openTeamCommissionModal(teamCommissionDetail.dataset.teamCommissionDetail);
+    return;
+  }
+
   const personDetail = event.target.closest("[data-person-detail]");
   if (personDetail) {
     state.query = personDetail.dataset.personDetail;
@@ -1690,10 +1860,13 @@ document.getElementById("moreFilterBtn").addEventListener("click", () => {
   showToast("可继续扩展平台、是否专场、佣金档位等筛选");
 });
 
-document.getElementById("onlyInvalidBtn").addEventListener("click", () => {
-  state.filterMode = state.filterMode === "invalid" ? "all" : "invalid";
-  renderAll();
-});
+const onlyInvalidBtn = document.getElementById("onlyInvalidBtn");
+if (onlyInvalidBtn) {
+  onlyInvalidBtn.addEventListener("click", () => {
+    state.filterMode = state.filterMode === "invalid" ? "all" : "invalid";
+    renderAll();
+  });
+}
 
 els.settlementSortBtn.addEventListener("click", () => {
   state.settlementSort = state.settlementSort === "desc" ? "asc" : "desc";
@@ -1719,6 +1892,7 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeDrawer();
     closeTierModal();
+    closeBaseDetailModal();
   }
 });
 
