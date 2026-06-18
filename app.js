@@ -923,217 +923,154 @@ function renderCoefficientEditor() {
 }
 
 function renderConfigPanel() {
-  renderCoefficientEditor();
-  return;
   const tab = state.configTab;
+  ensureCoefficientConfig();
   if (tab === "tier") {
     els.configPanel.innerHTML = `
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>佣金区间</th>
-              <th>最小佣金率</th>
-              <th>最大佣金率</th>
-              <th>商务提成比例</th>
-              <th>说明</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${state.config.tiers.map((tier) => `
+      <section class="coef-block">
+        <div class="coef-block-head">
+          <h3>提成比例阶梯</h3>
+          <div class="coef-head-actions">
+            <button class="ghost-button small-button" type="button" data-copy-last-month>复制上月</button>
+            <button class="primary-button small-button" type="button" data-add-tier>＋新增档位</button>
+          </div>
+        </div>
+        <div class="coef-table-wrap">
+          <table class="coef-table">
+            <thead>
               <tr>
-                <td><strong>${tier.label}</strong></td>
-                <td><input class="rate-input" type="number" min="0" step="0.01" value="${toInputPercent(tier.min)}" data-edit="tier-min" data-tier="${tier.id}" /> %</td>
-                <td><input class="rate-input" type="number" min="0" step="0.01" value="${tier.max == null ? "" : toInputPercent(tier.max)}" data-edit="tier-max" data-tier="${tier.id}" placeholder="无限制" /> %</td>
-                <td><input class="rate-input" type="number" min="0" step="0.01" value="${toInputPercent(tier.rate)}" data-edit="tier-rate" data-tier="${tier.id}" /> %</td>
-                <td class="muted">合作佣金越高，商务提成比例越低。</td>
+                <th>合作佣金下限</th>
+                <th>合作佣金上限</th>
+                <th>提成比例</th>
+                <th>操作</th>
               </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>${renderTierRows()}</tbody>
+          </table>
+        </div>
+      </section>
     `;
     return;
   }
 
-  if (tab === "base") {
+  if (tab === "customer") {
     els.configPanel.innerHTML = `
-      <div class="setting-grid">
-        <div class="setting-card">
-          <h3>专场计算系数</h3>
-          <div class="edit-field">
-            <label>专场</label>
-            <input type="number" min="0" step="0.01" value="${state.config.special.specialCoef}" data-edit="special-coef" />
-          </div>
-          <div class="edit-field">
-            <label>非专场</label>
-            <input type="number" min="0" step="0.01" value="${state.config.special.normalCoef}" data-edit="normal-coef" />
-          </div>
+      <section class="coef-block">
+        <h3>新客 / 老客系数</h3>
+        <div class="coef-table-wrap">
+          <table class="coef-table compact-table">
+            <thead><tr><th>类型</th><th>系数</th></tr></thead>
+            <tbody>
+              <tr><td>新客</td><td>${stepperInput("new-coef", displayNumber(state.config.customer.newCoef))}</td></tr>
+              <tr><td>老客</td><td>${stepperInput("old-coef", displayNumber(state.config.customer.oldCoef))}</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div class="setting-card">
-          <h3>新老客系数</h3>
-          <div class="edit-field">
-            <label>滚动窗口（月）</label>
-            <input type="number" min="0" step="1" value="${state.config.customer.rollingMonths}" data-edit="rolling-months" />
-          </div>
-          <div class="edit-field">
-            <label>新客系数</label>
-            <input type="number" min="0" step="0.01" value="${state.config.customer.newCoef}" data-edit="new-coef" />
-          </div>
-          <div class="edit-field">
-            <label>老客系数</label>
-            <input type="number" min="0" step="0.01" value="${state.config.customer.oldCoef}" data-edit="old-coef" />
-          </div>
-        </div>
-      </div>
+      </section>
     `;
     return;
   }
 
-  if (tab === "incentive") {
+  if (tab === "special") {
     els.configPanel.innerHTML = `
-      <div class="setting-grid">
-        <div class="setting-card">
-          <h3>气垫/素颜霜销售激励</h3>
-          <div class="edit-field">
-            <label>激励品类</label>
-            <input type="text" value="${state.config.incentive.categories.join("、")}" data-edit="incentive-categories" />
-          </div>
-          <div class="edit-field">
-            <label>销售额门槛</label>
-            <input type="number" min="0" step="1000" value="${state.config.incentive.threshold}" data-edit="incentive-threshold" />
-          </div>
-          <div class="edit-field">
-            <label>激励倍数</label>
-            <input type="number" min="1" step="0.1" value="${state.config.incentive.multiplier}" data-edit="incentive-multiplier" />
-          </div>
+      <section class="coef-block">
+        <h3>专场系数</h3>
+        <div class="coef-table-wrap">
+          <table class="coef-table compact-table">
+            <thead><tr><th>类型</th><th>系数</th></tr></thead>
+            <tbody>
+              <tr><td>专场</td><td>${stepperInput("special-coef", displayNumber(state.config.special.specialCoef))}</td></tr>
+              <tr><td>非专场</td><td>${stepperInput("normal-coef", displayNumber(state.config.special.normalCoef))}</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div class="setting-card">
-          <h3>当前命中 UID</h3>
-          <div class="note-box">${renderIncentivePreview()}</div>
-        </div>
-      </div>
+      </section>
     `;
     return;
   }
 
-  if (tab === "performance") {
-    const editablePeople = people.filter((person) => person.role !== "middle");
+  if (tab === "draw") {
+    const drawRows = state.config.drawShares.map((item) => `
+      <tr>
+        <td>${item.rule}</td>
+        <td>${stepperInput("draw-rate", displayPercent(item.rate), { attrs: `data-draw="${item.id}"`, suffix: "%" })}</td>
+        <td><button class="restore-link" type="button" data-reset-draw="${item.id}">恢复默认</button></td>
+      </tr>
+    `).join("");
     els.configPanel.innerHTML = `
-      <div class="setting-grid">
-        <div class="setting-card">
-          <h3>负责人分成比例</h3>
-          <div class="edit-field">
-            <label>团队分成比例</label>
-            <input type="number" min="0" max="100" step="0.1" value="${toInputPercent(state.config.leaderShare)}" data-edit="leader-share" /> %
-          </div>
+      <section class="coef-block">
+        <h3>抽成比例设置</h3>
+        <div class="coef-table-wrap">
+          <table class="coef-table">
+            <thead><tr><th>抽成规则</th><th>抽成比例</th><th>操作</th></tr></thead>
+            <tbody>${drawRows}</tbody>
+          </table>
         </div>
-        <div class="setting-card">
-          <h3>绩效口径</h3>
-        </div>
-      </div>
-      <div class="table-wrap" style="margin-top:16px">
-        <table>
-          <thead>
-            <tr>
-              <th>商务</th>
-              <th>角色</th>
-              <th>团队</th>
-              <th>绩效系数</th>
-              <th>上月补发</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${editablePeople.map((person) => `
-              <tr>
-                <td><strong>${person.name}</strong></td>
-                <td>${person.role === "leader" ? "团队负责人" : "普通成员"}</td>
-                <td>${person.team}</td>
-                <td><input type="number" min="0" step="0.01" value="${person.performance}" data-edit="person-performance" data-person="${person.id}" /></td>
-                <td><input type="number" step="100" value="${person.arrears || 0}" data-edit="person-arrears" data-person="${person.id}" ${person.role === "leader" ? "disabled" : ""} /></td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
+      </section>
     `;
     return;
   }
 
-  if (tab === "custom") {
-    const customCoefficients = state.config.customCoefficients;
+  if (tab === "category") {
+    const categoryRows = state.config.categoryBoosts.map((item) => `
+      <tr>
+        <td>${item.name}</td>
+        <td>${stepperInput("category-boost", displayNumber(item.value), { attrs: `data-category="${item.id}"` })}</td>
+      </tr>
+    `).join("");
     els.configPanel.innerHTML = `
-      <div class="custom-config-head">
-        <div>
-          <h3>自定义系数</h3>
+      <section class="coef-block">
+        <h3>品类激励系数</h3>
+        <div class="coef-table-wrap">
+          <table class="coef-table category-table">
+            <thead><tr><th>品类</th><th>激励系数</th></tr></thead>
+            <tbody>${categoryRows}</tbody>
+          </table>
         </div>
-        <button class="ghost-button" type="button" data-add-custom-coef>+ 新增系数</button>
-      </div>
-      <div class="table-wrap custom-coef-table">
-        <table>
-          <thead>
-            <tr>
-              <th>系数名称</th>
-              <th>适用环节</th>
-              <th>系数值</th>
-              <th>状态</th>
-              <th>说明</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${customCoefficients.length ? customCoefficients.map((coef) => `
-              <tr>
-                <td><input class="custom-name-input" type="text" value="${escapeAttr(coef.name)}" data-edit="custom-name" data-coef="${coef.id}" /></td>
-                <td>
-                  <select data-edit="custom-scope" data-coef="${coef.id}">
-                    <option value="交易层" ${coef.scope === "交易层" ? "selected" : ""}>交易层</option>
-                    <option value="达人层" ${coef.scope === "达人层" ? "selected" : ""}>达人层</option>
-                    <option value="个人结算" ${coef.scope === "个人结算" ? "selected" : ""}>个人结算</option>
-                    <option value="团队结算" ${coef.scope === "团队结算" ? "selected" : ""}>团队结算</option>
-                    <option value="中台结算" ${coef.scope === "中台结算" ? "selected" : ""}>中台结算</option>
-                  </select>
-                </td>
-                <td><input type="number" min="0" step="0.01" value="${coef.value}" data-edit="custom-value" data-coef="${coef.id}" /></td>
-                <td>
-                  <label class="switch-field compact-switch">
-                    <input type="checkbox" data-edit="custom-enabled" data-coef="${coef.id}" ${coef.enabled ? "checked" : ""} />
-                    ${coef.enabled ? "启用" : "停用"}
-                  </label>
-                </td>
-                <td><input class="custom-note-input" type="text" value="${escapeAttr(coef.note)}" data-edit="custom-note" data-coef="${coef.id}" /></td>
-                <td><button class="action-link" type="button" data-delete-coef="${coef.id}">删除</button></td>
-              </tr>
-            `).join("") : `<tr><td colspan="6"><div class="empty-state">暂无自定义系数，点击“新增系数”开始配置。</div></td></tr>`}
-          </tbody>
-        </table>
-      </div>
+      </section>
     `;
     return;
   }
 
-  if (tab === "yangjie") {
+  if (tab === "gsv") {
     els.configPanel.innerHTML = `
-      <div class="setting-grid">
-        <div class="setting-card">
-          <h3>A组杨洁结算表</h3>
-          <div class="edit-field">
-            <label>首播截止日</label>
-            <input type="date" value="${state.config.yangjie.cutoff}" data-edit="yangjie-cutoff" />
-          </div>
-          <label class="switch-field" style="margin-top:16px">
-            <input type="checkbox" data-edit="yangjie-special" ${state.config.yangjie.useSpecialCoef ? "checked" : ""} />
-            A组杨洁表也使用专场 0.5 折扣
-          </label>
+      <section class="coef-block inline-config">
+        <h3>GSV 门槛配置</h3>
+        <div class="threshold-line">
+          <span>当月商务总 GSV 低于以下金额时，不计算提成：</span>
+          ${stepperInput("gsv-threshold", displayNumber(state.config.gsvThreshold), { min: 0, step: 1000 })}
+          <span>元</span>
+          <span class="muted">（默认 10 万，设为 0 表示不限制）</span>
         </div>
-        <div class="setting-card">
-          <h3>规则差异</h3>
-          <div class="note-box">
-            当前杨洁表命中 ${getCalculations().filter((row) => row.yangjieRule).length} 条订单，
-            被截止日排除 ${getCalculations().filter((row) => row.yangjieRule && !row.computable).length} 条。
-          </div>
+      </section>
+    `;
+    return;
+  }
+
+  if (tab === "excluded") {
+    const excludedRows = state.config.excludedProducts.length
+      ? state.config.excludedProducts.map((item) => `
+        <tr>
+          <td><input class="plain-table-input" type="text" placeholder="图片地址" value="${escapeAttr(item.image || "")}" data-edit="excluded-image" data-product="${item.id}" /></td>
+          <td><input class="plain-table-input" type="text" placeholder="产品ID" value="${escapeAttr(item.productId || "")}" data-edit="excluded-id" data-product="${item.id}" /></td>
+          <td><input class="plain-table-input wide" type="text" placeholder="产品名称" value="${escapeAttr(item.name || "")}" data-edit="excluded-name" data-product="${item.id}" /></td>
+          <td><button class="danger-link" type="button" data-delete-product="${item.id}">删除</button></td>
+        </tr>
+      `).join("")
+      : `<tr><td colspan="4"><div class="empty-state">暂无数据</div></td></tr>`;
+    els.configPanel.innerHTML = `
+      <section class="coef-block">
+        <div class="coef-block-head">
+          <h3>排除产品配置</h3>
+          <button class="primary-button small-button" type="button" data-add-excluded-product>＋新增排除产品</button>
         </div>
-      </div>
+        <div class="coef-table-wrap">
+          <table class="coef-table exclude-table">
+            <thead><tr><th>产品图片</th><th>产品ID</th><th>产品名称</th><th>操作</th></tr></thead>
+            <tbody>${excludedRows}</tbody>
+          </table>
+        </div>
+      </section>
     `;
   }
 }

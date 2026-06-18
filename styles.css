@@ -767,12 +767,9 @@ tbody tr:hover {
 }
 
 .config-layout {
-  display: block;
+  display: grid;
+  grid-template-columns: 220px 1fr;
   min-height: 430px;
-}
-
-.config-layout .config-tabs {
-  display: none;
 }
 
 .config-tabs {
