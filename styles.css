@@ -393,13 +393,63 @@ h1 {
 }
 
 .filter-row.month-only {
-  width: fit-content;
-  min-width: 220px;
-  padding: 14px 18px;
+  width: 100%;
+  min-height: 86px;
+  padding: 18px 30px;
+  border-radius: 14px;
 }
 
 .filter-row.month-only [data-filter-extra] {
   display: none;
+}
+
+.month-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.month-title,
+.month-step-button {
+  display: none;
+}
+
+.month-step-button {
+  width: 30px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #8a96a8;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.month-step-button:hover {
+  color: var(--orange);
+}
+
+.filter-row.month-only .month-control {
+  gap: 14px;
+}
+
+.filter-row.month-only .month-title,
+.filter-row.month-only .month-step-button {
+  display: inline-flex;
+}
+
+.filter-row.month-only .month-title {
+  color: #172033;
+  font-size: 16px;
+}
+
+.filter-row.month-only .month-inline-label {
+  display: none;
+}
+
+.filter-row.month-only .month-field {
+  width: 280px;
 }
 
 .search-box,

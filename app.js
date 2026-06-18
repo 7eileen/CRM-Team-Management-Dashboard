@@ -304,6 +304,19 @@ function trimNumber(value) {
   return Number(value.toFixed(2)).toString();
 }
 
+function shiftMonth(month, offset) {
+  const [year, monthIndex] = month.split("-").map(Number);
+  const next = new Date(year, monthIndex - 1 + offset, 1);
+  return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function setSelectedMonth(month) {
+  state.selectedMonth = month;
+  if (els.monthSelect) els.monthSelect.value = month;
+  renderAll();
+  showToast("结算月已切换");
+}
+
 function escapeAttr(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -1128,6 +1141,13 @@ function updateConfig(target) {
 }
 
 document.addEventListener("click", (event) => {
+  const monthStep = event.target.closest("[data-month-step]");
+  if (monthStep) {
+    const offset = Number(monthStep.dataset.monthStep || 0);
+    setSelectedMonth(shiftMonth(state.selectedMonth, offset));
+    return;
+  }
+
   const commissionEntry = event.target.closest("[data-commission-entry]");
   if (commissionEntry) {
     setPage("aggregate");
@@ -1227,9 +1247,7 @@ document.addEventListener("change", (event) => {
   }
 
   if (target.id === "monthSelect") {
-    state.selectedMonth = target.value;
-    renderAll();
-    showToast("结算月已切换");
+    setSelectedMonth(target.value);
   }
 
   if (target.id === "teamSelect") {
