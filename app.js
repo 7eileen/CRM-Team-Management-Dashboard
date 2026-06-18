@@ -581,11 +581,10 @@ function getFilteredPeople() {
 }
 
 function renderMetrics() {
-  const { rows, personRows, middleRows } = getSettlement();
+  const { rows, personRows } = getSettlement();
   const memberRows = personRows.filter((person) => person.role === "member");
   const leaderRows = personRows.filter((person) => person.role === "leader");
   const totalPayable = personRows.reduce((sum, item) => sum + item.finalAmount, 0);
-  const middlePayable = middleRows.reduce((sum, item) => sum + item.finalAmount, 0);
   const teamPayable = ["A组", "B组", "C组"].reduce((acc, team) => {
     acc[team] = {
       amount: personRows
@@ -626,13 +625,6 @@ function renderMetrics() {
       metaLeft: `人员 ${teamPayable[team].count}`,
       metaRight: `团队汇总`,
     })),
-    {
-      id: "middle",
-      label: "中台独立结算",
-      value: money(middlePayable),
-      metaLeft: `内容支持`,
-      metaRight: `直接发放`,
-    },
   ];
 
   const isMetricActive = (card) => {
@@ -1613,10 +1605,6 @@ document.addEventListener("click", (event) => {
       if (els.teamSelect) els.teamSelect.value = state.team;
       setPage("aggregate");
       renderAll();
-      return;
-    }
-    if (metricId === "middle") {
-      setPage("middle");
       return;
     }
     if (["invalid", "incentive"].includes(metricId)) {
