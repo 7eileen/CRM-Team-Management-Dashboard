@@ -63,6 +63,33 @@ const people = [
   { id: "m2", name: "内容中台-阿知", team: "中台", role: "middle", fixed: 13500 },
 ];
 
+const orgPeople = [
+  { name: "于姿妏", placed: false },
+  { name: "于捷", placed: true },
+  { name: "刘则宁黄娇", placed: true },
+  { name: "刘涛", placed: true },
+  { name: "刘锐", placed: false },
+  { name: "卫露青", placed: true },
+  { name: "李新一", placed: false },
+  { name: "布程方", placed: true },
+  { name: "张如茜", placed: true },
+  { name: "张小远", placed: false },
+  { name: "徐怀玉", placed: false },
+  { name: "戴娜", placed: false },
+  { name: "曹艳媚", placed: false },
+  { name: "李梦洁", placed: false },
+  { name: "李霖然", placed: false },
+];
+
+const orgNodes = [
+  { name: "刘涛", role: "经理", coefficient: 1, x: 535, y: 70, roleTone: "purple" },
+  { name: "卫露青", role: "一级管理", coefficient: 1, x: 325, y: 250, roleTone: "blue" },
+  { name: "刘则...", role: "一级管理", coefficient: 1, x: 680, y: 250, roleTone: "blue" },
+  { name: "张如茜", role: "业务岗", coefficient: 1, x: 238, y: 488, roleTone: "gray" },
+  { name: "布程方", role: "业务岗", coefficient: 1, x: 455, y: 525, roleTone: "gray" },
+  { name: "于捷", role: "业务岗", coefficient: 1, x: 820, y: 488, roleTone: "gray" },
+];
+
 const transactions = [
   {
     orderId: "DB202605001",
@@ -273,14 +300,19 @@ const number = new Intl.NumberFormat("zh-CN", {
 
 const els = {
   metricFlow: document.getElementById("metricFlow"),
+  content: document.querySelector(".content"),
   settlementBody: document.getElementById("settlementBody"),
   transactionBody: document.getElementById("transactionBody"),
   configPanel: document.getElementById("configPanel"),
   teamCards: document.getElementById("teamCards"),
   leaderRanking: document.getElementById("leaderRanking"),
+  orgPeopleList: document.getElementById("orgPeopleList"),
+  orgNodes: document.getElementById("orgNodes"),
+  orgPeopleSearch: document.getElementById("orgPeopleSearch"),
   middleGrid: document.getElementById("middleGrid"),
   searchInput: document.getElementById("searchInput"),
   monthSelect: document.getElementById("monthSelect"),
+  orgMonthInput: document.querySelector("[data-org-month]"),
   teamSelect: document.getElementById("teamSelect"),
   filterRow: document.querySelector(".filter-row"),
   settlementSortBtn: document.getElementById("settlementSortBtn"),
@@ -289,6 +321,9 @@ const els = {
   drawer: document.getElementById("detailDrawer"),
   drawerTitle: document.getElementById("drawerTitle"),
   drawerBody: document.getElementById("drawerBody"),
+  tierModal: document.getElementById("tierModal"),
+  tierModalTitle: document.getElementById("tierModalTitle"),
+  tierModalBody: document.getElementById("tierModalBody"),
   toast: document.getElementById("toast"),
 };
 
@@ -313,6 +348,7 @@ function shiftMonth(month, offset) {
 function setSelectedMonth(month) {
   state.selectedMonth = month;
   if (els.monthSelect) els.monthSelect.value = month;
+  if (els.orgMonthInput) els.orgMonthInput.value = month;
   renderAll();
   showToast("结算月已切换");
 }
@@ -475,18 +511,22 @@ function getSettlement() {
       const rawAmount = rawByPerson[person.name] || 0;
       const orderCount = countByPerson[person.name] || 0;
       const isLeader = person.role === "leader";
+      const teamCommission = isLeader
+        ? (teamBase[person.team] || 0) * state.config.leaderShare
+        : 0;
       const finalAmount = isLeader
-        ? (teamBase[person.team] || 0) * state.config.leaderShare * person.performance
+        ? teamCommission * person.performance
         : rawAmount * person.performance + (person.arrears || 0);
       return {
         ...person,
         rawAmount,
+        teamCommission,
         orderCount,
         teamBase: teamBase[person.team] || 0,
         finalAmount,
         logic: isLeader
-          ? `团队原始提成 ${money(teamBase[person.team] || 0)} × ${pct(state.config.leaderShare)} × ${person.performance}`
-          : `个人原始提成 × ${person.performance} + 补发 ${money(person.arrears || 0)}`,
+          ? `团队提成 ${money(teamCommission)} × ${person.performance}`
+          : `基础提成 ${money(rawAmount)} × ${person.performance}`,
       };
     });
 
@@ -647,13 +687,12 @@ function renderSettlement() {
       </td>
       <td><span class="tag ${person.team === "A组" ? "orange" : ""}">${person.team}</span></td>
       <td class="money">${money(person.rawAmount)}</td>
-      <td>${person.role === "leader" ? `${pct(state.config.leaderShare)} × ${person.performance}` : person.performance}</td>
-      <td>${person.role === "leader" ? "-" : money(person.arrears || 0)}</td>
+      <td class="money">${person.role === "leader" ? money(person.teamCommission) : "-"}</td>
+      <td>${person.performance}</td>
       <td class="money orange-text">${money(person.finalAmount)}</td>
-      <td class="muted">${person.logic}</td>
       <td><button class="action-link" data-person-detail="${person.name}">查看明细</button></td>
     </tr>
-  `).join("") : `<tr><td colspan="8"><div class="empty-state">暂无匹配的结算记录</div></td></tr>`;
+  `).join("") : `<tr><td colspan="7"><div class="empty-state">暂无匹配的结算记录</div></td></tr>`;
 }
 
 function renderTeamSettlement(rows) {
@@ -662,6 +701,7 @@ function renderTeamSettlement(rows) {
     return {
       team,
       rawAmount: members.reduce((sum, item) => sum + item.rawAmount, 0),
+      teamCommission: members.reduce((sum, item) => sum + item.teamCommission, 0),
       finalAmount: members.reduce((sum, item) => sum + item.finalAmount, 0),
       count: members.length,
       leaders: members.filter((person) => person.role === "leader").map((person) => person.name).join("、") || "-",
@@ -681,13 +721,12 @@ function renderTeamSettlement(rows) {
       </td>
       <td><span class="tag">${team.leaders}</span></td>
       <td class="money">${money(team.rawAmount)}</td>
-      <td>成员绩效 + 负责人分成</td>
-      <td>-</td>
+      <td class="money">${money(team.teamCommission)}</td>
+      <td>综合</td>
       <td class="money orange-text">${money(team.finalAmount)}</td>
-      <td class="muted">团队聚合视图，保留个人与负责人两套结算口径。</td>
       <td><button class="action-link" data-team-detail="${team.team}">查看团队</button></td>
     </tr>
-  `).join("") : `<tr><td colspan="8"><div class="empty-state">暂无匹配的团队记录</div></td></tr>`;
+  `).join("") : `<tr><td colspan="7"><div class="empty-state">暂无匹配的团队记录</div></td></tr>`;
 }
 
 function renderTransactions() {
@@ -766,6 +805,10 @@ function displayNumber(value) {
   return Number(value || 0).toFixed(2);
 }
 
+function displayRatio(value, digits = 2) {
+  return Number(value || 0).toFixed(digits);
+}
+
 function stepperInput(edit, value, options = {}) {
   const {
     min = 0,
@@ -788,15 +831,88 @@ function stepperInput(edit, value, options = {}) {
 function renderTierRows() {
   return state.config.tiers.map((tier) => `
     <tr>
-      <td>${stepperInput("tier-min", displayPercent(tier.min), { attrs: `data-tier="${tier.id}"`, suffix: "%" })}</td>
-      <td>${stepperInput("tier-max", tier.max == null ? "999.00" : displayPercent(tier.max), { attrs: `data-tier="${tier.id}"`, suffix: "%" })}</td>
-      <td>${stepperInput("tier-rate", displayPercent(tier.rate), { attrs: `data-tier="${tier.id}"`, suffix: "%" })}</td>
+      <td>${displayPercent(tier.min)}%</td>
+      <td>${tier.max == null ? "999.00" : displayPercent(tier.max)}%</td>
+      <td>${displayPercent(tier.rate)}%</td>
       <td class="coef-actions">
         <button class="action-link" type="button" data-edit-tier="${tier.id}">编辑</button>
         <button class="danger-link" type="button" data-delete-tier="${tier.id}">删除</button>
       </td>
     </tr>
   `).join("");
+}
+
+function openTierModal(tierId = null) {
+  ensureCoefficientConfig();
+  const tier = tierId
+    ? state.config.tiers.find((item) => item.id === tierId)
+    : { id: null, min: 0, max: 0.29, rate: 0.025 };
+  if (!tier || !els.tierModal || !els.tierModalBody) return;
+
+  state.editingTierId = tierId;
+  els.tierModalTitle.textContent = tierId ? "编辑档位" : "新增档位";
+  els.tierModalBody.innerHTML = `
+    <label class="modal-field required-field">
+      <span>合作佣金下限</span>
+      ${stepperInput("", displayRatio(tier.min, 2), {
+        step: 0.01,
+        attrs: 'data-tier-draft="min"',
+      })}
+    </label>
+    <label class="modal-field required-field">
+      <span>合作佣金上限</span>
+      ${stepperInput("", tier.max == null ? "9.99" : displayRatio(tier.max, 2), {
+        step: 0.01,
+        attrs: 'data-tier-draft="max"',
+      })}
+    </label>
+    <label class="modal-field required-field">
+      <span>提成比例</span>
+      ${stepperInput("", displayRatio(tier.rate, 4), {
+        step: 0.0001,
+        attrs: 'data-tier-draft="rate"',
+      })}
+    </label>
+  `;
+  els.tierModal.classList.add("open");
+  els.tierModal.setAttribute("aria-hidden", "false");
+}
+
+function closeTierModal() {
+  if (!els.tierModal) return;
+  els.tierModal.classList.remove("open");
+  els.tierModal.setAttribute("aria-hidden", "true");
+  state.editingTierId = null;
+}
+
+function confirmTierModal() {
+  if (!els.tierModalBody) return;
+  const min = Number(els.tierModalBody.querySelector('[data-tier-draft="min"]')?.value || 0);
+  const max = Number(els.tierModalBody.querySelector('[data-tier-draft="max"]')?.value || 0);
+  const rate = Number(els.tierModalBody.querySelector('[data-tier-draft="rate"]')?.value || 0);
+  const existingTier = state.editingTierId
+    ? state.config.tiers.find((tier) => tier.id === state.editingTierId)
+    : null;
+
+  if (existingTier) {
+    existingTier.min = min;
+    existingTier.max = max;
+    existingTier.rate = rate;
+  } else {
+    state.config.tiers.push({
+      id: `tier-${Date.now()}`,
+      label: "新档位",
+      min,
+      max,
+      rate,
+    });
+  }
+
+  state.config.tiers.sort((a, b) => a.min - b.min);
+  closeTierModal();
+  renderAll();
+  setPage(state.activePage);
+  showToast("提成档位已保存");
 }
 
 function renderCoefficientEditor() {
@@ -1132,6 +1248,34 @@ function renderTeams() {
     `).join("");
 }
 
+function renderOrgBoard() {
+  if (!els.orgPeopleList || !els.orgNodes) return;
+
+  const query = (els.orgPeopleSearch?.value || "").trim().toLowerCase();
+  const visiblePeople = orgPeople.filter((person) => person.name.toLowerCase().includes(query));
+
+  els.orgPeopleList.innerHTML = visiblePeople.map((person) => `
+    <button class="org-person-row ${person.placed ? "placed" : ""}" type="button">
+      <span class="org-person-icon" aria-hidden="true"></span>
+      <span>${person.name}</span>
+      ${person.placed ? '<span class="org-check">✓</span>' : '<span></span>'}
+    </button>
+  `).join("");
+
+  els.orgNodes.innerHTML = orgNodes.map((node) => `
+    <article class="org-node" style="left:${node.x}px; top:${node.y}px;">
+      <div class="org-node-top">
+        <span class="org-person-icon" aria-hidden="true"></span>
+        <strong>${node.name}</strong>
+        <span class="org-coef">系数${node.coefficient}</span>
+        <button class="org-remove" type="button" aria-label="移除 ${node.name}">×</button>
+      </div>
+      <span class="org-role ${node.roleTone}">${node.role}</span>
+      <div class="org-share" aria-hidden="true">⌯</div>
+    </article>
+  `).join("");
+}
+
 function renderMiddle() {
   const middleRows = people.filter((person) => person.role === "middle");
   els.middleGrid.innerHTML = middleRows.map((person) => `
@@ -1173,7 +1317,7 @@ function renderAll() {
   renderSettlement();
   renderTransactions();
   renderConfigPanel();
-  renderTeams();
+  renderOrgBoard();
   renderMiddle();
 }
 
@@ -1189,6 +1333,9 @@ function setPage(page) {
   document.querySelectorAll(".page-view").forEach((panel) => {
     panel.classList.toggle("active", panel.dataset.pagePanel === page);
   });
+  if (els.content) {
+    els.content.classList.toggle("org-canvas-mode", page === "team");
+  }
   if (els.filterRow) {
     els.filterRow.classList.toggle("month-only", page === "config");
   }
@@ -1329,21 +1476,21 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const closeTier = event.target.closest("[data-tier-modal-close]");
+  if (closeTier || event.target === els.tierModal) {
+    closeTierModal();
+    return;
+  }
+
+  const confirmTier = event.target.closest("[data-tier-modal-confirm]");
+  if (confirmTier) {
+    confirmTierModal();
+    return;
+  }
+
   const addTier = event.target.closest("[data-add-tier]");
   if (addTier) {
-    ensureCoefficientConfig();
-    const lastTier = state.config.tiers[state.config.tiers.length - 1];
-    const min = lastTier && lastTier.max != null ? lastTier.max + 0.01 : 0.66;
-    state.config.tiers.push({
-      id: `tier-${Date.now()}`,
-      label: "新档位",
-      min,
-      max: 9.99,
-      rate: 0,
-    });
-    renderAll();
-    setPage(state.activePage);
-    showToast("已新增提成档位");
+    openTierModal();
     return;
   }
 
@@ -1360,9 +1507,7 @@ document.addEventListener("click", (event) => {
 
   const editTier = event.target.closest("[data-edit-tier]");
   if (editTier) {
-    const row = editTier.closest("tr");
-    const input = row ? row.querySelector("input") : null;
-    if (input) input.focus();
+    openTierModal(editTier.dataset.editTier);
     return;
   }
 
@@ -1520,6 +1665,10 @@ document.addEventListener("change", (event) => {
     setSelectedMonth(target.value);
   }
 
+  if (target.matches("[data-org-month]")) {
+    setSelectedMonth(target.value);
+  }
+
   if (target.id === "teamSelect") {
     state.team = target.value;
     renderAll();
@@ -1531,6 +1680,10 @@ els.searchInput.addEventListener("input", (event) => {
   renderSettlement();
   renderTransactions();
 });
+
+if (els.orgPeopleSearch) {
+  els.orgPeopleSearch.addEventListener("input", renderOrgBoard);
+}
 
 document.getElementById("clearBtn").addEventListener("click", () => {
   state.query = "";
@@ -1554,7 +1707,7 @@ document.getElementById("onlyInvalidBtn").addEventListener("click", () => {
 els.settlementSortBtn.addEventListener("click", () => {
   state.settlementSort = state.settlementSort === "desc" ? "asc" : "desc";
   renderSettlement();
-  showToast(state.settlementSort === "desc" ? "最终应发已按降序排序" : "最终应发已按升序排序");
+  showToast(state.settlementSort === "desc" ? "最终提成已按降序排序" : "最终提成已按升序排序");
 });
 
 document.getElementById("importBtn").addEventListener("click", () => {
@@ -1572,7 +1725,10 @@ document.getElementById("saveConfigBtn").addEventListener("click", () => {
 document.getElementById("closeDrawer").addEventListener("click", closeDrawer);
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeDrawer();
+  if (event.key === "Escape") {
+    closeDrawer();
+    closeTierModal();
+  }
 });
 
 renderAll();

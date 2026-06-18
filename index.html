@@ -115,15 +115,14 @@
                     <tr>
                       <th>结算对象</th>
                       <th>归属</th>
-                      <th>原始提成</th>
-                      <th>绩效/分成</th>
-                      <th>补发</th>
+                      <th>基础提成</th>
+                      <th>团队提成</th>
+                      <th>绩效系数</th>
                       <th>
                         <button class="sort-button" id="settlementSortBtn" type="button">
-                          最终应发 <span id="settlementSortIcon">↓</span>
+                          最终提成 <span id="settlementSortIcon">↓</span>
                         </button>
                       </th>
-                      <th>说明</th>
                       <th>操作</th>
                     </tr>
                   </thead>
@@ -189,25 +188,49 @@
         </section>
 
         <section class="page-view" id="teamPage" data-page-panel="team">
-          <div class="section-grid">
-            <article class="panel wide-panel">
-              <div class="panel-head">
-                <div>
-                  <h2>达播关系画板</h2>
+          <div class="org-board-page">
+            <div class="org-board-toolbar">
+              <h2>组织架构画板</h2>
+              <div class="org-month-switch">
+                <button type="button" data-month-step="-1" aria-label="上个月">‹</button>
+                <label>
+                  <span>▦</span>
+                  <input type="month" value="2026-05" data-org-month />
+                </label>
+                <button type="button" data-month-step="1" aria-label="下个月">›</button>
+              </div>
+              <div class="org-toolbar-actions">
+                <button class="ghost-button small-button" type="button">人员绩效系数</button>
+                <button class="ghost-button small-button" type="button">▣ 复制上月组织架构</button>
+                <button class="ghost-button small-button" type="button">重置视图</button>
+                <button class="primary-button small-button" type="button">保存</button>
+              </div>
+            </div>
+
+            <div class="org-board-shell">
+              <aside class="org-people-panel">
+                <div class="org-panel-title">
+                  <h3>人员列表</h3>
+                  <span>拖拽到画布</span>
                 </div>
+                <label class="org-search">
+                  <span>⌕</span>
+                  <input id="orgPeopleSearch" type="search" placeholder="搜索姓名" />
+                </label>
+                <div id="orgPeopleList" class="org-people-list"></div>
+              </aside>
+
+              <div class="org-canvas">
+                <svg class="org-links" viewBox="0 0 1160 620" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M585 120 C480 170 410 180 365 260" />
+                  <path d="M585 120 C700 178 720 190 760 260" />
+                  <path d="M365 340 C300 420 292 440 274 500" />
+                  <path d="M365 340 C430 430 430 455 438 520" />
+                  <path d="M760 340 C820 420 825 450 835 500" />
+                </svg>
+                <div id="orgNodes" class="org-nodes"></div>
               </div>
-              <div id="teamCards" class="team-cards"></div>
-            </article>
-            <aside class="panel insight-panel">
-              <div class="panel-head compact">
-                <h2>负责人公式</h2>
-              </div>
-              <div class="rule-box">
-                <strong>负责人提成</strong>
-                <span>团队成员原始提成金额汇总 × 50% × 负责人绩效系数</span>
-              </div>
-              <div id="leaderRanking" class="ranking-list"></div>
-            </aside>
+            </div>
           </div>
         </section>
 
@@ -235,6 +258,18 @@
     </div>
     <div class="drawer-body" id="drawerBody"></div>
   </aside>
+
+  <div class="modal-backdrop" id="tierModal" aria-hidden="true">
+    <div class="coef-modal" role="dialog" aria-modal="true" aria-labelledby="tierModalTitle">
+      <button class="modal-close" type="button" data-tier-modal-close aria-label="关闭">×</button>
+      <h3 id="tierModalTitle">编辑档位</h3>
+      <div class="modal-form" id="tierModalBody"></div>
+      <div class="modal-actions">
+        <button class="ghost-button" type="button" data-tier-modal-close>取消</button>
+        <button class="primary-button" type="button" data-tier-modal-confirm>确定</button>
+      </div>
+    </div>
+  </div>
 
   <div class="toast" id="toast">已重新计算</div>
   <script src="./app.js"></script>
