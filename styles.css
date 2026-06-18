@@ -269,12 +269,6 @@ h1 {
   letter-spacing: -0.5px;
 }
 
-.title-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 .primary-button,
 .ghost-button,
 .icon-button {

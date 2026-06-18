@@ -1874,14 +1874,6 @@ els.settlementSortBtn.addEventListener("click", () => {
   showToast(state.settlementSort === "desc" ? "最终提成已按降序排序" : "最终提成已按升序排序");
 });
 
-document.getElementById("importBtn").addEventListener("click", () => {
-  showToast("批量导入入口已触发");
-});
-
-document.getElementById("exportBtn").addEventListener("click", () => {
-  showToast("结算结果导出入口已触发");
-});
-
 document.getElementById("saveConfigBtn").addEventListener("click", () => {
   showToast("提成系数配置已保存");
 });
