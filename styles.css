@@ -38,12 +38,18 @@ button {
 }
 
 .app-shell {
-  display: block;
+  display: flex;
   min-height: 100vh;
 }
 
 .sidebar {
-  display: none;
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 250px;
+  min-height: 100vh;
+  background: #fff;
+  border-right: 1px solid var(--line);
+  z-index: 30;
 }
 
 .brand {
@@ -128,74 +134,22 @@ button {
 
 .workspace {
   min-height: 100vh;
-  margin-left: 0;
+  margin-left: 250px;
+  flex: 1;
 }
 
 .topbar {
   position: sticky;
   top: 0;
   z-index: 20;
-  height: 74px;
+  height: 60px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 28px;
+  justify-content: flex-end;
+  gap: 18px;
   background: #fff;
   border-bottom: 1px solid var(--line);
-  padding: 0 32px;
-}
-
-.top-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 330px;
-  color: #020b16;
-}
-
-.top-brand .brand-mark {
-  width: 40px;
-  height: 40px;
-  font-size: 24px;
-}
-
-.top-brand strong {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -1px;
-}
-
-.top-brand span {
-  margin-left: 12px;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.top-tabs {
-  height: 100%;
-  display: flex;
-  align-items: stretch;
-  gap: 28px;
-  flex: 1;
-  overflow: hidden;
-}
-
-.top-tab {
-  height: 74px;
-  min-width: auto;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: #fff;
-  color: #75849a;
-  font-size: 18px;
-  padding: 0;
-  white-space: nowrap;
-}
-
-.top-tab.active,
-.top-tab:hover {
-  color: var(--orange);
-  border-bottom-color: var(--orange);
+  padding: 0 42px 0 20px;
 }
 
 .user-actions {
@@ -210,12 +164,12 @@ button {
   border: 0;
   background: transparent;
   color: #0f172a;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .avatar {
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
   border-radius: 50%;
