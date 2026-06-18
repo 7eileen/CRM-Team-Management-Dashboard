@@ -586,7 +586,15 @@ function renderMetrics() {
   const leaderRows = personRows.filter((person) => person.role === "leader");
   const totalPayable = personRows.reduce((sum, item) => sum + item.finalAmount, 0);
   const middlePayable = middleRows.reduce((sum, item) => sum + item.finalAmount, 0);
-  const yangjiePayable = personRows.find((person) => person.name === "杨洁")?.finalAmount || 0;
+  const teamPayable = ["A组", "B组", "C组"].reduce((acc, team) => {
+    acc[team] = {
+      amount: personRows
+        .filter((person) => person.team === team)
+        .reduce((sum, person) => sum + person.finalAmount, 0),
+      count: personRows.filter((person) => person.team === team).length,
+    };
+    return acc;
+  }, {});
   const invalidCount = rows.filter((row) => !row.computable || row.tierRate === 0).length;
   const incentiveCount = rows.filter((row) => row.incentiveMultiplier > 1).length;
 
@@ -613,14 +621,14 @@ function renderMetrics() {
       metaLeft: `负责人 ${leaderRows.length}`,
       metaRight: `50% 基数`,
     },
-    {
-      id: "yangjie",
-      label: "A组杨洁特殊表",
-      value: money(yangjiePayable),
-      metaLeft: `不打专场折扣`,
-      metaRight: `独立规则`,
-      badge: rows.filter((row) => row.yangjieRule).length,
-    },
+    ...["A组", "B组", "C组"].map((team) => ({
+      id: `team-${team.slice(0, 1).toLowerCase()}`,
+      team,
+      label: `${team}提成`,
+      value: money(teamPayable[team].amount),
+      metaLeft: `人员 ${teamPayable[team].count}`,
+      metaRight: `团队汇总`,
+    })),
     {
       id: "invalid",
       label: "需复核记录",
@@ -646,8 +654,14 @@ function renderMetrics() {
     },
   ];
 
+  const isMetricActive = (card) => {
+    if (card.team) return state.team === card.team && state.filterMode === "all";
+    if (card.id === "all") return state.filterMode === "all" && state.team === "all";
+    return state.filterMode === card.id;
+  };
+
   els.metricFlow.innerHTML = cards.map((card) => `
-    <button class="metric-card ${state.filterMode === card.id ? "active" : ""}" data-metric="${card.id}">
+    <button class="metric-card ${isMetricActive(card) ? "active" : ""}" data-metric="${card.id}" ${card.team ? `data-team-metric="${card.team}"` : ""}>
       ${card.badge ? `<span class="metric-badge">${card.badge}</span>` : ""}
       <span class="label">${card.label}</span>
       <span class="value ${card.orange ? "orange" : ""}">${card.value}</span>
@@ -1612,11 +1626,19 @@ document.addEventListener("click", (event) => {
   const metric = event.target.closest("[data-metric]");
   if (metric) {
     const metricId = metric.dataset.metric;
+    if (metric.dataset.teamMetric) {
+      state.team = metric.dataset.teamMetric;
+      state.filterMode = "all";
+      if (els.teamSelect) els.teamSelect.value = state.team;
+      setPage("aggregate");
+      renderAll();
+      return;
+    }
     if (metricId === "middle") {
       setPage("middle");
       return;
     }
-    if (["invalid", "incentive", "yangjie"].includes(metricId)) {
+    if (["invalid", "incentive"].includes(metricId)) {
       state.filterMode = state.filterMode === metricId ? "all" : metricId;
       setPage("transactions");
       renderAll();
