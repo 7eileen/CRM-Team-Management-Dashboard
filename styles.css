@@ -535,6 +535,10 @@ h1 {
   padding-bottom: 12px;
 }
 
+.config-panel-head {
+  align-items: center;
+}
+
 .panel-head h2 {
   color: #07172a;
   font-size: 22px;
