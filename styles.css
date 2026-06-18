@@ -767,9 +767,12 @@ tbody tr:hover {
 }
 
 .config-layout {
-  display: grid;
-  grid-template-columns: 220px 1fr;
+  display: block;
   min-height: 430px;
+}
+
+.config-layout .config-tabs {
+  display: none;
 }
 
 .config-tabs {
@@ -804,7 +807,213 @@ tbody tr:hover {
 }
 
 .config-panel {
-  padding: 24px 28px;
+  padding: 24px 28px 32px;
+}
+
+.coefficient-board {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.coef-block {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 22px 24px;
+}
+
+.coef-block.span-4 {
+  grid-column: span 4;
+}
+
+.coef-block.span-8 {
+  grid-column: span 8;
+}
+
+.coef-block.span-12 {
+  grid-column: span 12;
+}
+
+.coef-block h3 {
+  margin: 0 0 18px;
+  color: #08182c;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.coef-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.coef-block-head h3 {
+  margin: 0;
+}
+
+.coef-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.small-button {
+  height: 38px;
+  border-radius: 6px;
+  padding: 0 16px;
+}
+
+.coef-table-wrap {
+  overflow: auto;
+}
+
+.coef-table {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-collapse: collapse;
+}
+
+.coef-table th,
+.coef-table td {
+  height: 50px;
+  border: 1px solid var(--line);
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px 14px;
+}
+
+.coef-table th {
+  background: #fbfcfe;
+  color: #07172a;
+  font-weight: 700;
+}
+
+.coef-table td {
+  color: #263244;
+}
+
+.coef-table tbody tr:hover {
+  background: #fffaf4;
+}
+
+.compact-table th,
+.compact-table td {
+  height: 56px;
+}
+
+.category-table th:first-child,
+.category-table td:first-child {
+  width: 72%;
+}
+
+.exclude-table th:first-child {
+  width: 110px;
+}
+
+.exclude-table th:nth-child(2) {
+  width: 180px;
+}
+
+.exclude-table th:last-child {
+  width: 110px;
+}
+
+.stepper-control {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  overflow: hidden;
+  border: 1px solid #d7e0ec;
+  border-radius: 6px;
+  background: #f7f9fc;
+  vertical-align: middle;
+}
+
+.stepper-control button {
+  width: 34px;
+  height: 32px;
+  border: 0;
+  border-right: 1px solid #d7e0ec;
+  background: #f3f6fa;
+  color: #5b6778;
+  font-size: 18px;
+}
+
+.stepper-control button:last-child {
+  border-right: 0;
+  border-left: 1px solid #d7e0ec;
+}
+
+.stepper-control button:hover {
+  color: var(--orange);
+  background: #fff7ef;
+}
+
+.stepper-input {
+  width: 86px;
+  height: 32px;
+  border: 0;
+  background: #fff;
+  color: #263244;
+  text-align: center;
+  outline: 0;
+}
+
+.stepper-suffix {
+  margin-left: 8px;
+  color: #526173;
+}
+
+.coef-actions {
+  white-space: nowrap;
+}
+
+.coef-actions button + button {
+  margin-left: 20px;
+}
+
+.danger-link,
+.restore-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.danger-link {
+  color: #ff4d4f;
+}
+
+.restore-link {
+  color: #ff9aa0;
+  font-weight: 700;
+}
+
+.plain-table-input {
+  width: 100%;
+  height: 34px;
+  border: 1px solid #dbe2eb;
+  border-radius: 6px;
+  padding: 0 10px;
+  outline: 0;
+}
+
+.plain-table-input.wide {
+  min-width: 240px;
+}
+
+.inline-config {
+  padding-bottom: 28px;
+}
+
+.threshold-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #334155;
 }
 
 .custom-config-head {
