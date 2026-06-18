@@ -595,7 +595,6 @@ function renderMetrics() {
     };
     return acc;
   }, {});
-  const invalidCount = rows.filter((row) => !row.computable || row.tierRate === 0).length;
   const incentiveCount = rows.filter((row) => row.incentiveMultiplier > 1).length;
 
   const cards = [
@@ -629,14 +628,6 @@ function renderMetrics() {
       metaLeft: `人员 ${teamPayable[team].count}`,
       metaRight: `团队汇总`,
     })),
-    {
-      id: "invalid",
-      label: "需复核记录",
-      value: number.format(invalidCount),
-      metaLeft: `排除/超档`,
-      metaRight: `点击查看`,
-      badge: invalidCount,
-    },
     {
       id: "incentive",
       label: "气垫/素颜霜激励",
