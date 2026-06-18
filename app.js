@@ -1039,7 +1039,7 @@ function setPage(page) {
   });
   const pageLabel = getPageLabel(page);
   if (els.activeTabText) els.activeTabText.textContent = pageLabel;
-  if (els.pageHeading) els.pageHeading.textContent = pageLabel;
+  if (els.pageHeading) els.pageHeading.textContent = "达播提成";
 }
 
 function setConfigTab(tab) {
