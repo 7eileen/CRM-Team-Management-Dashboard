@@ -1041,14 +1041,9 @@ function setPage(page) {
   document.querySelectorAll("[data-page]").forEach((item) => {
     item.classList.toggle("active", item.dataset.page === page);
   });
-  document.querySelectorAll(".nav-group").forEach((group) => {
-    const hasActiveChild = Boolean(group.querySelector(`[data-page="${page}"]`));
-    group.classList.toggle("open", hasActiveChild || group.classList.contains("open"));
-    const toggle = group.querySelector(".nav-group-toggle");
-    if (toggle) {
-      toggle.classList.toggle("active", hasActiveChild);
-      toggle.setAttribute("aria-expanded", group.classList.contains("open") ? "true" : "false");
-    }
+  const commissionPages = ["aggregate", "transactions", "config", "team", "middle"];
+  document.querySelectorAll("[data-commission-entry]").forEach((item) => {
+    item.classList.toggle("active", commissionPages.includes(page));
   });
   document.querySelectorAll(".page-view").forEach((panel) => {
     panel.classList.toggle("active", panel.dataset.pagePanel === page);
@@ -1154,11 +1149,9 @@ function updateConfig(target) {
 }
 
 document.addEventListener("click", (event) => {
-  const groupToggle = event.target.closest(".nav-group-toggle");
-  if (groupToggle) {
-    const group = groupToggle.closest(".nav-group");
-    group.classList.toggle("open");
-    groupToggle.setAttribute("aria-expanded", group.classList.contains("open") ? "true" : "false");
+  const commissionEntry = event.target.closest("[data-commission-entry]");
+  if (commissionEntry) {
+    setPage("aggregate");
     return;
   }
 

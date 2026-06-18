@@ -34,18 +34,10 @@
           <span class="nav-icon">▤</span>
           创建寄样订单
         </button>
-        <div class="nav-group open" data-nav-group="commission">
-          <button class="nav-item nav-group-toggle" type="button" aria-expanded="true">
-            <span class="nav-icon">◎</span>
-            <span class="nav-label">达播提成</span>
-            <span class="nav-chevron">⌄</span>
-          </button>
-          <div class="nav-sublist">
-            <button class="nav-sub-item" data-page="config" type="button">达播提成规则设置</button>
-            <button class="nav-sub-item active" data-page="aggregate" type="button">达播提成明细</button>
-            <button class="nav-sub-item" data-page="team" type="button">达播关系画板</button>
-          </div>
-        </div>
+        <button class="nav-item commission-entry active" data-commission-entry type="button">
+          <span class="nav-icon">◎</span>
+          达播提成
+        </button>
       </nav>
 
       <button class="collapse-handle" aria-label="收起侧栏">‹</button>
@@ -77,6 +69,12 @@
             <button class="ghost-button" id="importBtn"><span class="button-icon">⇧</span> 批量导入</button>
             <button class="primary-button" id="exportBtn"><span class="button-icon">⇩</span> 导出结算</button>
           </div>
+        </div>
+
+        <div class="commission-tabs" id="commissionTabs">
+          <button class="commission-tab" data-page="config" type="button">达播提成规则设置</button>
+          <button class="commission-tab active" data-page="aggregate" type="button">达播提成明细</button>
+          <button class="commission-tab" data-page="team" type="button">达播关系画板</button>
         </div>
 
         <div class="metric-flow" id="metricFlow"></div>
