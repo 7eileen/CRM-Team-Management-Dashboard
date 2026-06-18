@@ -63,7 +63,6 @@
         <div class="page-title">
           <div>
             <h1 id="pageHeading">达播提成明细</h1>
-            <p>按单条交易计算、达人归属汇总、个人绩效与负责人团队规则结算。</p>
           </div>
           <div class="title-actions">
             <button class="ghost-button" id="importBtn"><span class="button-icon">⇧</span> 批量导入</button>
@@ -107,7 +106,6 @@
               <div class="panel-head">
                 <div>
                   <h2>提成最终聚合</h2>
-                  <p>普通成员按个人绩效结算；负责人按团队原始提成 50% 分成。</p>
                 </div>
                 <div class="panel-tabs">
                   <button class="mini-tab active" data-aggregate-mode="person">按人</button>
@@ -144,7 +142,6 @@
             <div class="panel-head">
               <div>
                 <h2>单条交易计算明细</h2>
-                <p>点击“查看计算”可展开每条订单的因子和排除原因。</p>
               </div>
               <button class="ghost-button" id="onlyInvalidBtn">只看异常</button>
             </div>
@@ -175,7 +172,6 @@
             <div class="panel-head">
               <div>
                 <h2>提成系数可编辑配置</h2>
-                <p>修改后会立即影响聚合结算与单条订单计算。</p>
               </div>
               <button class="primary-button" id="saveConfigBtn">保存配置</button>
             </div>
@@ -201,7 +197,6 @@
               <div class="panel-head">
                 <div>
                   <h2>达播关系画板</h2>
-                  <p>查看团队负责人、商务成员与原始提成基数之间的结算关系。</p>
                 </div>
               </div>
               <div id="teamCards" class="team-cards"></div>
@@ -224,7 +219,6 @@
             <div class="panel-head">
               <div>
                 <h2>中台独立结算</h2>
-                <p>中台人员不参与达播组内分成，按月度合计金额直接发放。</p>
               </div>
             </div>
             <div class="middle-grid" id="middleGrid"></div>
@@ -237,7 +231,7 @@
   <aside class="drawer" id="detailDrawer" aria-hidden="true">
     <div class="drawer-head">
       <div>
-        <p>订单计算详情</p>
+        <span class="drawer-kicker">订单计算详情</span>
         <h3 id="drawerTitle">-</h3>
       </div>
       <button class="icon-button" id="closeDrawer" aria-label="关闭">×</button>

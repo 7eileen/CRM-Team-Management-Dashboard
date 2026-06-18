@@ -266,13 +266,6 @@ h1 {
   font-weight: 500;
 }
 
-.page-title p,
-.panel-head p {
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
 .title-actions {
   display: flex;
   align-items: center;
@@ -751,12 +744,6 @@ tbody tr:hover {
   font-size: 18px;
 }
 
-.custom-config-head p {
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
 .custom-coef-table input,
 .custom-coef-table select {
   height: 34px;
@@ -807,12 +794,6 @@ tbody tr:hover {
 .setting-card h3 {
   font-size: 16px;
   color: #08182c;
-}
-
-.setting-card p {
-  margin: 8px 0 14px;
-  color: var(--muted);
-  font-size: 13px;
 }
 
 .edit-field {
@@ -1025,7 +1006,8 @@ tbody input:disabled {
   border-bottom: 1px solid var(--line);
 }
 
-.drawer-head p {
+.drawer-kicker {
+  display: block;
   color: var(--muted);
   font-size: 13px;
 }

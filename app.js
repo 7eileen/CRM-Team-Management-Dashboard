@@ -735,7 +735,6 @@ function renderConfigPanel() {
       <div class="setting-grid">
         <div class="setting-card">
           <h3>专场计算系数</h3>
-          <p>普通达播订单使用；A组杨洁表默认不使用专场折扣。</p>
           <div class="edit-field">
             <label>专场</label>
             <input type="number" min="0" step="0.01" value="${state.config.special.specialCoef}" data-edit="special-coef" />
@@ -747,7 +746,6 @@ function renderConfigPanel() {
         </div>
         <div class="setting-card">
           <h3>新老客系数</h3>
-          <p>首播日期落在结算月往前滚动窗口内，视为新客。</p>
           <div class="edit-field">
             <label>滚动窗口（月）</label>
             <input type="number" min="0" step="1" value="${state.config.customer.rollingMonths}" data-edit="rolling-months" />
@@ -771,7 +769,6 @@ function renderConfigPanel() {
       <div class="setting-grid">
         <div class="setting-card">
           <h3>气垫/素颜霜销售激励</h3>
-          <p>同一 UID 在激励品类的销售额超过门槛后，该类产品提成翻倍。</p>
           <div class="edit-field">
             <label>激励品类</label>
             <input type="text" value="${state.config.incentive.categories.join("、")}" data-edit="incentive-categories" />
@@ -787,7 +784,6 @@ function renderConfigPanel() {
         </div>
         <div class="setting-card">
           <h3>当前命中 UID</h3>
-          <p>按当前配置实时识别可翻倍订单。</p>
           <div class="note-box">${renderIncentivePreview()}</div>
         </div>
       </div>
@@ -801,7 +797,6 @@ function renderConfigPanel() {
       <div class="setting-grid">
         <div class="setting-card">
           <h3>负责人分成比例</h3>
-          <p>团队负责人最终结算使用该比例，不参与个人最终发放。</p>
           <div class="edit-field">
             <label>团队分成比例</label>
             <input type="number" min="0" max="100" step="0.1" value="${toInputPercent(state.config.leaderShare)}" data-edit="leader-share" /> %
@@ -809,8 +804,6 @@ function renderConfigPanel() {
         </div>
         <div class="setting-card">
           <h3>绩效口径</h3>
-          <p>普通成员：单条最终金额汇总 × 个人绩效 + 上月补发；负责人：团队基数 × 分成 × 绩效。</p>
-          <div class="note-box">修改任意绩效系数后，聚合页与团队负责人页会同步刷新。</div>
         </div>
       </div>
       <div class="table-wrap" style="margin-top:16px">
@@ -847,7 +840,6 @@ function renderConfigPanel() {
       <div class="custom-config-head">
         <div>
           <h3>自定义系数</h3>
-          <p>维护新增系数的名称、适用环节、数值和启用状态；默认作为配置项留存，不直接改写正式结算公式。</p>
         </div>
         <button class="ghost-button" type="button" data-add-custom-coef>+ 新增系数</button>
       </div>
@@ -890,7 +882,6 @@ function renderConfigPanel() {
           </tbody>
         </table>
       </div>
-      <div class="note-box custom-note-box">提示：这些自定义系数适合记录新业务口径。若需要参与正式订单计算，建议先确认公式作用位置和优先级。</div>
     `;
     return;
   }
@@ -900,7 +891,6 @@ function renderConfigPanel() {
       <div class="setting-grid">
         <div class="setting-card">
           <h3>A组杨洁结算表</h3>
-          <p>提成金额 = 支付金额 × 新客系数 × 是否计算 × 提成比例；其余激励倍数逻辑一致。</p>
           <div class="edit-field">
             <label>首播截止日</label>
             <input type="date" value="${state.config.yangjie.cutoff}" data-edit="yangjie-cutoff" />
@@ -912,7 +902,6 @@ function renderConfigPanel() {
         </div>
         <div class="setting-card">
           <h3>规则差异</h3>
-          <p>与主表相比，杨洁表默认不使用专场计算系数，并且首播日期早于 2023-05-31 的订单不计算。</p>
           <div class="note-box">
             当前杨洁表命中 ${getCalculations().filter((row) => row.yangjieRule).length} 条订单，
             被截止日排除 ${getCalculations().filter((row) => row.yangjieRule && !row.computable).length} 条。
