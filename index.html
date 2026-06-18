@@ -71,7 +71,7 @@
         <div class="metric-flow" id="metricFlow"></div>
 
         <div class="filter-row">
-          <label class="search-box">
+          <label class="search-box" data-filter-extra>
             <span>⌕</span>
             <input id="searchInput" type="search" placeholder="搜索商务/达人UID/品类/订单号" />
           </label>
@@ -79,7 +79,7 @@
             <span>结算月：</span>
             <input id="monthSelect" type="month" value="2026-05" />
           </label>
-          <label class="field-select">
+          <label class="field-select" data-filter-extra>
             <span>团队：</span>
             <select id="teamSelect">
               <option value="all">全部团队</option>
@@ -88,8 +88,8 @@
               <option value="C组">C组</option>
             </select>
           </label>
-          <button class="ghost-button" id="moreFilterBtn"><span class="button-icon">▽</span> 更多筛选</button>
-          <button class="ghost-button" id="clearBtn"><span class="button-icon">↺</span> 清空</button>
+          <button class="ghost-button" id="moreFilterBtn" data-filter-extra><span class="button-icon">▽</span> 更多筛选</button>
+          <button class="ghost-button" id="clearBtn" data-filter-extra><span class="button-icon">↺</span> 清空</button>
         </div>
 
         <section class="page-view active" id="aggregatePage" data-page-panel="aggregate">

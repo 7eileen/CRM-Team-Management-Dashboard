@@ -392,6 +392,16 @@ h1 {
   box-shadow: var(--shadow);
 }
 
+.filter-row.month-only {
+  width: fit-content;
+  min-width: 220px;
+  padding: 14px 18px;
+}
+
+.filter-row.month-only [data-filter-extra] {
+  display: none;
+}
+
 .search-box,
 .field-select {
   height: 54px;

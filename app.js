@@ -282,6 +282,7 @@ const els = {
   searchInput: document.getElementById("searchInput"),
   monthSelect: document.getElementById("monthSelect"),
   teamSelect: document.getElementById("teamSelect"),
+  filterRow: document.querySelector(".filter-row"),
   settlementSortBtn: document.getElementById("settlementSortBtn"),
   settlementSortIcon: document.getElementById("settlementSortIcon"),
   pageHeading: document.getElementById("pageHeading"),
@@ -1025,6 +1026,9 @@ function setPage(page) {
   document.querySelectorAll(".page-view").forEach((panel) => {
     panel.classList.toggle("active", panel.dataset.pagePanel === page);
   });
+  if (els.filterRow) {
+    els.filterRow.classList.toggle("month-only", page === "config");
+  }
   if (els.pageHeading) els.pageHeading.textContent = "达播提成";
 }
 
