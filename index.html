@@ -1,286 +1,253 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>达人CRM作战看板</title>
-<style>
-*{box-sizing:border-box}
-:root{
-  --bg:#f3f6fb;--card:#fff;--text:#061b36;--muted:#73839c;--muted2:#95a2b4;
-  --line:#dbe5f1;--line2:#edf2f7;--orange:#ff7200;--orange2:#fff4eb;
-  --blue:#2389ff;--blue2:#eaf4ff;--green:#24c46b;--green2:#eafaf2;
-  --red:#ff4054;--red2:#fff0f2;--purple:#7867dd;--shadow:0 18px 48px rgba(23,48,80,.08);
-}
-html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;background:var(--bg);color:var(--text)}
-button,input,select,textarea{font:inherit}button{cursor:pointer}
-.topbar{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:26px;padding:0 26px;position:sticky;top:0;z-index:20}
-.brand{display:flex;align-items:center;gap:10px;min-width:270px}.brand-mark{width:32px;height:32px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px}.brand strong{font-size:26px;letter-spacing:-1px}.brand span{font-size:16px;font-weight:700;margin-left:12px}
-.nav{display:flex;align-items:center;gap:34px;height:100%;flex:1;overflow:auto}.nav button{border:0;background:transparent;height:100%;padding:0;color:#7c8aa0;font-size:16px;position:relative;white-space:nowrap}.nav button.active{color:var(--orange)}.nav button.active:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--orange)}
-.user{display:flex;align-items:center;gap:12px;font-size:16px;font-weight:700;white-space:nowrap}.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#8c73f6,#b99bff);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800}
-.page{max-width:1460px;margin:0 auto;padding:32px 26px 48px}.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}h1{font-size:29px;font-weight:500;margin:0;letter-spacing:-.5px}.btn{height:40px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);padding:0 15px}.btn.primary{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:700}.btn.soft{background:#f6f9fd}.btn.danger{background:var(--red2);border-color:#ffd0d6;color:var(--red)}
-.module-tabs{display:flex;background:#eaf0f7;border-radius:18px;padding:5px;margin-bottom:18px;gap:4px;width:max-content;max-width:100%;overflow:auto}.module-tabs button{height:38px;border:0;background:transparent;color:#71819a;border-radius:14px;padding:0 18px;font-size:15px;white-space:nowrap}.module-tabs button.active{background:#fff;color:var(--orange);box-shadow:0 2px 9px rgba(35,59,90,.08);font-weight:700}.module-page{display:none}.module-page.active{display:block}
-.toolbar{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:18px}.tool-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.seg{display:flex;background:#f1f5fa;border-radius:14px;padding:4px}.seg button{height:34px;border:0;background:transparent;color:#71819a;border-radius:12px;padding:0 16px;font-size:15px}.seg button.active{background:#fff;color:var(--orange);box-shadow:0 2px 8px rgba(35,59,90,.08)}.control{height:40px;border:1px solid #cfdceb;border-radius:8px;background:#fff;padding:0 12px;color:var(--text);min-width:118px}.search{width:280px}.spacer{flex:1}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}.stat-card{height:112px;background:#fff;border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:center;padding:0 28px}.stat-card b{font-size:30px;line-height:1;font-weight:800;margin-bottom:10px}.stat-card span{font-size:14px;color:#7b8ba4}.stat-card small{font-size:12px;color:#a0acbc}.orange b{color:var(--orange)}.blue b{color:var(--blue)}.green b{color:var(--green)}.red b{color:var(--red)}
-.section{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:20px;margin-bottom:18px}.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.section-head h2{margin:0;font-size:18px;font-weight:600}.section-head span{font-size:13px;color:var(--muted)}
-.badge{height:26px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-radius:13px;font-size:13px;width:max-content}.badge:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}.badge.orange{background:var(--orange2);color:var(--orange)}.badge.blue{background:var(--blue2);color:var(--blue)}.badge.green{background:var(--green2);color:var(--green)}.badge.red{background:var(--red2);color:var(--red)}.badge.gray{background:#f1f5fa;color:#728098}.badge.purple{background:#f0edff;color:var(--purple)}
-.mission-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.mission-card{border:1px solid #ffd9bd;background:#fffaf6;border-radius:18px;padding:20px}.mission-top{display:flex;justify-content:space-between;gap:16px}.mission-card h3{margin:0 0 10px;font-size:20px}.mission-owner{font-size:14px;color:var(--muted)}.mission-metrics{display:grid;grid-template-columns:repeat(4,82px);gap:10px;text-align:center}.mission-metrics small{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.mission-metrics b{font-size:20px;color:#ff304f}.mission-metrics .dash{color:#1a2c45}.progress-row{display:flex;align-items:center;gap:10px;margin-top:18px;color:var(--muted);font-size:13px}.progress{height:5px;background:#efefee;border-radius:10px;overflow:hidden;flex:1}.progress span{height:100%;display:block;background:var(--orange);border-radius:10px}
-.tier-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}.tier-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff}.tier-card strong{display:block;margin-bottom:9px}.tier-card p{margin:7px 0;color:#52627a;font-size:13px}.tier-card.s{border-color:#ffaf27;color:#c97900}.tier-card.a{border-color:#ff9b3b;color:#d46800}.tier-card.b{border-color:#3b83ff;color:#2162c4}.tier-card.c{border-color:#28b844;color:#18862d}.tier-card.d{border-color:#d0d7df;color:#4f5d6e}
-.two-col{display:grid;grid-template-columns:1fr 390px;gap:18px}.funnel-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.funnel-list{display:flex;flex-direction:column;gap:10px}.funnel-item{display:grid;grid-template-columns:94px 1fr 34px;align-items:center;gap:10px;font-size:13px}.bar{height:8px;background:#f0f1f2;border-radius:10px;overflow:hidden}.bar span{height:100%;display:block;border-radius:10px;background:var(--orange)}
-.action-list,.lead-mini-list{display:flex;flex-direction:column;gap:10px}.action,.lead-mini{border:1px solid var(--line2);border-radius:14px;background:#fbfdff;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}.action strong,.lead-mini strong{font-size:14px}.action small,.lead-mini small{display:block;color:var(--muted);font-size:13px;margin-top:5px}
-.kanban{overflow:auto}.kanban-cols{display:flex;gap:14px;min-height:390px}.kanban-col{min-width:222px;flex:1;border:1px solid var(--line);border-radius:18px;background:#f9fbfe;overflow:hidden}.kanban-head{height:44px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-top:3px solid var(--orange)}.kanban-head strong{font-size:14px}.kanban-body{padding:10px;min-height:340px;max-height:520px;overflow:auto}.lead-card{background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:14px;padding:12px;margin-bottom:10px;transition:.15s}.lead-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(22,48,82,.1)}.lead-card.tier-s{border-left-color:#f2a51a}.lead-card.tier-a{border-left-color:#2878d9}.lead-card.tier-b{border-left-color:#7a8796}.lead-card.tier-c{border-left-color:#a7b0bb}.lead-card h3{margin:0 0 8px;font-size:15px}.meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.meta span{font-size:12px;color:#536273;background:#f0f3f7;border-radius:6px;padding:3px 6px}.risk-text{margin-top:8px;padding:7px 8px;border-radius:8px;background:var(--red2);color:var(--red);font-size:12px;line-height:1.4}.empty{padding:24px;text-align:center;color:var(--muted)}
-.tables{display:grid;grid-template-columns:1fr 410px;gap:18px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;height:40px;color:#6f7f96;background:#f7faff;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}td{height:48px;border-bottom:1px solid var(--line2);color:#18304c;vertical-align:middle}th,td{padding:0 10px}.name-cell strong{display:block;margin-bottom:4px}.name-cell small{color:var(--muted)}.mini-actions{display:flex;gap:6px;white-space:nowrap}.mini-btn{height:28px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:0 8px;color:#23354d}
-.drawer-mask,.modal-mask{position:fixed;inset:0;background:rgba(8,18,34,.34);display:none;z-index:50}.drawer-mask.active,.modal-mask.active{display:block}.drawer{position:fixed;right:0;top:0;width:min(780px,94vw);height:100vh;background:#fff;z-index:60;box-shadow:-20px 0 48px rgba(8,18,34,.18);transform:translateX(100%);transition:.22s;display:flex;flex-direction:column}.drawer.active{transform:translateX(0)}.drawer-head{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px}.drawer-title h2{margin:0 0 6px;font-size:22px}.drawer-title span{color:var(--muted);font-size:14px}.icon-btn{width:36px;height:36px;border:1px solid var(--line);background:#fff;border-radius:9px;color:#596b82;font-size:22px;line-height:1}.drawer-body{padding:22px 24px 34px;overflow:auto}.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}.detail{min-height:72px;background:#f7faff;border:1px solid var(--line2);border-radius:14px;padding:12px}.detail small{display:block;color:var(--muted);font-size:12px;margin-bottom:7px}.detail b{font-size:15px}.exception-panel{border:1px solid #ffd0d6;background:var(--red2);border-radius:16px;padding:14px 16px;margin:0 0 20px}.exception-panel strong{display:block;color:var(--red);margin-bottom:6px}.exception-panel p{margin:0 0 12px;color:#87434b;font-size:13px;line-height:1.6}.drawer-actions{display:flex;gap:10px;flex-wrap:wrap}.timeline{position:relative;margin:8px 0 22px;padding-left:20px}.timeline:before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:2px;background:#e5ecf4}.step{position:relative;margin-bottom:16px}.step:before{content:"";position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--orange);border:3px solid #fff}.step strong{font-size:14px}.step p{margin:5px 0 0;color:var(--muted);font-size:13px}
-.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,94vw);background:#fff;border-radius:18px;box-shadow:0 28px 80px rgba(8,18,34,.24);z-index:70;display:none}.modal.active{display:block}.modal-head{height:64px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 20px}.modal-head h2{font-size:20px;margin:0}.modal-body{padding:18px 20px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;min-height:38px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff}.field textarea{min-height:82px;resize:vertical}.modal-actions{display:flex;justify-content:flex-end;gap:10px;padding:0 20px 20px}
-@media(max-width:1180px){.stats{grid-template-columns:repeat(2,1fr)}.mission-grid,.tier-grid,.two-col,.tables{grid-template-columns:1fr}.mission-metrics{grid-template-columns:repeat(2,82px)}}@media(max-width:760px){.topbar{height:auto;min-height:64px;flex-wrap:wrap;padding:12px 18px}.brand{min-width:auto}.brand strong{font-size:22px}.nav{order:3;width:100%;gap:24px}.page{padding:24px 16px}.stats,.funnel-grid,.detail-grid,.form-grid{grid-template-columns:1fr}.search,.control,.btn{width:100%}.tool-row{align-items:stretch}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新池工作台 - 商务提成分析</title>
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-<header class="topbar">
-  <div class="brand"><div class="brand-mark">X</div><strong>新池集团</strong><span>新池工作台</span></div>
-  <nav class="nav">
-    <button class="active" data-view="overview">作战总览</button>
-    <button data-view="lead">客户线索管理</button>
-    <button data-view="pipeline">跟进看板</button>
-    <button data-view="team">团队数据看板</button>
-    <button>CRM规则设置</button>
-    <button>创建寄样订单</button>
-  </nav>
-  <div class="user"><span>返回工作台</span><span class="avatar">BABI</span><span>管理员</span></div>
-</header>
-
-<main class="page">
-  <div class="page-head">
-    <h1 id="pageTitle">达人CRM作战看板</h1>
-    <button class="btn primary" onclick="openAddModal()">+ 新增达人</button>
-  </div>
-
-  <div class="module-tabs" id="moduleTabs">
-    <button class="active" data-view="overview">作战总览</button>
-    <button data-view="pipeline">跟进看板</button>
-    <button data-view="lead">客户线索</button>
-    <button data-view="team">团队数据</button>
-  </div>
-
-  <section class="toolbar">
-    <div class="tool-row" style="margin-bottom:14px">
-      <span style="color:var(--muted)">查看维度：</span>
-      <div class="seg" id="dimensionSeg">
-        <button class="active" data-dimension="category">按品类查看</button>
-        <button data-dimension="team">按团队查看</button>
-        <button data-dimension="talent">按达人查看</button>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">X</div>
+        <div>
+          <strong>新池集团</strong>
+          <span>新池工作台</span>
+        </div>
       </div>
-      <span class="spacer"></span>
-      <span style="color:var(--muted)">选择月份：</span>
-      <select class="control" id="monthSelect"><option>2026年06月</option><option>2026年05月</option><option>2026年04月</option></select>
-    </div>
-    <div class="tool-row">
-      <input class="control search" id="filterSearch" placeholder="搜索达人昵称 / UID / ID" oninput="renderAll()">
-      <select class="control" id="filterProduct" onchange="renderAll()"><option value="">全部产品</option></select>
-      <select class="control" id="filterGroup" onchange="renderAll()"><option value="">全部组</option></select>
-      <select class="control" id="filterFormat" onchange="renderAll()"><option value="">全部玩法</option></select>
-      <select class="control" id="filterType" onchange="renderAll()"><option value="">全部类型</option></select>
-      <select class="control" id="filterTier" onchange="renderAll()"><option value="">全部等级</option></select>
-      <select class="control" id="filterStage" onchange="renderAll()"><option value="">全部状态</option></select>
-      <select class="control" id="filterPerson" onchange="renderAll()"><option value="">全部商务</option></select>
-      <select class="control" id="filterPlatform" onchange="renderAll()"><option value="">全部平台</option></select>
-      <select class="control" id="filterImportance" onchange="renderAll()"><option value="">全部重要程度</option></select>
-      <button class="btn soft" onclick="resetFilters()">重置筛选</button>
-      <button class="btn" onclick="exportCSV()">导出 CSV</button>
-    </div>
-  </section>
 
-  <div class="module-page active" data-page="overview">
-  <section class="stats" id="kpiRow"></section>
+      <nav class="side-nav" aria-label="主导航">
+        <button class="nav-item" data-placeholder-nav type="button">
+          <span class="nav-icon">♙</span>
+          客户线索管理
+        </button>
+        <button class="nav-item" data-placeholder-nav type="button">
+          <span class="nav-icon">▥</span>
+          团队数据看板
+        </button>
+        <button class="nav-item" data-placeholder-nav type="button">
+          <span class="nav-icon">☷</span>
+          CRM规则设置
+        </button>
+        <button class="nav-item" data-placeholder-nav type="button">
+          <span class="nav-icon">▤</span>
+          创建寄样订单
+        </button>
+        <div class="nav-group open" data-nav-group="commission">
+          <button class="nav-item nav-group-toggle" type="button" aria-expanded="true">
+            <span class="nav-icon">◎</span>
+            <span class="nav-label">达播提成</span>
+            <span class="nav-chevron">⌄</span>
+          </button>
+          <div class="nav-sublist">
+            <button class="nav-sub-item" data-page="config" type="button">达播提成规则设置</button>
+            <button class="nav-sub-item active" data-page="aggregate" type="button">达播提成明细</button>
+            <button class="nav-sub-item" data-page="team" type="button">达播关系画板</button>
+          </div>
+        </div>
+      </nav>
 
-  <section class="section" id="missionSection">
-    <div class="section-head"><div><h2>作战地图总览</h2><span id="missionSubtitle">按品类查看 · 2026年06月</span></div><span class="badge orange">目标进度</span></div>
-    <div class="mission-grid" id="missionGrid"></div>
-  </section>
+      <button class="collapse-handle" aria-label="收起侧栏">‹</button>
+    </aside>
 
-  <section class="section">
-    <div class="section-head"><div><h2>达人池分层管理</h2><span>基于2025年数据</span></div><span class="badge green">分层运营</span></div>
-    <div class="tier-grid" id="tierGrid"></div>
-  </section>
-  </div>
+    <main class="workspace">
+      <header class="topbar">
+        <div class="top-tabs">
+          <button class="top-tab active">国内达人</button>
+        </div>
+        <div class="user-actions">
+          <button class="link-button">返回工作台</button>
+          <div class="avatar">BABI</div>
+          <span>管理员</span>
+        </div>
+      </header>
 
-  <div class="module-page" data-page="pipeline">
-  <div class="two-col">
-    <section class="section">
-      <div class="section-head"><div><h2>线索转化漏斗</h2><span>草稿阶段 + 系统阶段双视角</span></div></div>
-      <div class="funnel-grid">
-        <div><h3 style="margin:0 0 12px;font-size:15px">达人跟进阶段</h3><div class="funnel-list" id="funnelOriginal"></div></div>
-        <div><h3 style="margin:0 0 12px;font-size:15px">客户线索阶段</h3><div class="funnel-list" id="funnelSystem"></div></div>
+      <div class="tab-strip">
+        <button class="orange-tab">● <span id="activeTabText">达播提成明细</span> <span>×</span></button>
       </div>
-    </section>
-    <section class="section">
-      <div class="section-head"><div><h2>今日管理动作</h2><span>待跟进 / 卡点 / 费比 / 寄样</span></div></div>
-      <div class="action-list" id="actionList"></div>
-    </section>
+
+      <section class="content">
+        <div class="page-title">
+          <div>
+            <h1 id="pageHeading">达播提成明细</h1>
+            <p>按单条交易计算、达人归属汇总、个人绩效与负责人团队规则结算。</p>
+          </div>
+          <div class="title-actions">
+            <button class="ghost-button" id="importBtn"><span class="button-icon">⇧</span> 批量导入</button>
+            <button class="primary-button" id="exportBtn"><span class="button-icon">⇩</span> 导出结算</button>
+          </div>
+        </div>
+
+        <div class="metric-flow" id="metricFlow"></div>
+
+        <div class="filter-row">
+          <label class="search-box">
+            <span>⌕</span>
+            <input id="searchInput" type="search" placeholder="搜索商务/达人UID/品类/订单号" />
+          </label>
+          <label class="field-select">
+            <span>结算月：</span>
+            <input id="monthSelect" type="month" value="2026-05" />
+          </label>
+          <label class="field-select">
+            <span>团队：</span>
+            <select id="teamSelect">
+              <option value="all">全部团队</option>
+              <option value="A组">A组</option>
+              <option value="B组">B组</option>
+              <option value="C组">C组</option>
+            </select>
+          </label>
+          <button class="ghost-button" id="moreFilterBtn"><span class="button-icon">▽</span> 更多筛选</button>
+          <button class="ghost-button" id="clearBtn"><span class="button-icon">↺</span> 清空</button>
+        </div>
+
+        <section class="page-view active" id="aggregatePage" data-page-panel="aggregate">
+          <div class="section-grid aggregate-grid">
+            <article class="panel wide-panel">
+              <div class="panel-head">
+                <div>
+                  <h2>提成最终聚合</h2>
+                  <p>普通成员按个人绩效结算；负责人按团队原始提成 50% 分成。</p>
+                </div>
+                <div class="panel-tabs">
+                  <button class="mini-tab active" data-aggregate-mode="person">按人</button>
+                  <button class="mini-tab" data-aggregate-mode="team">按团队</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>结算对象</th>
+                      <th>归属</th>
+                      <th>原始提成</th>
+                      <th>绩效/分成</th>
+                      <th>补发</th>
+                      <th>
+                        <button class="sort-button" id="settlementSortBtn" type="button">
+                          最终应发 <span id="settlementSortIcon">↓</span>
+                        </button>
+                      </th>
+                      <th>说明</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="settlementBody"></tbody>
+                </table>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="page-view" id="transactionsPage" data-page-panel="transactions">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>单条交易计算明细</h2>
+                <p>点击“查看计算”可展开每条订单的因子和排除原因。</p>
+              </div>
+              <button class="ghost-button" id="onlyInvalidBtn">只看异常</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>订单号</th>
+                    <th>商务/团队</th>
+                    <th>达人UID</th>
+                    <th>产品品类</th>
+                    <th>支付金额</th>
+                    <th>合作佣金</th>
+                    <th>系数</th>
+                    <th>最终提成</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="transactionBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="page-view" id="configPage" data-page-panel="config">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>提成系数可编辑配置</h2>
+                <p>修改后会立即影响聚合结算与单条订单计算。</p>
+              </div>
+              <button class="primary-button" id="saveConfigBtn">保存配置</button>
+            </div>
+
+            <div class="config-layout">
+              <div class="config-tabs" id="configTabs">
+                <button class="config-tab active" data-config-tab="tier">合作佣金提成比例</button>
+                <button class="config-tab" data-config-tab="base">专场与新老客</button>
+                <button class="config-tab" data-config-tab="incentive">气垫/素颜霜激励</button>
+                <button class="config-tab" data-config-tab="performance">个人绩效系数</button>
+                <button class="config-tab" data-config-tab="yangjie">A组杨洁特殊规则</button>
+                <button class="config-tab" data-config-tab="custom">自定义系数</button>
+                <button class="add-coef-button" id="addCustomCoefBtn" type="button" data-add-custom-coef>+ 新增系数</button>
+              </div>
+              <div class="config-panel" id="configPanel"></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="page-view" id="teamPage" data-page-panel="team">
+          <div class="section-grid">
+            <article class="panel wide-panel">
+              <div class="panel-head">
+                <div>
+                  <h2>达播关系画板</h2>
+                  <p>查看团队负责人、商务成员与原始提成基数之间的结算关系。</p>
+                </div>
+              </div>
+              <div id="teamCards" class="team-cards"></div>
+            </article>
+            <aside class="panel insight-panel">
+              <div class="panel-head compact">
+                <h2>负责人公式</h2>
+              </div>
+              <div class="rule-box">
+                <strong>负责人提成</strong>
+                <span>团队成员原始提成金额汇总 × 50% × 负责人绩效系数</span>
+              </div>
+              <div id="leaderRanking" class="ranking-list"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="page-view" id="middlePage" data-page-panel="middle">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>中台独立结算</h2>
+                <p>中台人员不参与达播组内分成，按月度合计金额直接发放。</p>
+              </div>
+            </div>
+            <div class="middle-grid" id="middleGrid"></div>
+          </article>
+        </section>
+      </section>
+    </main>
   </div>
 
-  <section class="section">
-    <div class="section-head"><div><h2>流水线看板</h2><span>拖动卡片可变更草稿阶段，点击卡片查看线索档案</span></div><span class="badge purple" id="kanbanCount">0 个达人</span></div>
-    <div class="kanban"><div class="kanban-cols" id="kanbanColumns"></div></div>
-  </section>
-  </div>
-
-  <div class="module-page" data-page="lead">
-  <div class="tables" id="leadSection">
-    <section class="section">
-      <div class="section-head"><div><h2>客户线索管理</h2><span>达人信息、归属商务、跟进状态、下一次动作</span></div><div><button class="btn">批量转移</button> <button class="btn">批量加白</button> <button class="btn danger">批量释放</button></div></div>
-      <div class="table-wrap"><table id="leadTable"></table></div>
-    </section>
-    <section class="section">
-      <div class="section-head"><div><h2>卡点 / 阻塞项</h2><span>需要负责人处理</span></div></div>
-      <div class="table-wrap"><table id="bottleneckTable"></table></div>
-    </section>
-  </div>
-  </div>
-
-  <div class="module-page" data-page="team">
-  <section class="section" id="teamSection">
-    <div class="section-head"><div><h2>团队数据看板</h2><span>商务过程指标与GMV结果</span></div><span class="badge blue">统计时间 2026-06</span></div>
-    <div class="table-wrap"><table id="teamTable"></table></div>
-  </section>
-  </div>
-</main>
-
-<div class="drawer-mask" id="drawerMask" onclick="closeDrawer()"></div>
-<aside class="drawer" id="drawer">
-  <div class="drawer-head"><div class="drawer-title"><h2 id="drawerTitle">达人详情</h2><span id="drawerSub"></span></div><button class="icon-btn" onclick="closeDrawer()">×</button></div>
-  <div class="drawer-body" id="drawerBody"></div>
-</aside>
-
-<div class="modal-mask" id="modalMask" onclick="closeModal()"></div>
-<div class="modal" id="recordModal">
-  <div class="modal-head"><h2 id="modalTitle">新增达人</h2><button class="icon-btn" onclick="closeModal()">×</button></div>
-  <div class="modal-body">
-    <input type="hidden" id="editId">
-    <div class="form-grid">
-      <div class="field"><label>达人名称</label><input id="editName" placeholder="输入达人名称"></div>
-      <div class="field"><label>达人等级</label><select id="editTier"></select></div>
-      <div class="field"><label>达人类型</label><select id="editType"></select></div>
-      <div class="field"><label>产品</label><select id="editProduct"></select></div>
-      <div class="field"><label>组</label><select id="editGroup"></select></div>
-      <div class="field"><label>达人玩法</label><select id="editFormat"></select></div>
-      <div class="field"><label>当前状态</label><select id="editStage"></select></div>
-      <div class="field"><label>负责商务</label><select id="editPerson"></select></div>
+  <aside class="drawer" id="detailDrawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <p>订单计算详情</p>
+        <h3 id="drawerTitle">-</h3>
+      </div>
+      <button class="icon-button" id="closeDrawer" aria-label="关闭">×</button>
     </div>
-    <div class="field" style="margin-top:12px"><label>卡点 / 备注</label><textarea id="editBottleneck" placeholder="输入当前卡点或备注信息"></textarea></div>
-  </div>
-  <div class="modal-actions"><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="saveRecord()">保存</button></div>
-</div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
 
-<script>
-const STAGES=['待触达','已触达','沟通中','已寄样','试播中','洽谈排期','已签约','已流失'];
-const SYSTEM_STAGES=['公海达人','待建联','建联中','已寄样','待排期','已合作','深度合作','已流失'];
-const PRODUCTS=['定妆喷雾','气垫pro','防晒素颜霜','防晒喷雾'];
-const GROUPS=['A','B','C'];const FORMATS=['专场','混播','单品直播间','短视频挂车','IP小号'];
-const TYPES=['美垂','生活分享','三农','时尚穿搭','美食','母婴','剧情搞笑','其他'];
-const TIERS=['S','A','B','C'];const PERSONS=['张三','李四','王五','赵六'];
-const PLATFORMS=['抖音','快手','视频号','小红书','淘宝'];const IMPORTANCE=['超头部','头部','肩部','中腰部','尾部'];
-let currentDimension='category';let dragId=null;let nextId=21;
-let records=[
-  {id:1,name:'小美酱',tier:'S',type:'美垂',product:'定妆喷雾',group:'A',format:'专场',stage:'已签约',person:'张三',bottleneck:''},
-  {id:2,name:'乡村阿花',tier:'A',type:'三农',product:'防晒素颜霜',group:'B',format:'短视频挂车',stage:'试播中',person:'李四',bottleneck:'排期冲突，等达人档期'},
-  {id:3,name:'生活达人Lily',tier:'A',type:'生活分享',product:'气垫pro',group:'A',format:'混播',stage:'沟通中',person:'张三',bottleneck:'达人对佣金比例有异议'},
-  {id:4,name:'潮流小K',tier:'B',type:'时尚穿搭',product:'定妆喷雾',group:'C',format:'单品直播间',stage:'已寄样',person:'王五',bottleneck:''},
-  {id:5,name:'美食控阿强',tier:'C',type:'美食',product:'防晒喷雾',group:'B',format:'IP小号',stage:'待触达',person:'李四',bottleneck:''},
-  {id:6,name:'辣妈CC',tier:'S',type:'母婴',product:'气垫pro',group:'A',format:'专场',stage:'洽谈排期',person:'张三',bottleneck:'报价超出预算30%'},
-  {id:7,name:'化妆师老罗',tier:'A',type:'美垂',product:'定妆喷雾',group:'C',format:'混播',stage:'已触达',person:'王五',bottleneck:''},
-  {id:8,name:'田野阿宝',tier:'B',type:'三农',product:'防晒喷雾',group:'B',format:'短视频挂车',stage:'沟通中',person:'李四',bottleneck:''},
-  {id:9,name:'Vicky爱分享',tier:'A',type:'生活分享',product:'防晒素颜霜',group:'A',format:'专场',stage:'已寄样',person:'赵六',bottleneck:'样品物流延迟'},
-  {id:10,name:'段子手大刘',tier:'B',type:'剧情搞笑',product:'防晒喷雾',group:'C',format:'短视频挂车',stage:'待触达',person:'王五',bottleneck:''},
-  {id:11,name:'美妆课代表',tier:'S',type:'美垂',product:'气垫pro',group:'A',format:'单品直播间',stage:'已签约',person:'张三',bottleneck:''},
-  {id:12,name:'小城日记',tier:'C',type:'生活分享',product:'定妆喷雾',group:'B',format:'IP小号',stage:'已触达',person:'李四',bottleneck:''},
-  {id:13,name:'穿搭达人Nina',tier:'A',type:'时尚穿搭',product:'防晒素颜霜',group:'C',format:'混播',stage:'试播中',person:'王五',bottleneck:'试播数据不达标，需二次评估'},
-  {id:14,name:'农家胖哥',tier:'B',type:'三农',product:'防晒喷雾',group:'B',format:'单品直播间',stage:'洽谈排期',person:'李四',bottleneck:''},
-  {id:15,name:'小白的美妆日记',tier:'B',type:'美垂',product:'定妆喷雾',group:'A',format:'短视频挂车',stage:'沟通中',person:'赵六',bottleneck:''},
-  {id:16,name:'厨神阿欢',tier:'C',type:'美食',product:'防晒素颜霜',group:'C',format:'IP小号',stage:'已流失',person:'王五',bottleneck:'达人明确拒绝合作'},
-  {id:17,name:'国际庄小马',tier:'B',type:'剧情搞笑',product:'气垫pro',group:'B',format:'短视频挂车',stage:'待触达',person:'李四',bottleneck:''},
-  {id:18,name:'辣妹CC酱',tier:'A',type:'美垂',product:'防晒喷雾',group:'A',format:'混播',stage:'已寄样',person:'赵六',bottleneck:''},
-  {id:19,name:'宝妈的精致生活',tier:'C',type:'母婴',product:'气垫pro',group:'C',format:'专场',stage:'沟通中',person:'王五',bottleneck:'需等618大促结束后再谈'},
-  {id:20,name:'三叔的院子',tier:'A',type:'三农',product:'防晒素颜霜',group:'B',format:'短视频挂车',stage:'已签约',person:'李四',bottleneck:''}
-];
-const missionGroups=[
-  {name:'专场A组',owner:'杨洁',protect:'--',actual:9.93,sprint:'--',ratio:'--',progress:0,done:'9.93万 / -- (0%)'},
-  {name:'专场B组',owner:'马雯',protect:'--',actual:3.07,sprint:'--',ratio:'--',progress:0,done:'3.07万 / -- (0%)'},
-  {name:'专场C组',owner:'刘则宇 黄娇',protect:'--',actual:.58,sprint:'--',ratio:'--',progress:0,done:'0.58万 / -- (0%)'}
-];
-const tierPool=[
-  {key:'s',name:'S级 · 超头部',count:32,year:'484,342.95',avg:'15,135.72/人'},
-  {key:'a',name:'A级 · 头部',count:6,year:'30,621.85',avg:'5,103.64/人'},
-  {key:'b',name:'B级 · 肩部',count:281,year:'1,061,449.04',avg:'3,777.40/人'},
-  {key:'c',name:'C级 · 中腰部',count:117,year:'222,043.35',avg:'1,897.81/人'},
-  {key:'d',name:'D级 · 尾部',count:896,year:'4,443,195.79',avg:'4,958.92/人'}
-];
-const teamStats=[
-  {person:'张三',dept:'A组',talents:6,follow:31,connect:18,sampleTalent:4,samplePieces:11,newOrderTalent:2,newOrderGsv:12.8,talentGsv:42.6,coupon:1.8,totalGmv:36.2,refund:.9},
-  {person:'李四',dept:'B组',talents:7,follow:28,connect:15,sampleTalent:3,samplePieces:8,newOrderTalent:1,newOrderGsv:8.4,talentGsv:31.7,coupon:1.2,totalGmv:28.1,refund:.6},
-  {person:'王五',dept:'C组',talents:5,follow:19,connect:9,sampleTalent:2,samplePieces:5,newOrderTalent:0,newOrderGsv:3.6,talentGsv:12.4,coupon:.6,totalGmv:10.7,refund:.4},
-  {person:'赵六',dept:'A组',talents:4,follow:16,connect:11,sampleTalent:3,samplePieces:6,newOrderTalent:1,newOrderGsv:5.9,talentGsv:18.5,coupon:.8,totalGmv:16.1,refund:.3}
-];
-function byId(id){return document.getElementById(id)}function fmtWan(n){return Number(n).toFixed(2)+'万'}function pct(n){return Number(n).toFixed(1)+'%'}function sum(arr,key){return arr.reduce((a,b)=>a+(Number(b[key])||0),0)}
-function populateSelect(id,values){const el=byId(id);values.forEach(v=>el.append(new Option(v,v)))}
-function stageToSystem(stage,tier){if(stage==='待触达')return'待建联';if(stage==='已触达'||stage==='沟通中')return'建联中';if(stage==='已寄样')return'已寄样';if(stage==='试播中'||stage==='洽谈排期')return'待排期';if(stage==='已签约')return tier==='S'?'深度合作':'已合作';if(stage==='已流失')return'已流失';return'公海达人'}
-function enrich(r){const idx=r.id-1,sales=(idx%5+1)*28+(r.tier==='S'?120:r.tier==='A'?55:12),amount=sales*(r.tier==='S'?1.8:r.tier==='A'?1.2:.72);return{...r,uid:'UID'+String(830000+r.id*137),baying:'BY'+String(12000+r.id*19),platform:PLATFORMS[idx%PLATFORMS.length],category:r.product.replace('pro','Pro'),systemStage:stageToSystem(r.stage,r.tier),importance:IMPORTANCE[Math.min(IMPORTANCE.length-1,TIERS.indexOf(r.tier))],fans:(r.tier==='S'?860+idx*23:r.tier==='A'?260+idx*13:r.tier==='B'?90+idx*7:28+idx*3)+'万',avgLikeRatio:((idx%7+3)/10).toFixed(1)+'%',carryCategory:r.type==='三农'?'食品生鲜':r.type==='美垂'?'美妆个护':r.type==='母婴'?'母婴亲子':'生活方式',sales30:sales,amount30:amount,avatarProfile:r.type+'粉丝，女性占比'+(54+idx%18)+'%，核心城市二三线',source:['主动开发','资源承接','种草推荐','离职人员交接','公海认领'][idx%5],created:'2026-0'+((idx%5)+1)+'-'+String(10+idx%18).padStart(2,'0'),firstFollow:'2026-05-'+String(8+idx%20).padStart(2,'0'),statusChanged:'2026-06-'+String(1+idx%9).padStart(2,'0'),nextFollow:'2026-06-'+String(10+idx%12).padStart(2,'0'),releaseReason:r.stage==='已流失'?r.bottleneck:'--',auditResult:r.stage==='已签约'?'通过':r.stage==='已流失'?'驳回':'待审核',lastRelease:idx%6===0?'2026-05-'+String(18+idx%8).padStart(2,'0'):'--',currentRelease:r.stage==='已流失'?'2026-06-05':'--',liveFreq:['稳定','不稳定','周播','月播'][idx%4],talentState:r.stage==='已流失'?'已流失':'可跟进',canNewProduct:idx%3===0?'否':'是',nextSchedule:r.stage==='洽谈排期'?'待确认坑位与直播档期':r.stage==='已寄样'?'跟进样品签收与试用反馈':r.bottleneck||'按计划跟进',coupon:amount*.04,totalGmv:amount*1.36,refund:amount*.025,contract:r.contractOverride||(r.id===16?'合同审批中':r.stage==='已签约'?'合同审批中':'未发起'),overdue:['待触达','沟通中','试播中'].includes(r.stage)&&idx%2===0,white:idx%4===0,followCount:2+idx%8,tags:[r.type,r.format,r.tier+'级'].join(' / ')}}
-function getFiltered(){const s=byId('filterSearch').value.trim().toLowerCase(),f={product:byId('filterProduct').value,group:byId('filterGroup').value,format:byId('filterFormat').value,type:byId('filterType').value,tier:byId('filterTier').value,stage:byId('filterStage').value,person:byId('filterPerson').value,platform:byId('filterPlatform').value,importance:byId('filterImportance').value};return records.map(enrich).filter(r=>(!s||[r.name,r.uid,String(r.id)].some(v=>String(v).toLowerCase().includes(s)))&&(!f.product||r.product===f.product)&&(!f.group||r.group===f.group)&&(!f.format||r.format===f.format)&&(!f.type||r.type===f.type)&&(!f.tier||r.tier===f.tier)&&(!f.stage||r.stage===f.stage||r.systemStage===f.stage)&&(!f.person||r.person===f.person)&&(!f.platform||r.platform===f.platform)&&(!f.importance||r.importance===f.importance))}
-function renderAll(){const data=getFiltered();renderKpis(data);renderMission();renderTierPool();renderFunnels(data);renderActions(data);renderKanban(data);renderLeadTable(data);renderBottlenecks(data);renderTeamTable()}
-function renderKpis(data){const total=data.length,active=data.filter(r=>r.stage!=='已流失').length,signed=data.filter(r=>['已签约','已合作','深度合作'].includes(r.stage)||['已合作','深度合作'].includes(r.systemStage)).length,lost=data.filter(r=>r.stage==='已流失').length,bottleneck=data.filter(r=>r.bottleneck).length,gmv=data.reduce((a,r)=>a+r.totalGmv,0),sample=data.filter(r=>['已寄样','试播中','洽谈排期','已签约'].includes(r.stage)).length;const cards=[['达人总数',total,'筛选后','blue'],['活跃跟进中',active,'不含已流失',''],['已签约/合作',signed,'转化率 '+(active?pct(signed/active*100):'0.0%'),'green'],['有卡点',bottleneck,bottleneck?'需负责人处理':'暂无阻塞','red'],['已流失',lost,total?pct(lost/total*100)+' 流失率':'0.0% 流失率',''],['S级达人',data.filter(r=>r.tier==='S').length,'超头部机会','orange'],['寄样/试播中',sample,'样品与直播排期','blue'],['归属总GMV',fmtWan(gmv),'含近30日估算','green']];byId('kpiRow').innerHTML=cards.map(c=>`<div class="stat-card ${c[3]}"><b>${c[1]}</b><span>${c[0]}</span><small>${c[2]}</small></div>`).join('')}
-function renderMission(){byId('missionSubtitle').textContent=(currentDimension==='category'?'按品类查看':currentDimension==='team'?'按团队查看':'按达人查看')+' · '+byId('monthSelect').value;byId('missionGrid').innerHTML=missionGroups.map(g=>`<div class="mission-card"><div class="mission-top"><div><h3>${g.name}</h3><div class="mission-owner">负责人：${g.owner}</div></div><div class="mission-metrics"><div><small>保底目标</small><b class="dash">${g.protect}</b></div><div><small>本月实销</small><b>${fmtWan(g.actual)}</b></div><div><small>冲刺目标</small><b class="dash">${g.sprint}</b></div><div><small>费比目标</small><b class="dash">${g.ratio}</b></div></div></div><div class="progress-row"><span>完成进度</span><div class="progress"><span style="width:${g.progress}%"></span></div><span>${g.done}</span></div></div>`).join('')}
-function renderTierPool(){byId('tierGrid').innerHTML=tierPool.map(t=>`<div class="tier-card ${t.key}"><strong>${t.name}</strong><p>${t.count}人</p><p>2025年贡献：${t.year}</p><p>均值${t.avg}</p></div>`).join('')}
-function renderFunnels(data){const maxStage=Math.max(1,...STAGES.map(s=>data.filter(r=>r.stage===s).length));byId('funnelOriginal').innerHTML=STAGES.map(s=>{const count=data.filter(r=>r.stage===s).length;return`<div class="funnel-item"><span>${s}</span><div class="bar"><span style="width:${count/maxStage*100}%"></span></div><b>${count}</b></div>`}).join('');const maxSys=Math.max(1,...SYSTEM_STAGES.map(s=>data.filter(r=>r.systemStage===s).length));byId('funnelSystem').innerHTML=SYSTEM_STAGES.map(s=>{const count=data.filter(r=>r.systemStage===s).length;return`<div class="funnel-item"><span>${s}</span><div class="bar"><span style="width:${count/maxSys*100}%"></span></div><b>${count}</b></div>`}).join('')}
-function renderActions(data){const due=data.filter(r=>r.overdue).slice(0,4),risks=data.filter(r=>r.bottleneck).slice(0,4),fee=data.filter(r=>['洽谈排期','试播中','已签约'].includes(r.stage)).slice(0,3),sample=data.filter(r=>['已寄样','试播中'].includes(r.stage)).slice(0,3);const blocks=[['待跟进',due.length?due.map(r=>r.name).join('、'):'暂无过期未跟进','red',due.length],['卡点处理',risks.length?risks.map(r=>r.name).join('、'):'暂无卡点','orange',risks.length],['付费/费比评估',fee.length?fee.map(r=>r.name).join('、'):'暂无待评估','blue',fee.length],['寄样与物流',sample.length?sample.map(r=>r.name).join('、'):'暂无寄样事项','green',sample.length]];byId('actionList').innerHTML=blocks.map(b=>`<div class="action"><div><strong>${b[0]}</strong><small>${b[1]}</small></div><span class="badge ${b[2]}">${b[3]}</span></div>`).join('')}
-function renderKanban(data){byId('kanbanCount').textContent=data.length+' 个达人';const colors=['#7a8796','#2878d9','#ff9f1a','#7562c8','#cb5a9b','#148f96','#168a5a','#d83b35'];byId('kanbanColumns').innerHTML=STAGES.map((stage,i)=>{const items=data.filter(r=>r.stage===stage);return`<div class="kanban-col"><div class="kanban-head" style="border-top-color:${colors[i]}"><strong>${stage}</strong><span class="badge gray">${items.length}</span></div><div class="kanban-body" data-stage="${stage}" ondragover="event.preventDefault()" ondrop="handleDrop(event,'${stage}')">${items.length?items.map(r=>`<article class="lead-card tier-${r.tier.toLowerCase()}" draggable="true" ondragstart="handleDrag(event,'${r.id}')" onclick="openDrawer(${r.id})"><h3>${r.name} <span class="badge gray">${r.tier}级</span></h3><div class="meta"><span>${r.type}</span><span>${r.product}</span><span>${r.format}</span></div><div class="meta"><span>${r.group}组</span><span>${r.person}</span><span>${r.systemStage}</span></div>${r.bottleneck?`<div class="risk-text">${r.bottleneck}</div>`:''}</article>`).join(''):'<div class="empty">暂无达人</div>'}</div></div>`}).join('')}
-function renderLeadTable(data){const rows=data.map(r=>`<tr><td class="name-cell"><strong>${r.name}</strong><small>${r.uid} / ${r.baying}</small></td><td>${r.platform}</td><td>${r.category}</td><td><span class="badge ${r.tier==='S'?'orange':r.tier==='A'?'blue':'gray'}">${r.importance}</span></td><td><span class="badge ${r.systemStage==='已流失'?'red':r.systemStage.includes('合作')?'green':'blue'}">${r.systemStage}</span></td><td>${r.nextFollow}</td><td>${fmtWan(r.amount30)}</td><td>${r.person}</td><td class="mini-actions"><button class="mini-btn" onclick="openDrawer(${r.id})">详情</button><button class="mini-btn" onclick="openEditModal(${r.id},event)">编辑</button><button class="mini-btn" onclick="manageChannelProduct(${r.id},event)">渠道品</button><button class="mini-btn">确认跟进</button></td></tr>`).join('');byId('leadTable').innerHTML=`<thead><tr><th>达人信息</th><th>归属平台</th><th>合作品类</th><th>达人层级</th><th>状态</th><th>下一次跟进时间</th><th>近30日销售额</th><th>归属商务</th><th>操作</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="empty">暂无数据</td></tr>'}</tbody>`}
-function renderBottlenecks(data){const items=data.filter(r=>r.bottleneck);byId('bottleneckTable').innerHTML=`<thead><tr><th>达人</th><th>阶段</th><th>卡点</th><th>负责人</th></tr></thead><tbody>${items.length?items.map(r=>`<tr><td><strong>${r.name}</strong></td><td><span class="badge orange">${r.stage}</span></td><td>${r.bottleneck}</td><td>${r.person}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">暂无卡点</td></tr>'}</tbody>`}
-function renderTeamTable(){const rows=teamStats.map(t=>`<tr><td class="name-cell"><strong>${t.person}</strong><small>${t.dept} · 末级部门</small></td><td>${t.talents}</td><td>${t.follow}</td><td>${t.connect}</td><td>${t.sampleTalent}</td><td>${t.samplePieces}</td><td>${t.newOrderTalent}</td><td>${fmtWan(t.newOrderGsv)}</td><td>${fmtWan(t.talentGsv)}</td><td>${fmtWan(t.totalGmv)}</td><td>${fmtWan(t.refund)}</td></tr>`).join('');const totals=`<tr><td><strong>合计</strong></td><td>${sum(teamStats,'talents')}</td><td>${sum(teamStats,'follow')}</td><td>${sum(teamStats,'connect')}</td><td>${sum(teamStats,'sampleTalent')}</td><td>${sum(teamStats,'samplePieces')}</td><td>${sum(teamStats,'newOrderTalent')}</td><td>${fmtWan(sum(teamStats,'newOrderGsv'))}</td><td>${fmtWan(sum(teamStats,'talentGsv'))}</td><td>${fmtWan(sum(teamStats,'totalGmv'))}</td><td>${fmtWan(sum(teamStats,'refund'))}</td></tr>`;byId('teamTable').innerHTML=`<thead><tr><th>商务名称</th><th>达人总数</th><th>跟进次数</th><th>建联成功数</th><th>寄样达人数</th><th>寄样件数</th><th>新增开单达人数</th><th>新增开单GSV</th><th>达人GSV</th><th>归属总GMV</th><th>归属退款金额</th></tr></thead><tbody>${rows}${totals}</tbody>`}
-function handleDrag(e,id){dragId=Number(id);e.dataTransfer.effectAllowed='move'}function handleDrop(e,stage){e.preventDefault();const rec=records.find(r=>r.id===dragId);if(rec){rec.stage=stage;renderAll()}dragId=null}
-function hasContractReleaseConflict(r){return r.stage==='已流失'&&r.contract==='合同审批中'}
-function renderContractReleaseException(r){return hasContractReleaseConflict(r)?`<div class="exception-panel"><strong>合同流程中释放异常</strong><p>当前达人已经释放，但合同仍在审批中，因此渠道品管理被锁定。需要先撤回释放继续处理，或终止合同流程后归档。</p><div class="drawer-actions"><button class="btn primary" onclick="restoreReleasedTalent(${r.id})">撤回释放</button><button class="btn danger" onclick="terminateContract(${r.id})">终止合同流程</button><button class="btn" onclick="manageChannelProduct(${r.id},event)">编辑渠道品</button></div></div>`:''}
-function openDrawer(id){const r=enrich(records.find(x=>x.id===id));if(!r)return;byId('drawerTitle').textContent=r.name;byId('drawerSub').textContent=`${r.uid} · ${r.platform} · ${r.person}`;const details=[['达人等级',r.tier+'级'],['达人类型',r.type],['产品',r.product],['组',r.group+'组'],['达人玩法',r.format],['草稿状态',r.stage],['客户线索状态',r.systemStage],['合同审批',r.contract],['归属商务',r.person],['合作品类',r.category],['达人层级',r.importance],['状态变更时间',r.statusChanged],['下一次跟进时间',r.nextFollow],['标签',r.tags],['粉丝数',r.fans],['百应ID',r.baying],['平均赞粉比',r.avgLikeRatio],['带货类目',r.carryCategory],['近30日销量',r.sales30],['近30日销售额',fmtWan(r.amount30)],['粉丝画像',r.avatarProfile],['来源',r.source],['创建时间',r.created],['首次跟进时间',r.firstFollow],['释放原因',r.releaseReason],['审核结果',r.auditResult],['上次释放时间',r.lastRelease],['本次释放时间',r.currentRelease],['开播频率',r.liveFreq],['达人状态',r.talentState],['是否可合作新品',r.canNewProduct],['下次排期与备注',r.nextSchedule],['归属优惠金额',fmtWan(r.coupon)],['归属总GMV',fmtWan(r.totalGmv)],['归属退款金额',fmtWan(r.refund)],['备注/卡点',r.bottleneck||'--']];byId('drawerBody').innerHTML=`<div class="detail-grid">${details.map(d=>`<div class="detail"><small>${d[0]}</small><b>${d[1]}</b></div>`).join('')}</div>${renderContractReleaseException(r)}<h3 style="font-size:16px;margin:18px 0 10px">达人跟进记录</h3><div class="timeline"><div class="step"><strong>${r.firstFollow} 建联录入</strong><p>${r.person} 创建线索，来源：${r.source}。</p></div><div class="step"><strong>${r.statusChanged} 状态流转至 ${r.systemStage}</strong><p>${r.nextSchedule}</p></div><div class="step"><strong>${r.nextFollow} 下一次跟进</strong><p>跟进品类：${r.category}；玩法：${r.format}；费比/寄样/排期按当前阶段推进。</p></div></div><h3 style="font-size:16px;margin:18px 0 10px">合作与履约</h3><div class="detail-grid"><div class="detail"><small>寄样查询</small><b>${['已寄样','试播中','洽谈排期','已签约'].includes(r.stage)?'已有寄样记录':'未寄样'}</b></div><div class="detail"><small>费比详情</small><b>${['试播中','洽谈排期','已签约'].includes(r.stage)?'待付费评估':'未录入'}</b></div><div class="detail"><small>合作进展</small><b>${r.systemStage}</b></div></div>`;byId('drawerMask').classList.add('active');byId('drawer').classList.add('active')}
-function restoreReleasedTalent(id){const rec=records.find(r=>r.id===id);if(!rec)return;rec.stage='沟通中';rec.bottleneck='合同审批未完成，已撤回释放等待继续处理';rec.contractOverride='合同审批中';renderAll();openDrawer(id)}
-function terminateContract(id){const rec=records.find(r=>r.id===id);if(!rec)return;rec.contractOverride='已终止';rec.bottleneck='合同流程已终止，可重新释放或归档';renderAll();openDrawer(id)}
-function manageChannelProduct(id,evt){if(evt)evt.stopPropagation();const r=enrich(records.find(x=>x.id===id));if(!r)return;if(hasContractReleaseConflict(r)){alert('当前达人已释放且合同审批中，渠道品管理被锁定。请先撤回释放继续处理，或终止合同流程后归档。');openDrawer(id);return}alert('已进入渠道品管理：'+r.name)}
-function closeDrawer(){byId('drawerMask').classList.remove('active');byId('drawer').classList.remove('active')}
-function openAddModal(){byId('modalTitle').textContent='新增达人';byId('editId').value='';byId('editName').value='';byId('editTier').value='A';byId('editType').value='美垂';byId('editProduct').value='定妆喷雾';byId('editGroup').value='A';byId('editFormat').value='专场';byId('editStage').value='待触达';byId('editPerson').value='张三';byId('editBottleneck').value='';showModal()}
-function openEditModal(id,evt){if(evt)evt.stopPropagation();const r=records.find(x=>x.id===id);if(!r)return;byId('modalTitle').textContent='编辑达人';byId('editId').value=r.id;byId('editName').value=r.name;byId('editTier').value=r.tier;byId('editType').value=r.type;byId('editProduct').value=r.product;byId('editGroup').value=r.group;byId('editFormat').value=r.format;byId('editStage').value=r.stage;byId('editPerson').value=r.person;byId('editBottleneck').value=r.bottleneck;showModal()}
-function showModal(){byId('modalMask').classList.add('active');byId('recordModal').classList.add('active')}function closeModal(){byId('modalMask').classList.remove('active');byId('recordModal').classList.remove('active')}
-function saveRecord(){const id=byId('editId').value,data={name:byId('editName').value||'未命名',tier:byId('editTier').value,type:byId('editType').value,product:byId('editProduct').value,group:byId('editGroup').value,format:byId('editFormat').value,stage:byId('editStage').value,person:byId('editPerson').value,bottleneck:byId('editBottleneck').value};if(id){const idx=records.findIndex(r=>r.id===Number(id));records[idx]={...records[idx],...data}}else records.push({id:nextId++,...data});closeModal();renderAll()}
-function resetFilters(){['filterSearch','filterProduct','filterGroup','filterFormat','filterType','filterTier','filterStage','filterPerson','filterPlatform','filterImportance'].forEach(id=>byId(id).value='');renderAll()}
-function exportCSV(){const data=getFiltered(),headers=['ID','达人名称','等级','类型','产品','组','玩法','草稿状态','客户线索状态','商务','平台','达人UID','百应ID','粉丝数','近30日销量','近30日销售额','下一次跟进时间','卡点'],rows=data.map(r=>[r.id,r.name,r.tier,r.type,r.product,r.group,r.format,r.stage,r.systemStage,r.person,r.platform,r.uid,r.baying,r.fans,r.sales30,fmtWan(r.amount30),r.nextFollow,r.bottleneck]);const csv=[headers,...rows].map(row=>row.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n'),blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='达人CRM作战看板_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url)}
-function switchModule(view){
-  const titles={overview:'达人CRM作战看板',pipeline:'跟进看板',lead:'客户线索管理',team:'团队数据看板'};
-  document.querySelectorAll('.module-page').forEach(page=>page.classList.toggle('active',page.dataset.page===view));
-  document.querySelectorAll('[data-view]').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));
-  byId('pageTitle').textContent=titles[view]||'达人CRM作战看板';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function init(){
-  populateSelect('filterProduct',PRODUCTS);
-  populateSelect('filterGroup',GROUPS);
-  populateSelect('filterFormat',FORMATS);
-  populateSelect('filterType',TYPES);
-  populateSelect('filterTier',TIERS);
-  populateSelect('filterStage',[...STAGES,...SYSTEM_STAGES]);
-  populateSelect('filterPerson',PERSONS);
-  populateSelect('filterPlatform',PLATFORMS);
-  populateSelect('filterImportance',IMPORTANCE);
-  [['editTier',TIERS],['editType',TYPES],['editProduct',PRODUCTS],['editGroup',GROUPS],['editFormat',FORMATS],['editStage',STAGES],['editPerson',PERSONS]].forEach(([id,arr])=>populateSelect(id,arr));
-  document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>switchModule(btn.dataset.view)));
-  byId('dimensionSeg').addEventListener('click',e=>{
-    if(e.target.tagName!=='BUTTON')return;
-    currentDimension=e.target.dataset.dimension;
-    document.querySelectorAll('#dimensionSeg button').forEach(b=>b.classList.remove('active'));
-    e.target.classList.add('active');
-    renderMission();
-  });
-  byId('monthSelect').addEventListener('change',renderMission);
-  renderAll();
-  switchModule('overview');
-}
-init();
-</script>
+  <div class="toast" id="toast">已重新计算</div>
+  <script src="./app.js"></script>
 </body>
 </html>

@@ -104,7 +104,8 @@ button {
 }
 
 .nav-item.active,
-.nav-item:hover {
+.nav-item:hover,
+.nav-group-toggle.active {
   color: var(--orange);
   background: linear-gradient(90deg, #fff7ef 0, #fff 78%);
 }
@@ -117,8 +118,63 @@ button {
   color: currentColor;
 }
 
-.nav-item:first-child .nav-icon {
-  font-size: 40px;
+.nav-label {
+  flex: 1;
+}
+
+.nav-chevron {
+  margin-left: auto;
+  color: #8a96a8;
+  font-size: 14px;
+  transition: transform 0.18s ease;
+}
+
+.nav-group.open .nav-chevron {
+  transform: rotate(180deg);
+}
+
+.nav-sublist {
+  display: none;
+  padding: 2px 0 8px;
+}
+
+.nav-group.open .nav-sublist {
+  display: block;
+}
+
+.nav-sub-item {
+  width: 100%;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: #263347;
+  text-align: left;
+  font-size: 16px;
+  padding: 0 18px 0 60px;
+  position: relative;
+}
+
+.nav-sub-item::before {
+  content: "";
+  position: absolute;
+  left: 42px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c7d0dd;
+}
+
+.nav-sub-item.active,
+.nav-sub-item:hover {
+  color: var(--orange);
+  background: #fff7ef;
+}
+
+.nav-sub-item.active::before,
+.nav-sub-item:hover::before {
+  background: var(--orange);
 }
 
 .collapse-handle {

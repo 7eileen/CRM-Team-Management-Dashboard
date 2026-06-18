@@ -284,6 +284,8 @@ const els = {
   teamSelect: document.getElementById("teamSelect"),
   settlementSortBtn: document.getElementById("settlementSortBtn"),
   settlementSortIcon: document.getElementById("settlementSortIcon"),
+  activeTabText: document.getElementById("activeTabText"),
+  pageHeading: document.getElementById("pageHeading"),
   drawer: document.getElementById("detailDrawer"),
   drawerTitle: document.getElementById("drawerTitle"),
   drawerBody: document.getElementById("drawerBody"),
@@ -1023,14 +1025,37 @@ function renderAll() {
   renderMiddle();
 }
 
+function getPageLabel(page) {
+  const labels = {
+    aggregate: "达播提成明细",
+    transactions: "达播交易明细",
+    config: "达播提成规则设置",
+    team: "达播关系画板",
+    middle: "中台独立结算",
+  };
+  return labels[page] || "达播提成";
+}
+
 function setPage(page) {
   state.activePage = page;
-  document.querySelectorAll(".nav-item").forEach((item) => {
+  document.querySelectorAll("[data-page]").forEach((item) => {
     item.classList.toggle("active", item.dataset.page === page);
+  });
+  document.querySelectorAll(".nav-group").forEach((group) => {
+    const hasActiveChild = Boolean(group.querySelector(`[data-page="${page}"]`));
+    group.classList.toggle("open", hasActiveChild || group.classList.contains("open"));
+    const toggle = group.querySelector(".nav-group-toggle");
+    if (toggle) {
+      toggle.classList.toggle("active", hasActiveChild);
+      toggle.setAttribute("aria-expanded", group.classList.contains("open") ? "true" : "false");
+    }
   });
   document.querySelectorAll(".page-view").forEach((panel) => {
     panel.classList.toggle("active", panel.dataset.pagePanel === page);
   });
+  const pageLabel = getPageLabel(page);
+  if (els.activeTabText) els.activeTabText.textContent = pageLabel;
+  if (els.pageHeading) els.pageHeading.textContent = pageLabel;
 }
 
 function setConfigTab(tab) {
@@ -1129,7 +1154,21 @@ function updateConfig(target) {
 }
 
 document.addEventListener("click", (event) => {
-  const nav = event.target.closest(".nav-item");
+  const groupToggle = event.target.closest(".nav-group-toggle");
+  if (groupToggle) {
+    const group = groupToggle.closest(".nav-group");
+    group.classList.toggle("open");
+    groupToggle.setAttribute("aria-expanded", group.classList.contains("open") ? "true" : "false");
+    return;
+  }
+
+  const placeholderNav = event.target.closest("[data-placeholder-nav]");
+  if (placeholderNav) {
+    showToast("该模块已保留在左侧导航");
+    return;
+  }
+
+  const nav = event.target.closest("[data-page]");
   if (nav) {
     setPage(nav.dataset.page);
     return;
