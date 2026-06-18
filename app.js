@@ -595,8 +595,6 @@ function renderMetrics() {
     };
     return acc;
   }, {});
-  const incentiveCount = rows.filter((row) => row.incentiveMultiplier > 1).length;
-
   const cards = [
     {
       id: "all",
@@ -628,14 +626,6 @@ function renderMetrics() {
       metaLeft: `人员 ${teamPayable[team].count}`,
       metaRight: `团队汇总`,
     })),
-    {
-      id: "incentive",
-      label: "气垫/素颜霜激励",
-      value: number.format(incentiveCount),
-      metaLeft: `UID过15万`,
-      metaRight: `提成翻倍`,
-      badge: incentiveCount,
-    },
     {
       id: "middle",
       label: "中台独立结算",
