@@ -45,6 +45,11 @@
 
     <main class="workspace">
       <header class="topbar">
+        <div class="commission-tabs topbar-tabs" id="commissionTabs">
+          <button class="commission-tab" data-page="config" type="button">达播提成规则设置</button>
+          <button class="commission-tab active" data-page="aggregate" type="button">达播提成明细</button>
+          <button class="commission-tab" data-page="team" type="button">达播关系画板</button>
+        </div>
         <div class="user-actions">
           <button class="link-button">返回工作台</button>
           <div class="avatar">BABI</div>
@@ -61,12 +66,6 @@
             <button class="ghost-button" id="importBtn"><span class="button-icon">⇧</span> 批量导入</button>
             <button class="primary-button" id="exportBtn"><span class="button-icon">⇩</span> 导出结算</button>
           </div>
-        </div>
-
-        <div class="commission-tabs" id="commissionTabs">
-          <button class="commission-tab" data-page="config" type="button">达播提成规则设置</button>
-          <button class="commission-tab active" data-page="aggregate" type="button">达播提成明细</button>
-          <button class="commission-tab" data-page="team" type="button">达播关系画板</button>
         </div>
 
         <div class="metric-flow" id="metricFlow"></div>

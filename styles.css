@@ -145,7 +145,7 @@ button {
   height: 60px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 18px;
   background: #fff;
   border-bottom: 1px solid var(--line);
@@ -224,6 +224,14 @@ button {
   border-bottom: 1px solid var(--line);
 }
 
+.topbar-tabs {
+  align-self: stretch;
+  flex: 1;
+  gap: 36px;
+  margin: 0;
+  border-bottom: 0;
+}
+
 .commission-tab {
   height: 48px;
   border: 0;
@@ -232,6 +240,12 @@ button {
   color: #75849a;
   padding: 0;
   font-size: 16px;
+}
+
+.topbar-tabs .commission-tab {
+  height: 60px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .commission-tab.active,
