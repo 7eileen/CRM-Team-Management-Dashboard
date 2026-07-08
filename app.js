@@ -1,1892 +1,681 @@
-const state = {
-  selectedMonth: "2026-05",
-  activePage: "aggregate",
-  aggregateMode: "person",
-  settlementSort: "desc",
-  configTab: "tier",
-  query: "",
-  team: "all",
-  filterMode: "all",
-  config: {
-    tiers: [
-      { id: "t1", label: "≤ 29%", min: 0, max: 0.29, rate: 0.025 },
-      { id: "t2", label: "30% - 39%", min: 0.3, max: 0.39, rate: 0.02 },
-      { id: "t3", label: "40% - 45%", min: 0.4, max: 0.45, rate: 0.015 },
-      { id: "t4", label: "46% - 55%", min: 0.46, max: 0.55, rate: 0.01 },
-      { id: "t5", label: "56% - 60%", min: 0.56, max: 0.6, rate: 0.005 },
-      { id: "t6", label: "61% - 65%", min: 0.61, max: 0.65, rate: 0.003 },
-      { id: "t7", label: "> 65%", min: 0.6501, max: null, rate: 0 },
-    ],
-    special: {
-      specialCoef: 0.5,
-      normalCoef: 1,
-    },
-    customer: {
-      rollingMonths: 2,
-      newCoef: 1,
-      oldCoef: 0.5,
-    },
-    incentive: {
-      categories: ["气垫", "素颜霜"],
-      threshold: 150000,
-      multiplier: 2,
-    },
-    leaderShare: 0.5,
-    yangjie: {
-      cutoff: "2023-05-31",
-      useSpecialCoef: false,
-    },
-    customCoefficients: [
-      {
-        id: "custom-1",
-        name: "活动加权系数",
-        scope: "交易层",
-        value: 1,
-        enabled: true,
-        note: "用于记录临时活动加权，暂不参与正式结算公式。",
-      },
-    ],
-  },
+const STAGES = [
+  { id: "contact", label: "待触达", color: "#64748b", soft: "#f1f5f9" },
+  { id: "reached", label: "已触达", color: "#2563eb", soft: "#eef4ff" },
+  { id: "talking", label: "沟通中", color: "#d97706", soft: "#fff7e6" },
+  { id: "sampled", label: "已寄样", color: "#7c3aed", soft: "#f3edff" },
+  { id: "trial", label: "试播中", color: "#db2777", soft: "#fdf2f8" },
+  { id: "schedule", label: "洽谈排期", color: "#0f766e", soft: "#ecfdf5" },
+  { id: "signed", label: "已签约", color: "#059669", soft: "#eaf8f1" },
+  { id: "lost", label: "已流失", color: "#dc2626", soft: "#feecec" },
+];
+
+const PRODUCTS = ["定妆喷雾", "气垫pro", "防晒素颜霜", "防晒喷雾"];
+const GROUPS = ["A", "B", "C"];
+const FORMATS = ["专场", "混播", "单品直播间", "短视频挂车", "IP小号"];
+const TYPES = ["美垂", "生活分享", "三农", "时尚穿搭", "美食", "母婴", "剧情搞笑", "其他"];
+const TIERS = ["S", "A", "B", "C"];
+const PERSONS = ["张三", "李四", "王五", "赵六"];
+
+const tierMeta = {
+  S: { color: "#f59e0b", soft: "#fff7e6" },
+  A: { color: "#2563eb", soft: "#eef4ff" },
+  B: { color: "#64748b", soft: "#f1f5f9" },
+  C: { color: "#94a3b8", soft: "#f8fafc" },
 };
 
-const people = [
-  { id: "p1", name: "林予乔", team: "B组", role: "member", performance: 1.08, arrears: 1200 },
-  { id: "p2", name: "周岚", team: "B组", role: "member", performance: 0.96, arrears: 0 },
-  { id: "p3", name: "沈夏", team: "C组", role: "member", performance: 1.12, arrears: 600 },
-  { id: "p4", name: "唐可", team: "C组", role: "member", performance: 0.9, arrears: -300 },
-  { id: "p5", name: "秦若言", team: "B组", role: "leader", performance: 1.05, arrears: 0 },
-  { id: "p6", name: "赵澄", team: "C组", role: "leader", performance: 1, arrears: 0 },
-  { id: "p7", name: "杨洁", team: "A组", role: "member", performance: 1.1, arrears: 0 },
-  { id: "p8", name: "高烁", team: "A组", role: "member", performance: 0.88, arrears: 0 },
-  { id: "p9", name: "罗曼", team: "A组", role: "leader", performance: 1.02, arrears: 0 },
-  { id: "m1", name: "内容中台-小莫", team: "中台", role: "middle", fixed: 18000 },
-  { id: "m2", name: "内容中台-阿知", team: "中台", role: "middle", fixed: 13500 },
+const initialRecords = [
+  { id: 1, name: "小美酱", tier: "S", type: "美垂", product: "定妆喷雾", group: "A", format: "专场", stage: "已签约", person: "张三", bottleneck: "" },
+  { id: 2, name: "乡村阿花", tier: "A", type: "三农", product: "防晒素颜霜", group: "B", format: "短视频挂车", stage: "试播中", person: "李四", bottleneck: "排期冲突，等达人档期" },
+  { id: 3, name: "生活达人Lily", tier: "A", type: "生活分享", product: "气垫pro", group: "A", format: "混播", stage: "沟通中", person: "张三", bottleneck: "达人对佣金比例有异议" },
+  { id: 4, name: "潮流小K", tier: "B", type: "时尚穿搭", product: "定妆喷雾", group: "C", format: "单品直播间", stage: "已寄样", person: "王五", bottleneck: "" },
+  { id: 5, name: "美食控阿强", tier: "C", type: "美食", product: "防晒喷雾", group: "B", format: "IP小号", stage: "待触达", person: "李四", bottleneck: "" },
+  { id: 6, name: "辣妈CC", tier: "S", type: "母婴", product: "气垫pro", group: "A", format: "专场", stage: "洽谈排期", person: "张三", bottleneck: "报价超出预算30%" },
+  { id: 7, name: "化妆师老罗", tier: "A", type: "美垂", product: "定妆喷雾", group: "C", format: "混播", stage: "已触达", person: "王五", bottleneck: "" },
+  { id: 8, name: "田野阿宝", tier: "B", type: "三农", product: "防晒喷雾", group: "B", format: "短视频挂车", stage: "沟通中", person: "李四", bottleneck: "" },
+  { id: 9, name: "Vicky爱分享", tier: "A", type: "生活分享", product: "防晒素颜霜", group: "A", format: "专场", stage: "已寄样", person: "赵六", bottleneck: "样品物流延迟" },
+  { id: 10, name: "段子手大刘", tier: "B", type: "剧情搞笑", product: "防晒喷雾", group: "C", format: "短视频挂车", stage: "待触达", person: "王五", bottleneck: "" },
+  { id: 11, name: "美妆课代表", tier: "S", type: "美垂", product: "气垫pro", group: "A", format: "单品直播间", stage: "已签约", person: "张三", bottleneck: "" },
+  { id: 12, name: "小城日记", tier: "C", type: "生活分享", product: "定妆喷雾", group: "B", format: "IP小号", stage: "已触达", person: "李四", bottleneck: "" },
+  { id: 13, name: "穿搭达人Nina", tier: "A", type: "时尚穿搭", product: "防晒素颜霜", group: "C", format: "混播", stage: "试播中", person: "王五", bottleneck: "试播数据不达标，需二次评估" },
+  { id: 14, name: "农家胖哥", tier: "B", type: "三农", product: "防晒喷雾", group: "B", format: "单品直播间", stage: "洽谈排期", person: "李四", bottleneck: "" },
+  { id: 15, name: "小白的美妆日记", tier: "B", type: "美垂", product: "定妆喷雾", group: "A", format: "短视频挂车", stage: "沟通中", person: "赵六", bottleneck: "" },
+  { id: 16, name: "厨神阿欢", tier: "C", type: "美食", product: "防晒素颜霜", group: "C", format: "IP小号", stage: "已流失", person: "王五", bottleneck: "达人明确拒绝合作" },
+  { id: 17, name: "国际庄小马", tier: "B", type: "剧情搞笑", product: "气垫pro", group: "B", format: "短视频挂车", stage: "待触达", person: "李四", bottleneck: "" },
+  { id: 18, name: "辣妹CC酱", tier: "A", type: "美垂", product: "防晒喷雾", group: "A", format: "混播", stage: "已寄样", person: "赵六", bottleneck: "" },
+  { id: 19, name: "宝妈的精致生活", tier: "C", type: "母婴", product: "气垫pro", group: "C", format: "专场", stage: "沟通中", person: "王五", bottleneck: "需等618大促结束后再谈" },
+  { id: 20, name: "三叔的院子", tier: "A", type: "三农", product: "防晒素颜霜", group: "B", format: "短视频挂车", stage: "已签约", person: "李四", bottleneck: "" },
 ];
 
-const orgPeople = [
-  { name: "于姿妏", placed: false },
-  { name: "于捷", placed: true },
-  { name: "刘则宁黄娇", placed: true },
-  { name: "刘涛", placed: true },
-  { name: "刘锐", placed: false },
-  { name: "卫露青", placed: true },
-  { name: "李新一", placed: false },
-  { name: "布程方", placed: true },
-  { name: "张如茜", placed: true },
-  { name: "张小远", placed: false },
-  { name: "徐怀玉", placed: false },
-  { name: "戴娜", placed: false },
-  { name: "曹艳媚", placed: false },
-  { name: "李梦洁", placed: false },
-  { name: "李霖然", placed: false },
-];
-
-const orgNodes = [
-  { name: "刘涛", role: "经理", coefficient: 1, x: 535, y: 70, roleTone: "purple" },
-  { name: "卫露青", role: "一级管理", coefficient: 1, x: 325, y: 250, roleTone: "blue" },
-  { name: "刘则...", role: "一级管理", coefficient: 1, x: 680, y: 250, roleTone: "blue" },
-  { name: "张如茜", role: "业务岗", coefficient: 1, x: 238, y: 488, roleTone: "gray" },
-  { name: "布程方", role: "业务岗", coefficient: 1, x: 455, y: 525, roleTone: "gray" },
-  { name: "于捷", role: "业务岗", coefficient: 1, x: 820, y: 488, roleTone: "gray" },
-];
-
-const transactions = [
-  {
-    orderId: "DB202605001",
-    owner: "林予乔",
-    team: "B组",
-    uid: "1253874928453015",
-    influencer: "LAOCOU老奏",
-    category: "气垫",
-    payment: 88000,
-    isSpecial: false,
-    firstLive: "2026-04-08",
-    commissionRate: 0.28,
-    attribution: "达播",
+const state = {
+  view: "pipeline",
+  query: "",
+  filters: {
+    product: "",
+    group: "",
+    format: "",
+    type: "",
+    tier: "",
+    stage: "",
+    person: "",
   },
-  {
-    orderId: "DB202605002",
-    owner: "林予乔",
-    team: "B组",
-    uid: "1253874928453015",
-    influencer: "LAOCOU老奏",
-    category: "素颜霜",
-    payment: 72000,
-    isSpecial: true,
-    firstLive: "2026-02-20",
-    commissionRate: 0.28,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605003",
-    owner: "周岚",
-    team: "B组",
-    uid: "932817055777428",
-    influencer: "豫东兵嫂",
-    category: "精华",
-    payment: 98000,
-    isSpecial: false,
-    firstLive: "2025-11-02",
-    commissionRate: 0.43,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605004",
-    owner: "唐可",
-    team: "C组",
-    uid: "61270212367",
-    influencer: "豫东兵嫂（好物分享号）",
-    category: "口红",
-    payment: 60000,
-    isSpecial: true,
-    firstLive: "2026-05-09",
-    commissionRate: 0.37,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605005",
-    owner: "沈夏",
-    team: "C组",
-    uid: "6524464400",
-    influencer: "盈儿♡",
-    category: "面膜",
-    payment: 110000,
-    isSpecial: false,
-    firstLive: "2026-03-18",
-    commissionRate: 0.58,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605006",
-    owner: "沈夏",
-    team: "C组",
-    uid: "6524464400",
-    influencer: "盈儿♡",
-    category: "素颜霜",
-    payment: 160000,
-    isSpecial: false,
-    firstLive: "2026-03-18",
-    commissionRate: 0.52,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605007",
-    owner: "杨洁",
-    team: "A组",
-    uid: "3492464775403479",
-    influencer: "大小与",
-    category: "气垫",
-    payment: 120000,
-    isSpecial: true,
-    firstLive: "2026-04-18",
-    commissionRate: 0.34,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605008",
-    owner: "杨洁",
-    team: "A组",
-    uid: "3492464775403479",
-    influencer: "大小与",
-    category: "素颜霜",
-    payment: 65000,
-    isSpecial: true,
-    firstLive: "2026-03-12",
-    commissionRate: 0.34,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605009",
-    owner: "杨洁",
-    team: "A组",
-    uid: "3492464775403479",
-    influencer: "大小与",
-    category: "口红",
-    payment: 42000,
-    isSpecial: false,
-    firstLive: "2023-04-20",
-    commissionRate: 0.24,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605010",
-    owner: "高烁",
-    team: "A组",
-    uid: "59092920806",
-    influencer: "沙妹肉姐",
-    category: "防晒",
-    payment: 75000,
-    isSpecial: false,
-    firstLive: "2026-05-03",
-    commissionRate: 0.41,
-    attribution: "#N/A",
-  },
-  {
-    orderId: "DB202605011",
-    owner: "林予乔",
-    team: "B组",
-    uid: "1253874928453015",
-    influencer: "LAOCOU老奏",
-    category: "防晒",
-    payment: 49000,
-    isSpecial: false,
-    firstLive: "2026-04-08",
-    commissionRate: null,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605012",
-    owner: "周岚",
-    team: "B组",
-    uid: "77352891999421",
-    influencer: "小璐美妆",
-    category: "气垫",
-    payment: 155000,
-    isSpecial: false,
-    firstLive: "2026-05-13",
-    commissionRate: 0.66,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605013",
-    owner: "秦若言",
-    team: "B组",
-    uid: "771282918812",
-    influencer: "玲子护肤日记",
-    category: "面霜",
-    payment: 56000,
-    isSpecial: false,
-    firstLive: "2026-01-22",
-    commissionRate: 0.31,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605014",
-    owner: "赵澄",
-    team: "C组",
-    uid: "88210919900",
-    influencer: "张张变美课",
-    category: "粉底液",
-    payment: 82000,
-    isSpecial: true,
-    firstLive: "2026-05-16",
-    commissionRate: 0.47,
-    attribution: "达播",
-  },
-  {
-    orderId: "DB202605015",
-    owner: "唐可",
-    team: "C组",
-    uid: "61270212367",
-    influencer: "豫东兵嫂（好物分享号）",
-    category: "卸妆油",
-    payment: 33000,
-    isSpecial: false,
-    firstLive: "2026-05-09",
-    commissionRate: 0.62,
-    attribution: "非达播",
-  },
-];
-
-const currency = new Intl.NumberFormat("zh-CN", {
-  style: "currency",
-  currency: "CNY",
-  maximumFractionDigits: 0,
-});
-
-const number = new Intl.NumberFormat("zh-CN", {
-  maximumFractionDigits: 0,
-});
+  records: initialRecords.map((record) => ({ ...record })),
+  nextId: 21,
+};
 
 const els = {
-  metricFlow: document.getElementById("metricFlow"),
-  content: document.querySelector(".content"),
-  settlementBody: document.getElementById("settlementBody"),
-  transactionBody: document.getElementById("transactionBody"),
-  configPanel: document.getElementById("configPanel"),
-  teamCards: document.getElementById("teamCards"),
-  leaderRanking: document.getElementById("leaderRanking"),
-  orgPeopleList: document.getElementById("orgPeopleList"),
-  orgNodes: document.getElementById("orgNodes"),
-  orgPeopleSearch: document.getElementById("orgPeopleSearch"),
-  middleGrid: document.getElementById("middleGrid"),
+  lastUpdate: document.getElementById("lastUpdate"),
   searchInput: document.getElementById("searchInput"),
-  monthSelect: document.getElementById("monthSelect"),
-  orgMonthInput: document.querySelector("[data-org-month]"),
-  teamSelect: document.getElementById("teamSelect"),
-  filterRow: document.querySelector(".filter-row"),
-  settlementSortBtn: document.getElementById("settlementSortBtn"),
-  settlementSortIcon: document.getElementById("settlementSortIcon"),
-  pageHeading: document.getElementById("pageHeading"),
+  resetFiltersBtn: document.getElementById("resetFiltersBtn"),
+  exportBtn: document.getElementById("exportBtn"),
+  addRecordBtn: document.getElementById("addRecordBtn"),
+  filterProduct: document.getElementById("filterProduct"),
+  filterGroup: document.getElementById("filterGroup"),
+  filterFormat: document.getElementById("filterFormat"),
+  filterType: document.getElementById("filterType"),
+  filterTier: document.getElementById("filterTier"),
+  filterStage: document.getElementById("filterStage"),
+  filterPerson: document.getElementById("filterPerson"),
+  kpiGrid: document.getElementById("kpiGrid"),
+  tierLegend: document.getElementById("tierLegend"),
+  kanbanColumns: document.getElementById("kanbanColumns"),
+  bottleneckList: document.getElementById("bottleneckList"),
+  ownerList: document.getElementById("ownerList"),
+  funnelChart: document.getElementById("funnelChart"),
+  typeChart: document.getElementById("typeChart"),
+  groupChart: document.getElementById("groupChart"),
+  formatGrid: document.getElementById("formatGrid"),
+  tableCount: document.getElementById("tableCount"),
+  recordTableBody: document.getElementById("recordTableBody"),
   drawer: document.getElementById("detailDrawer"),
+  drawerBackdrop: document.getElementById("drawerBackdrop"),
+  drawerCloseBtn: document.getElementById("drawerCloseBtn"),
+  drawerKicker: document.getElementById("drawerKicker"),
   drawerTitle: document.getElementById("drawerTitle"),
   drawerBody: document.getElementById("drawerBody"),
-  tierModal: document.getElementById("tierModal"),
-  tierModalTitle: document.getElementById("tierModalTitle"),
-  tierModalBody: document.getElementById("tierModalBody"),
-  baseDetailModal: document.getElementById("baseDetailModal"),
-  baseDetailTitle: document.getElementById("baseDetailTitle"),
-  baseDetailBody: document.getElementById("baseDetailBody"),
-  baseDetailExport: document.querySelector("[data-export-base-detail]"),
   toast: document.getElementById("toast"),
 };
 
-function money(value) {
-  return currency.format(Math.round(value || 0));
+function icon(name) {
+  return `<svg aria-hidden="true"><use href="#icon-${name}"></use></svg>`;
 }
 
-function decimalMoney(value) {
-  return Number(value || 0).toLocaleString("zh-CN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+function stageMeta(label) {
+  return STAGES.find((stage) => stage.label === label) || STAGES[0];
+}
+
+function stageIndex(label) {
+  return STAGES.findIndex((stage) => stage.label === label);
+}
+
+function normalize(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function optionHtml(defaultLabel, values) {
+  return [
+    `<option value="">${defaultLabel}</option>`,
+    ...values.map((value) => `<option value="${value}">${value}</option>`),
+  ].join("");
+}
+
+function renderFilterOptions() {
+  els.filterProduct.innerHTML = optionHtml("全部产品", PRODUCTS);
+  els.filterGroup.innerHTML = optionHtml("全部组", GROUPS);
+  els.filterFormat.innerHTML = optionHtml("全部玩法", FORMATS);
+  els.filterType.innerHTML = optionHtml("全部类型", TYPES);
+  els.filterTier.innerHTML = optionHtml("全部等级", TIERS);
+  els.filterStage.innerHTML = optionHtml("全部状态", STAGES.map((stage) => stage.label));
+  els.filterPerson.innerHTML = optionHtml("全部商务", PERSONS);
+}
+
+function recordSearchText(record) {
+  return [
+    record.name,
+    record.tier,
+    record.type,
+    record.product,
+    record.group,
+    record.format,
+    record.stage,
+    record.person,
+    record.bottleneck,
+  ].join(" ").toLowerCase();
+}
+
+function filteredRecords() {
+  return state.records.filter((record) => {
+    const filters = state.filters;
+    const matchesFilters =
+      (!filters.product || record.product === filters.product) &&
+      (!filters.group || record.group === filters.group) &&
+      (!filters.format || record.format === filters.format) &&
+      (!filters.type || record.type === filters.type) &&
+      (!filters.tier || record.tier === filters.tier) &&
+      (!filters.stage || record.stage === filters.stage) &&
+      (!filters.person || record.person === filters.person);
+    return matchesFilters && (!state.query || recordSearchText(record).includes(state.query));
   });
 }
 
-function pct(value) {
-  return `${trimNumber((value || 0) * 100)}%`;
+function statsFor(data) {
+  const total = data.length;
+  const signed = data.filter((record) => record.stage === "已签约").length;
+  const lost = data.filter((record) => record.stage === "已流失").length;
+  const active = data.filter((record) => record.stage !== "已流失").length;
+  const bottlenecks = data.filter((record) => record.bottleneck).length;
+  const sTier = data.filter((record) => record.tier === "S").length;
+  const conversion = active ? signed / active : 0;
+  return { total, signed, lost, active, bottlenecks, sTier, conversion };
 }
 
-function pctFixed(value) {
-  return `${decimalMoney((value || 0) * 100)}%`;
+function percent(value) {
+  return `${(value * 100).toFixed(1)}%`;
 }
 
-function monthLabel(month) {
-  const [year, monthIndex] = month.split("-");
-  return `${year}-${monthIndex}`;
-}
-
-function trimNumber(value) {
-  return Number(value.toFixed(2)).toString();
-}
-
-function shiftMonth(month, offset) {
-  const [year, monthIndex] = month.split("-").map(Number);
-  const next = new Date(year, monthIndex - 1 + offset, 1);
-  return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function setSelectedMonth(month) {
-  state.selectedMonth = month;
-  if (els.monthSelect) els.monthSelect.value = month;
-  if (els.orgMonthInput) els.orgMonthInput.value = month;
-  renderAll();
-  showToast("结算月已切换");
-}
-
-function escapeAttr(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function toInputPercent(value) {
-  return trimNumber((value || 0) * 100);
-}
-
-function parseDate(value) {
-  return new Date(`${value}T00:00:00`);
-}
-
-function getMonthWindow(month) {
-  const [year, monthIndex] = month.split("-").map(Number);
-  const start = new Date(year, monthIndex - 1 - state.config.customer.rollingMonths, 1);
-  const end = new Date(year, monthIndex, 0);
-  return { start, end };
-}
-
-function isNewCustomer(firstLive) {
-  const { start, end } = getMonthWindow(state.selectedMonth);
-  const liveDate = parseDate(firstLive);
-  return liveDate >= start && liveDate <= end;
-}
-
-function isYangjieRule(tx) {
-  return tx.team === "A组" && tx.owner === "杨洁";
-}
-
-function getTier(commissionRate) {
-  if (commissionRate == null || Number.isNaN(commissionRate)) return null;
-  return state.config.tiers.find((tier) => {
-    const aboveMin = commissionRate >= tier.min;
-    const belowMax = tier.max == null ? true : commissionRate <= tier.max;
-    return aboveMin && belowMax;
-  }) || state.config.tiers[state.config.tiers.length - 1];
-}
-
-function getPerson(name) {
-  return people.find((person) => person.name === name);
-}
-
-function getInitial(name) {
-  return name.replace(/[A-Za-z0-9\-\s]/g, "").slice(0, 1) || name.slice(0, 1);
-}
-
-function getCalculations() {
-  ensureCoefficientConfig();
-  const ownerGsv = transactions.reduce((acc, tx) => {
-    acc[tx.owner] = (acc[tx.owner] || 0) + tx.payment;
-    return acc;
-  }, {});
-  const initialRows = transactions.map((tx) => {
-    const tier = getTier(tx.commissionRate);
-    const reasons = [];
-    const yangjieRule = isYangjieRule(tx);
-    const dateBeforeCutoff = yangjieRule && parseDate(tx.firstLive) < parseDate(state.config.yangjie.cutoff);
-    const newCustomer = isNewCustomer(tx.firstLive);
-    const specialCoef = yangjieRule && !state.config.yangjie.useSpecialCoef
-      ? 1
-      : tx.isSpecial
-        ? state.config.special.specialCoef
-        : state.config.special.normalCoef;
-    const customerCoef = newCustomer ? state.config.customer.newCoef : state.config.customer.oldCoef;
-    const categoryBoost = state.config.categoryBoosts.find((item) => item.name === tx.category)?.value || 1;
-
-    if (tx.attribution === "#N/A") reasons.push("达人归属 = #N/A");
-    if (tx.attribution === "非达播") reasons.push("达人归属 = 非达播");
-    if (tx.commissionRate == null) reasons.push("合作佣金 = #N/A");
-    if (dateBeforeCutoff) reasons.push("A组杨洁表：首播日期早于 2023-05-31");
-    if (state.config.gsvThreshold > 0 && (ownerGsv[tx.owner] || 0) < state.config.gsvThreshold) {
-      reasons.push("当月商务总 GSV 低于门槛");
-    }
-
-    const computable = reasons.length === 0;
-    const tierRate = tier ? tier.rate : 0;
-    const baseAmount = computable ? tx.payment * specialCoef * customerCoef * categoryBoost * tierRate : 0;
-
-    return {
-      ...tx,
-      tier,
-      tierRate,
-      reasons,
-      computable,
-      specialCoef,
-      customerCoef,
-      categoryBoost,
-      newCustomer,
-      yangjieRule,
-      baseAmount,
-      incentiveSales: 0,
-      incentiveMultiplier: 1,
-      finalAmount: 0,
-      status: "排除",
-    };
-  });
-
-  const salesByUid = initialRows.reduce((acc, row) => {
-    const isIncentiveCategory = state.config.incentive.categories.includes(row.category);
-    if (row.computable && isIncentiveCategory) {
-      acc[row.uid] = (acc[row.uid] || 0) + row.payment;
-    }
-    return acc;
-  }, {});
-
-  return initialRows.map((row) => {
-    const incentiveSales = salesByUid[row.uid] || 0;
-    const isIncentiveCategory = state.config.incentive.categories.includes(row.category);
-    const incentiveMultiplier = row.computable
-      && isIncentiveCategory
-      && incentiveSales > state.config.incentive.threshold
-        ? state.config.incentive.multiplier
-        : 1;
-    const finalAmount = row.baseAmount * incentiveMultiplier;
-    const status = row.computable
-      ? row.tierRate === 0
-        ? "佣金超档"
-        : "已计算"
-      : "排除";
-
-    return {
-      ...row,
-      incentiveSales,
-      incentiveMultiplier,
-      finalAmount,
-      status,
-    };
-  });
-}
-
-function getSettlement() {
-  const rows = getCalculations();
-  const rawByPerson = rows.reduce((acc, row) => {
-    acc[row.owner] = (acc[row.owner] || 0) + row.finalAmount;
-    return acc;
-  }, {});
-  const countByPerson = rows.reduce((acc, row) => {
-    acc[row.owner] = (acc[row.owner] || 0) + 1;
-    return acc;
-  }, {});
-  const teamBase = rows.reduce((acc, row) => {
-    const person = getPerson(row.owner);
-    if (person && person.role !== "middle") {
-      acc[row.team] = (acc[row.team] || 0) + row.finalAmount;
-    }
-    return acc;
-  }, {});
-
-  const personRows = people
-    .filter((person) => person.role !== "middle")
-    .map((person) => {
-      const rawAmount = rawByPerson[person.name] || 0;
-      const orderCount = countByPerson[person.name] || 0;
-      const isLeader = person.role === "leader";
-      const teamCommission = isLeader
-        ? (teamBase[person.team] || 0) * state.config.leaderShare
-        : 0;
-      const finalAmount = isLeader
-        ? teamCommission * person.performance
-        : rawAmount * person.performance + (person.arrears || 0);
-      return {
-        ...person,
-        rawAmount,
-        teamCommission,
-        orderCount,
-        teamBase: teamBase[person.team] || 0,
-        finalAmount,
-        logic: isLeader
-          ? `团队提成 ${money(teamCommission)} × ${person.performance}`
-          : `基础提成 ${money(rawAmount)} × ${person.performance}`,
-      };
-    });
-
-  const middleRows = people
-    .filter((person) => person.role === "middle")
-    .map((person) => ({
-      ...person,
-      rawAmount: person.fixed || 0,
-      finalAmount: person.fixed || 0,
-      orderCount: 0,
-      logic: "中台支持按月度合计金额直接发放",
-    }));
-
-  return { rows, personRows, middleRows, teamBase };
-}
-
-function matchesQuery(text) {
-  if (!state.query) return true;
-  return text.toLowerCase().includes(state.query.toLowerCase());
-}
-
-function getFilteredTransactions() {
-  return getCalculations().filter((row) => {
-    const pool = [
-      row.orderId,
-      row.owner,
-      row.team,
-      row.uid,
-      row.influencer,
-      row.category,
-      row.status,
-    ].join(" ");
-    const byTeam = state.team === "all" || row.team === state.team;
-    const byMode = state.filterMode === "invalid"
-      ? !row.computable || row.tierRate === 0
-      : state.filterMode === "incentive"
-        ? row.incentiveMultiplier > 1
-        : state.filterMode === "yangjie"
-          ? row.yangjieRule
-          : true;
-    return matchesQuery(pool) && byTeam && byMode;
-  });
-}
-
-function getFilteredPeople() {
-  const { personRows } = getSettlement();
-  return personRows.filter((person) => {
-    const pool = [person.name, person.team, person.role, person.logic].join(" ");
-    const byTeam = state.team === "all" || person.team === state.team;
-    return matchesQuery(pool) && byTeam;
-  });
-}
-
-function renderMetrics() {
-  const { rows, personRows } = getSettlement();
-  const memberRows = personRows.filter((person) => person.role === "member");
-  const leaderRows = personRows.filter((person) => person.role === "leader");
-  const totalPayable = personRows.reduce((sum, item) => sum + item.finalAmount, 0);
-  const teamPayable = ["A组", "B组", "C组"].reduce((acc, team) => {
-    acc[team] = {
-      amount: personRows
-        .filter((person) => person.team === team)
-        .reduce((sum, person) => sum + person.finalAmount, 0),
-      count: personRows.filter((person) => person.team === team).length,
-    };
-    return acc;
-  }, {});
+function renderKpis() {
+  const stats = statsFor(filteredRecords());
   const cards = [
-    {
-      id: "all",
-      label: "最终应发提成",
-      value: money(totalPayable),
-      metaLeft: `交易 ${rows.length}`,
-      metaRight: `人员 ${personRows.length}`,
-      orange: true,
-    },
-    {
-      id: "member",
-      label: "普通成员结算",
-      value: money(memberRows.reduce((sum, item) => sum + item.finalAmount, 0)),
-      metaLeft: `成员 ${memberRows.length}`,
-      metaRight: `绩效后`,
-    },
-    {
-      id: "leader",
-      label: "负责人团队分成",
-      value: money(leaderRows.reduce((sum, item) => sum + item.finalAmount, 0)),
-      metaLeft: `负责人 ${leaderRows.length}`,
-      metaRight: `50% 基数`,
-    },
-    ...["A组", "B组", "C组"].map((team) => ({
-      id: `team-${team.slice(0, 1).toLowerCase()}`,
-      team,
-      label: `${team}提成`,
-      value: money(teamPayable[team].amount),
-      metaLeft: `人员 ${teamPayable[team].count}`,
-      metaRight: `团队汇总`,
-    })),
+    { label: "达人总数", value: stats.total, sub: "筛选后记录", tone: "" },
+    { label: "活跃跟进中", value: stats.active, sub: "不含已流失", tone: "" },
+    { label: "已签约", value: stats.signed, sub: `转化率 ${percent(stats.conversion)}`, tone: "success" },
+    { label: "有卡点", value: stats.bottlenecks, sub: stats.bottlenecks ? "需要关注处理" : "暂无阻塞", tone: "warning" },
+    { label: "已流失", value: stats.lost, sub: stats.total ? `流失率 ${percent(stats.lost / stats.total)}` : "无流失", tone: "danger" },
+    { label: "S级达人", value: stats.sTier, sub: "重点合作池", tone: "" },
   ];
 
-  const isMetricActive = (card) => {
-    if (card.team) return state.team === card.team && state.filterMode === "all";
-    if (card.id === "all") return state.filterMode === "all" && state.team === "all";
-    return state.filterMode === card.id;
-  };
-
-  els.metricFlow.innerHTML = cards.map((card) => `
-    <button class="metric-card ${isMetricActive(card) ? "active" : ""}" data-metric="${card.id}" ${card.team ? `data-team-metric="${card.team}"` : ""}>
-      ${card.badge ? `<span class="metric-badge">${card.badge}</span>` : ""}
-      <span class="label">${card.label}</span>
-      <span class="value ${card.orange ? "orange" : ""}">${card.value}</span>
-      <span class="meta"><span>${card.metaLeft}</span><span>${card.metaRight}</span></span>
-    </button>
-  `).join("");
-}
-
-function sortFinalAmountRows(rows) {
-  const direction = state.settlementSort === "asc" ? 1 : -1;
-  return [...rows].sort((a, b) => (a.finalAmount - b.finalAmount) * direction);
-}
-
-function renderSettlementSortIcon() {
-  if (!els.settlementSortIcon) return;
-  els.settlementSortIcon.textContent = state.settlementSort === "asc" ? "↑" : "↓";
-}
-
-function renderSettlement() {
-  const rows = sortFinalAmountRows(getFilteredPeople());
-  renderSettlementSortIcon();
-  if (state.aggregateMode === "team") {
-    renderTeamSettlement(rows);
-    return;
-  }
-
-  els.settlementBody.innerHTML = rows.length ? rows.map((person) => `
-    <tr>
-      <td>
-        <div class="person-cell">
-          <span class="person-avatar">${getInitial(person.name)}</span>
-          <span class="person-title">
-            <strong>${person.name}</strong>
-            <span>${person.role === "leader" ? "团队负责人" : "普通成员"} · ${person.orderCount} 条交易</span>
-          </span>
-        </div>
-      </td>
-      <td><span class="tag ${person.team === "A组" ? "orange" : ""}">${person.team}</span></td>
-      <td class="money">
-        <button class="amount-link" type="button" data-base-detail="${escapeAttr(person.name)}">
-          ${money(person.rawAmount)}
-        </button>
-      </td>
-      <td class="money">
-        <button class="amount-link" type="button" data-team-commission-detail="${escapeAttr(person.name)}">
-          ${person.role === "leader" ? money(person.teamCommission) : "-"}
-        </button>
-      </td>
-      <td>${person.performance}</td>
-      <td class="money orange-text">${money(person.finalAmount)}</td>
-      <td><button class="action-link" data-person-detail="${person.name}">查看明细</button></td>
-    </tr>
-  `).join("") : `<tr><td colspan="7"><div class="empty-state">暂无匹配的结算记录</div></td></tr>`;
-}
-
-function renderTeamSettlement(rows) {
-  const teams = sortFinalAmountRows(Array.from(new Set(rows.map((person) => person.team))).map((team) => {
-    const members = rows.filter((person) => person.team === team);
-    return {
-      team,
-      rawAmount: members.reduce((sum, item) => sum + item.rawAmount, 0),
-      teamCommission: members.reduce((sum, item) => sum + item.teamCommission, 0),
-      finalAmount: members.reduce((sum, item) => sum + item.finalAmount, 0),
-      count: members.length,
-      leaders: members.filter((person) => person.role === "leader").map((person) => person.name).join("、") || "-",
-    };
-  }));
-
-  els.settlementBody.innerHTML = teams.length ? teams.map((team) => `
-    <tr>
-      <td>
-        <div class="person-cell">
-          <span class="person-avatar">${team.team.slice(0, 1)}</span>
-          <span class="person-title">
-            <strong>${team.team}</strong>
-            <span>${team.count} 个结算对象</span>
-          </span>
-        </div>
-      </td>
-      <td><span class="tag">${team.leaders}</span></td>
-      <td class="money">${money(team.rawAmount)}</td>
-      <td class="money">${money(team.teamCommission)}</td>
-      <td>综合</td>
-      <td class="money orange-text">${money(team.finalAmount)}</td>
-      <td><button class="action-link" data-team-detail="${team.team}">查看团队</button></td>
-    </tr>
-  `).join("") : `<tr><td colspan="7"><div class="empty-state">暂无匹配的团队记录</div></td></tr>`;
-}
-
-function renderTransactions() {
-  const rows = getFilteredTransactions();
-  els.transactionBody.innerHTML = rows.length ? rows.map((row) => {
-    const statusClass = row.status === "已计算" ? "green" : row.status === "佣金超档" ? "orange" : "red";
-    return `
-      <tr>
-        <td>
-          <strong>${row.orderId}</strong>
-          <div class="muted">${row.influencer}</div>
-        </td>
-        <td>${row.owner}<div class="muted">${row.team}</div></td>
-        <td>${row.uid}</td>
-        <td>${row.category}${row.yangjieRule ? `<div><span class="tag orange">杨洁表</span></div>` : ""}</td>
-        <td class="money">${money(row.payment)}</td>
-        <td>${row.commissionRate == null ? "#N/A" : pct(row.commissionRate)}</td>
-        <td>
-          <div class="coef-stack">
-            <span class="coef-pill">专场 ${row.specialCoef}</span>
-            <span class="coef-pill">${row.newCustomer ? "新客" : "老客"} ${row.customerCoef}</span>
-            <span class="coef-pill">品类 ${row.categoryBoost}</span>
-            <span class="coef-pill">比例 ${pct(row.tierRate)}</span>
-            <span class="coef-pill">激励 ×${row.incentiveMultiplier}</span>
-          </div>
-        </td>
-        <td class="money orange-text">${money(row.finalAmount)}</td>
-        <td><span class="tag ${statusClass}">${row.status}</span></td>
-        <td><button class="action-link" data-order="${row.orderId}">查看计算</button></td>
-      </tr>
-    `;
-  }).join("") : `<tr><td colspan="10"><div class="empty-state">暂无匹配的交易记录</div></td></tr>`;
-}
-
-function ensureCoefficientConfig() {
-  if (!state.config.configUiHydrated) {
-    state.config.special.specialCoef = 1;
-    state.config.special.normalCoef = 1;
-    state.config.customer.newCoef = 1;
-    state.config.customer.oldCoef = 1;
-    state.config.configUiHydrated = true;
-  }
-  if (!state.config.drawShares) {
-    state.config.drawShares = [
-      { id: "secondary-direct", rule: "二级管理-直属业务岗", rate: 0.25, defaultRate: 0.25 },
-      { id: "primary-direct", rule: "一级管理-直属业务岗", rate: 0.5, defaultRate: 0.5 },
-      { id: "primary-secondary", rule: "一级管理-直属二级管理", rate: 0.5, defaultRate: 0.5 },
-      { id: "primary-secondary-team", rule: "一级管理-二级管理已抽取团队提成", rate: 0.25, defaultRate: 0.25 },
-      { id: "primary-self", rule: "一级管理-本人", rate: 0.5, defaultRate: 0.5 },
-    ];
-  }
-  if (!state.config.categoryBoosts) {
-    state.config.categoryBoosts = [
-      "定型",
-      "定妆",
-      "粉底",
-      "其他",
-      "防晒喷雾",
-      "气垫",
-      "遮瑕",
-      "防晒素颜霜",
-      "防晒定妆喷雾",
-      "双头修容",
-      "四色修容盘",
-    ].map((name) => ({ id: `category-${name}`, name, value: 1 }));
-  }
-  if (typeof state.config.gsvThreshold !== "number") state.config.gsvThreshold = 100000;
-  if (!state.config.excludedProducts) state.config.excludedProducts = [];
-}
-
-function displayPercent(value) {
-  return Number(((value || 0) * 100).toFixed(2)).toFixed(2);
-}
-
-function displayNumber(value) {
-  return Number(value || 0).toFixed(2);
-}
-
-function displayRatio(value, digits = 2) {
-  return Number(value || 0).toFixed(digits);
-}
-
-function stepperInput(edit, value, options = {}) {
-  const {
-    min = 0,
-    max = "",
-    step = 0.01,
-    suffix = "",
-    attrs = "",
-    inputClass = "stepper-input",
-  } = options;
-  return `
-    <span class="stepper-control">
-      <button type="button" data-step-button="-1" aria-label="减少">−</button>
-      <input class="${inputClass}" type="number" min="${min}" max="${max}" step="${step}" value="${value}" data-edit="${edit}" ${attrs} />
-      <button type="button" data-step-button="1" aria-label="增加">＋</button>
-    </span>
-    ${suffix ? `<span class="stepper-suffix">${suffix}</span>` : ""}
-  `;
-}
-
-function renderTierRows() {
-  return state.config.tiers.map((tier) => `
-    <tr>
-      <td>${displayPercent(tier.min)}%</td>
-      <td>${tier.max == null ? "999.00" : displayPercent(tier.max)}%</td>
-      <td>${displayPercent(tier.rate)}%</td>
-      <td class="coef-actions">
-        <button class="action-link" type="button" data-edit-tier="${tier.id}">编辑</button>
-        <button class="danger-link" type="button" data-delete-tier="${tier.id}">删除</button>
-      </td>
-    </tr>
-  `).join("");
-}
-
-function openTierModal(tierId = null) {
-  ensureCoefficientConfig();
-  const tier = tierId
-    ? state.config.tiers.find((item) => item.id === tierId)
-    : { id: null, min: 0, max: 0.29, rate: 0.025 };
-  if (!tier || !els.tierModal || !els.tierModalBody) return;
-
-  state.editingTierId = tierId;
-  els.tierModalTitle.textContent = tierId ? "编辑档位" : "新增档位";
-  els.tierModalBody.innerHTML = `
-    <label class="modal-field required-field">
-      <span>合作佣金下限</span>
-      ${stepperInput("", displayRatio(tier.min, 2), {
-        step: 0.01,
-        attrs: 'data-tier-draft="min"',
-      })}
-    </label>
-    <label class="modal-field required-field">
-      <span>合作佣金上限</span>
-      ${stepperInput("", tier.max == null ? "9.99" : displayRatio(tier.max, 2), {
-        step: 0.01,
-        attrs: 'data-tier-draft="max"',
-      })}
-    </label>
-    <label class="modal-field required-field">
-      <span>提成比例</span>
-      ${stepperInput("", displayRatio(tier.rate, 4), {
-        step: 0.0001,
-        attrs: 'data-tier-draft="rate"',
-      })}
-    </label>
-  `;
-  els.tierModal.classList.add("open");
-  els.tierModal.setAttribute("aria-hidden", "false");
-}
-
-function closeTierModal() {
-  if (!els.tierModal) return;
-  els.tierModal.classList.remove("open");
-  els.tierModal.setAttribute("aria-hidden", "true");
-  state.editingTierId = null;
-}
-
-function confirmTierModal() {
-  if (!els.tierModalBody) return;
-  const min = Number(els.tierModalBody.querySelector('[data-tier-draft="min"]')?.value || 0);
-  const max = Number(els.tierModalBody.querySelector('[data-tier-draft="max"]')?.value || 0);
-  const rate = Number(els.tierModalBody.querySelector('[data-tier-draft="rate"]')?.value || 0);
-  const existingTier = state.editingTierId
-    ? state.config.tiers.find((tier) => tier.id === state.editingTierId)
-    : null;
-
-  if (existingTier) {
-    existingTier.min = min;
-    existingTier.max = max;
-    existingTier.rate = rate;
-  } else {
-    state.config.tiers.push({
-      id: `tier-${Date.now()}`,
-      label: "新档位",
-      min,
-      max,
-      rate,
-    });
-  }
-
-  state.config.tiers.sort((a, b) => a.min - b.min);
-  closeTierModal();
-  renderAll();
-  setPage(state.activePage);
-  showToast("提成档位已保存");
-}
-
-function renderCoefficientEditor() {
-  ensureCoefficientConfig();
-  const categoryRows = state.config.categoryBoosts.map((item) => `
-    <tr>
-      <td>${item.name}</td>
-      <td>${stepperInput("category-boost", displayNumber(item.value), { attrs: `data-category="${item.id}"` })}</td>
-    </tr>
-  `).join("");
-  const drawRows = state.config.drawShares.map((item) => `
-    <tr>
-      <td>${item.rule}</td>
-      <td>${stepperInput("draw-rate", displayPercent(item.rate), { attrs: `data-draw="${item.id}"`, suffix: "%" })}</td>
-      <td><button class="restore-link" type="button" data-reset-draw="${item.id}">恢复默认</button></td>
-    </tr>
-  `).join("");
-  const excludedRows = state.config.excludedProducts.length
-    ? state.config.excludedProducts.map((item) => `
-      <tr>
-        <td><input class="plain-table-input" type="text" placeholder="图片地址" value="${escapeAttr(item.image || "")}" data-edit="excluded-image" data-product="${item.id}" /></td>
-        <td><input class="plain-table-input" type="text" placeholder="产品ID" value="${escapeAttr(item.productId || "")}" data-edit="excluded-id" data-product="${item.id}" /></td>
-        <td><input class="plain-table-input wide" type="text" placeholder="产品名称" value="${escapeAttr(item.name || "")}" data-edit="excluded-name" data-product="${item.id}" /></td>
-        <td><button class="danger-link" type="button" data-delete-product="${item.id}">删除</button></td>
-      </tr>
-    `).join("")
-    : `<tr><td colspan="4"><div class="empty-state">暂无数据</div></td></tr>`;
-
-  els.configPanel.innerHTML = `
-    <div class="coefficient-board">
-      <section class="coef-block span-8">
-        <div class="coef-block-head">
-          <h3>提成比例阶梯</h3>
-          <div class="coef-head-actions">
-            <button class="ghost-button small-button" type="button" data-copy-last-month>复制上月</button>
-            <button class="primary-button small-button" type="button" data-add-tier>＋新增档位</button>
-          </div>
-        </div>
-        <div class="coef-table-wrap">
-          <table class="coef-table">
-            <thead>
-              <tr>
-                <th>合作佣金下限</th>
-                <th>合作佣金上限</th>
-                <th>提成比例</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>${renderTierRows()}</tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="coef-block span-4">
-        <h3>新客 / 老客系数</h3>
-        <div class="coef-table-wrap">
-          <table class="coef-table compact-table">
-            <thead><tr><th>类型</th><th>系数</th></tr></thead>
-            <tbody>
-              <tr><td>新客</td><td>${stepperInput("new-coef", displayNumber(state.config.customer.newCoef))}</td></tr>
-              <tr><td>老客</td><td>${stepperInput("old-coef", displayNumber(state.config.customer.oldCoef))}</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="coef-block span-4">
-        <h3>专场系数</h3>
-        <div class="coef-table-wrap">
-          <table class="coef-table compact-table">
-            <thead><tr><th>类型</th><th>系数</th></tr></thead>
-            <tbody>
-              <tr><td>专场</td><td>${stepperInput("special-coef", displayNumber(state.config.special.specialCoef))}</td></tr>
-              <tr><td>非专场</td><td>${stepperInput("normal-coef", displayNumber(state.config.special.normalCoef))}</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="coef-block span-12">
-        <h3>抽成比例设置</h3>
-        <div class="coef-table-wrap">
-          <table class="coef-table">
-            <thead><tr><th>抽成规则</th><th>抽成比例</th><th>操作</th></tr></thead>
-            <tbody>${drawRows}</tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="coef-block span-12">
-        <h3>品类激励系数</h3>
-        <div class="coef-table-wrap">
-          <table class="coef-table category-table">
-            <thead><tr><th>品类</th><th>激励系数</th></tr></thead>
-            <tbody>${categoryRows}</tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="coef-block span-12 inline-config">
-        <h3>GSV 门槛配置</h3>
-        <div class="threshold-line">
-          <span>当月商务总 GSV 低于以下金额时，不计算提成：</span>
-          ${stepperInput("gsv-threshold", displayNumber(state.config.gsvThreshold), { min: 0, step: 1000 })}
-          <span>元</span>
-          <span class="muted">（默认 10 万，设为 0 表示不限制）</span>
-        </div>
-      </section>
-
-      <section class="coef-block span-12">
-        <div class="coef-block-head">
-          <h3>排除产品配置</h3>
-          <button class="primary-button small-button" type="button" data-add-excluded-product>＋新增排除产品</button>
-        </div>
-        <div class="coef-table-wrap">
-          <table class="coef-table exclude-table">
-            <thead><tr><th>产品图片</th><th>产品ID</th><th>产品名称</th><th>操作</th></tr></thead>
-            <tbody>${excludedRows}</tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-  `;
-}
-
-function renderConfigPanel() {
-  const tab = state.configTab;
-  ensureCoefficientConfig();
-  if (tab === "tier") {
-    els.configPanel.innerHTML = `
-      <section class="coef-block">
-        <div class="coef-block-head">
-          <h3>提成比例阶梯</h3>
-          <div class="coef-head-actions">
-            <button class="ghost-button small-button" type="button" data-copy-last-month>复制上月</button>
-            <button class="primary-button small-button" type="button" data-add-tier>＋新增档位</button>
-          </div>
-        </div>
-        <div class="coef-table-wrap">
-          <table class="coef-table">
-            <thead>
-              <tr>
-                <th>合作佣金下限</th>
-                <th>合作佣金上限</th>
-                <th>提成比例</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>${renderTierRows()}</tbody>
-          </table>
-        </div>
-      </section>
-    `;
-    return;
-  }
-
-  if (tab === "customer") {
-    els.configPanel.innerHTML = `
-      <section class="coef-block">
-        <h3>新客 / 老客系数</h3>
-        <div class="coef-table-wrap">
-          <table class="coef-table compact-table">
-            <thead><tr><th>类型</th><th>系数</th></tr></thead>
-            <tbody>
-              <tr><td>新客</td><td>${stepperInput("new-coef", displayNumber(state.config.customer.newCoef))}</td></tr>
-              <tr><td>老客</td><td>${stepperInput("old-coef", displayNumber(state.config.customer.oldCoef))}</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    `;
-    return;
-  }
-
-  if (tab === "special") {
-    els.configPanel.innerHTML = `
-      <section class="coef-block">
-        <h3>专场系数</h3>
-        <div class="coef-table-wrap">
-          <table class="coef-table compact-table">
-            <thead><tr><th>类型</th><th>系数</th></tr></thead>
-            <tbody>
-              <tr><td>专场</td><td>${stepperInput("special-coef", displayNumber(state.config.special.specialCoef))}</td></tr>
-              <tr><td>非专场</td><td>${stepperInput("normal-coef", displayNumber(state.config.special.normalCoef))}</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    `;
-    return;
-  }
-
-  if (tab === "draw") {
-    const drawRows = state.config.drawShares.map((item) => `
-      <tr>
-        <td>${item.rule}</td>
-        <td>${stepperInput("draw-rate", displayPercent(item.rate), { attrs: `data-draw="${item.id}"`, suffix: "%" })}</td>
-        <td><button class="restore-link" type="button" data-reset-draw="${item.id}">恢复默认</button></td>
-      </tr>
-    `).join("");
-    els.configPanel.innerHTML = `
-      <section class="coef-block">
-        <h3>抽成比例设置</h3>
-        <div class="coef-table-wrap">
-          <table class="coef-table">
-            <thead><tr><th>抽成规则</th><th>抽成比例</th><th>操作</th></tr></thead>
-            <tbody>${drawRows}</tbody>
-          </table>
-        </div>
-      </section>
-    `;
-    return;
-  }
-
-  if (tab === "category") {
-    const categoryRows = state.config.categoryBoosts.map((item) => `
-      <tr>
-        <td>${item.name}</td>
-        <td>${stepperInput("category-boost", displayNumber(item.value), { attrs: `data-category="${item.id}"` })}</td>
-      </tr>
-    `).join("");
-    els.configPanel.innerHTML = `
-      <section class="coef-block">
-        <h3>品类激励系数</h3>
-        <div class="coef-table-wrap">
-          <table class="coef-table category-table">
-            <thead><tr><th>品类</th><th>激励系数</th></tr></thead>
-            <tbody>${categoryRows}</tbody>
-          </table>
-        </div>
-      </section>
-    `;
-    return;
-  }
-
-  if (tab === "gsv") {
-    els.configPanel.innerHTML = `
-      <section class="coef-block inline-config">
-        <h3>GSV 门槛配置</h3>
-        <div class="threshold-line">
-          <span>当月商务总 GSV 低于以下金额时，不计算提成：</span>
-          ${stepperInput("gsv-threshold", displayNumber(state.config.gsvThreshold), { min: 0, step: 1000 })}
-          <span>元</span>
-          <span class="muted">（默认 10 万，设为 0 表示不限制）</span>
-        </div>
-      </section>
-    `;
-    return;
-  }
-
-  if (tab === "excluded") {
-    const excludedRows = state.config.excludedProducts.length
-      ? state.config.excludedProducts.map((item) => `
-        <tr>
-          <td><input class="plain-table-input" type="text" placeholder="图片地址" value="${escapeAttr(item.image || "")}" data-edit="excluded-image" data-product="${item.id}" /></td>
-          <td><input class="plain-table-input" type="text" placeholder="产品ID" value="${escapeAttr(item.productId || "")}" data-edit="excluded-id" data-product="${item.id}" /></td>
-          <td><input class="plain-table-input wide" type="text" placeholder="产品名称" value="${escapeAttr(item.name || "")}" data-edit="excluded-name" data-product="${item.id}" /></td>
-          <td><button class="danger-link" type="button" data-delete-product="${item.id}">删除</button></td>
-        </tr>
-      `).join("")
-      : `<tr><td colspan="4"><div class="empty-state">暂无数据</div></td></tr>`;
-    els.configPanel.innerHTML = `
-      <section class="coef-block">
-        <div class="coef-block-head">
-          <h3>排除产品配置</h3>
-          <button class="primary-button small-button" type="button" data-add-excluded-product>＋新增排除产品</button>
-        </div>
-        <div class="coef-table-wrap">
-          <table class="coef-table exclude-table">
-            <thead><tr><th>产品图片</th><th>产品ID</th><th>产品名称</th><th>操作</th></tr></thead>
-            <tbody>${excludedRows}</tbody>
-          </table>
-        </div>
-      </section>
-    `;
-  }
-}
-
-function renderIncentivePreview() {
-  const rows = getCalculations().filter((row) => row.incentiveMultiplier > 1);
-  if (!rows.length) return "当前没有 UID 达到激励门槛。";
-  const grouped = rows.reduce((acc, row) => {
-    if (!acc[row.uid]) acc[row.uid] = { uid: row.uid, sales: row.incentiveSales, orders: 0 };
-    acc[row.uid].orders += 1;
-    return acc;
-  }, {});
-  return Object.values(grouped)
-    .map((item) => `${item.uid}：${money(item.sales)}，${item.orders} 条订单翻倍`)
-    .join("<br>");
-}
-
-function renderTeams() {
-  const { personRows, teamBase } = getSettlement();
-  const leaders = personRows.filter((person) => person.role === "leader");
-  const maxFinal = Math.max(...leaders.map((leader) => leader.finalAmount), 1);
-
-  els.teamCards.innerHTML = leaders.map((leader) => {
-    const memberCount = personRows.filter((person) => person.team === leader.team && person.role === "member").length;
-    const width = Math.max(8, (leader.finalAmount / maxFinal) * 100);
-    return `
-      <div class="team-card">
-        <h3>${leader.team} · ${leader.name}</h3>
-        <div class="team-stat">
-          <div class="stat-box">
-            <span>团队基数</span>
-            <strong>${money(teamBase[leader.team] || 0)}</strong>
-          </div>
-          <div class="stat-box">
-            <span>负责人应发</span>
-            <strong>${money(leader.finalAmount)}</strong>
-          </div>
-          <div class="stat-box">
-            <span>绩效系数</span>
-            <strong>${leader.performance}</strong>
-          </div>
-          <div class="stat-box">
-            <span>团队成员</span>
-            <strong>${memberCount}</strong>
-          </div>
-        </div>
-        <div class="bar"><span style="width:${width}%"></span></div>
+  els.kpiGrid.innerHTML = cards.map((card) => `
+    <article class="kpi-card ${card.tone}">
+      <span>${card.label}</span>
+      <div>
+        <strong>${card.value}</strong>
+        <small>${card.sub}</small>
       </div>
-    `;
-  }).join("");
-
-  els.leaderRanking.innerHTML = leaders
-    .sort((a, b) => b.finalAmount - a.finalAmount)
-    .map((leader, index) => `
-      <div class="rank-row">
-        <span>${index + 1}. ${leader.name}</span>
-        <strong>${money(leader.finalAmount)}</strong>
-      </div>
-    `).join("");
-}
-
-function renderOrgBoard() {
-  if (!els.orgPeopleList || !els.orgNodes) return;
-
-  const query = (els.orgPeopleSearch?.value || "").trim().toLowerCase();
-  const visiblePeople = orgPeople.filter((person) => person.name.toLowerCase().includes(query));
-
-  els.orgPeopleList.innerHTML = visiblePeople.map((person) => `
-    <button class="org-person-row ${person.placed ? "placed" : ""}" type="button">
-      <span class="org-person-icon" aria-hidden="true"></span>
-      <span>${person.name}</span>
-      ${person.placed ? '<span class="org-check">✓</span>' : '<span></span>'}
-    </button>
-  `).join("");
-
-  els.orgNodes.innerHTML = orgNodes.map((node) => `
-    <article class="org-node" style="left:${node.x}px; top:${node.y}px;">
-      <div class="org-node-top">
-        <span class="org-person-icon" aria-hidden="true"></span>
-        <strong>${node.name}</strong>
-        <span class="org-coef">系数${node.coefficient}</span>
-        <button class="org-remove" type="button" aria-label="移除 ${node.name}">×</button>
-      </div>
-      <span class="org-role ${node.roleTone}">${node.role}</span>
-      <div class="org-share" aria-hidden="true">⌯</div>
     </article>
   `).join("");
 }
 
-function renderMiddle() {
-  const middleRows = people.filter((person) => person.role === "middle");
-  els.middleGrid.innerHTML = middleRows.map((person) => `
-    <div class="middle-card">
-      <h3>${person.name}</h3>
-      <span class="tag green">内容支持独立结算</span>
-      <span class="amount">${money(person.fixed || 0)}</span>
-      <div class="edit-field">
-        <label>月度合计</label>
-        <input type="number" min="0" step="100" value="${person.fixed || 0}" data-edit="middle-fixed" data-person="${person.id}" />
-      </div>
-    </div>
+function renderLegend() {
+  els.tierLegend.innerHTML = TIERS.map((tier) => `
+    <span class="legend-item">
+      <span class="legend-dot" style="--tier-color:${tierMeta[tier].color}"></span>
+      ${tier}级
+    </span>
   `).join("");
 }
 
-function addCustomCoefficient() {
-  const nextIndex = state.config.customCoefficients.length + 1;
-  state.config.customCoefficients.push({
-    id: `custom-${Date.now()}`,
-    name: `新系数 ${nextIndex}`,
-    scope: "交易层",
-    value: 1,
-    enabled: true,
-    note: "",
-  });
-  setPage("config");
-  setConfigTab("custom");
-  showToast("已新增系数，可直接编辑");
+function renderKanban() {
+  const data = filteredRecords();
+  els.kanbanColumns.innerHTML = STAGES.map((stage) => {
+    const stageRecords = data.filter((record) => record.stage === stage.label);
+    return `
+      <section class="kanban-col" data-drop-stage="${stage.label}">
+        <div class="kanban-col-head" style="--stage-color:${stage.color}">
+          <strong>${stage.label}</strong>
+          <span class="count-pill">${stageRecords.length}</span>
+        </div>
+        <div class="kanban-stack">
+          ${stageRecords.length ? stageRecords.map(renderTalentCard).join("") : `<div class="empty-state">暂无达人</div>`}
+        </div>
+      </section>
+    `;
+  }).join("");
 }
 
-function deleteCustomCoefficient(id) {
-  state.config.customCoefficients = state.config.customCoefficients.filter((coef) => coef.id !== id);
-  setConfigTab("custom");
-  showToast("已删除自定义系数");
+function renderTalentCard(record) {
+  const tier = tierMeta[record.tier];
+  const stage = stageMeta(record.stage);
+  return `
+    <button class="talent-card" type="button" data-record-detail="${record.id}" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">
+      <div class="talent-card-head">
+        <strong>${record.name}</strong>
+        <span class="tier-pill" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">${record.tier}级</span>
+      </div>
+      <div class="card-meta">
+        <span>${record.type}</span>
+        <span>${record.product}</span>
+        <span>${record.format}</span>
+      </div>
+      ${record.bottleneck ? `<div class="bottleneck-chip">${icon("alert")}<span>${record.bottleneck}</span></div>` : ""}
+      <div class="talent-card-foot">
+        <span class="muted">${record.group}组 · ${record.person}</span>
+        <span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span>
+      </div>
+    </button>
+  `;
+}
+
+function renderBottlenecks() {
+  const items = filteredRecords().filter((record) => record.bottleneck);
+  els.bottleneckList.innerHTML = items.length ? items.map((record) => {
+    const stage = stageMeta(record.stage);
+    return `
+      <button class="bottleneck-item" type="button" data-record-detail="${record.id}">
+        <div class="bottleneck-top">
+          <strong>${record.name}</strong>
+          <span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${record.stage}</span>
+        </div>
+        <p>${record.bottleneck}</p>
+        <span class="muted">${record.person} · ${record.product}</span>
+      </button>
+    `;
+  }).join("") : `<div class="empty-state">暂无卡点</div>`;
+}
+
+function renderOwners() {
+  const data = filteredRecords();
+  const max = Math.max(...PERSONS.map((person) => data.filter((record) => record.person === person).length), 1);
+  els.ownerList.innerHTML = PERSONS.map((person) => {
+    const owned = data.filter((record) => record.person === person);
+    const signed = owned.filter((record) => record.stage === "已签约").length;
+    const blocked = owned.filter((record) => record.bottleneck).length;
+    return `
+      <div class="owner-item">
+        <div class="owner-top">
+          <strong>${person}</strong>
+          <span class="tag">${owned.length} 人</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="--progress:${(owned.length / max) * 100}%; --progress-color:#2563eb"></div>
+        </div>
+        <span class="muted">已签约 ${signed} · 卡点 ${blocked}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderFunnelChart() {
+  const data = filteredRecords();
+  const max = Math.max(...STAGES.map((stage) => data.filter((record) => record.stage === stage.label).length), 1);
+  els.funnelChart.innerHTML = STAGES.map((stage) => {
+    const count = data.filter((record) => record.stage === stage.label).length;
+    const width = count ? Math.max((count / max) * 100, 12) : 0;
+    return `
+      <div class="funnel-row">
+        <span class="chart-label">${stage.label}</span>
+        <div class="chart-bar">
+          <div class="chart-fill" style="--bar-width:${width}%; --bar-color:${stage.color}">${count}</div>
+        </div>
+        <span class="muted">${count} 人</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderTypeChart() {
+  const data = filteredRecords();
+  const max = Math.max(...TYPES.map((type) => data.filter((record) => record.type === type).length), 1);
+  const palette = ["#2563eb", "#7c3aed", "#db2777", "#d97706", "#14b8a6", "#059669", "#dc2626", "#64748b"];
+  els.typeChart.innerHTML = TYPES.map((type, index) => {
+    const count = data.filter((record) => record.type === type).length;
+    const width = count ? Math.max((count / max) * 100, 10) : 0;
+    return `
+      <div class="bar-row">
+        <span class="chart-label">${type}</span>
+        <div class="chart-bar">
+          <div class="chart-fill" style="--bar-width:${width}%; --bar-color:${palette[index]}">${count}</div>
+        </div>
+        <span class="muted">${count} 人</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderGroupChart() {
+  const data = filteredRecords();
+  els.groupChart.innerHTML = GROUPS.map((group) => {
+    const groupRecords = data.filter((record) => record.group === group);
+    const total = groupRecords.length || 1;
+    return `
+      <div class="stack-group">
+        <div class="stack-head">
+          <span>${group}组</span>
+          <span class="muted">${groupRecords.length} 人</span>
+        </div>
+        <div class="stack-bar">
+          ${STAGES.map((stage) => {
+            const count = groupRecords.filter((record) => record.stage === stage.label).length;
+            return count ? `<span class="stack-segment" title="${stage.label} ${count}" style="--segment-width:${(count / total) * 100}%; --segment-color:${stage.color}"></span>` : "";
+          }).join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderFormatGrid() {
+  const data = filteredRecords();
+  els.formatGrid.innerHTML = FORMATS.map((format) => {
+    const count = data.filter((record) => record.format === format).length;
+    const signed = data.filter((record) => record.format === format && record.stage === "已签约").length;
+    return `
+      <div class="format-card">
+        <span>${format}</span>
+        <strong>${count}</strong>
+        <span>已签约 ${signed}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderDirectory() {
+  const data = filteredRecords();
+  els.tableCount.textContent = `${data.length} 条记录`;
+  els.recordTableBody.innerHTML = data.length ? data.map((record) => {
+    const stage = stageMeta(record.stage);
+    const tier = tierMeta[record.tier];
+    return `
+      <tr>
+        <td>
+          <div class="record-name">
+            <strong>${record.name}</strong>
+            <span>${record.person} · ${record.group}组</span>
+          </div>
+        </td>
+        <td><span class="tier-pill" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">${record.tier}级</span></td>
+        <td>${record.type}</td>
+        <td>${record.product}</td>
+        <td>${record.group}组</td>
+        <td>${record.format}</td>
+        <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${record.stage}</span></td>
+        <td>${record.person}</td>
+        <td>${record.bottleneck ? `<span class="tag">有卡点</span>` : `<span class="muted">无</span>`}</td>
+        <td><button class="small-button" type="button" data-record-detail="${record.id}">详情</button></td>
+      </tr>
+    `;
+  }).join("") : `<tr><td colspan="10"><div class="empty-state">暂无匹配记录</div></td></tr>`;
 }
 
 function renderAll() {
-  renderMetrics();
-  renderSettlement();
-  renderTransactions();
-  renderConfigPanel();
-  renderOrgBoard();
-  renderMiddle();
+  renderKpis();
+  renderLegend();
+  renderKanban();
+  renderBottlenecks();
+  renderOwners();
+  renderFunnelChart();
+  renderTypeChart();
+  renderGroupChart();
+  renderFormatGrid();
+  renderDirectory();
 }
 
-function setPage(page) {
-  state.activePage = page;
-  document.querySelectorAll("[data-page]").forEach((item) => {
-    item.classList.toggle("active", item.dataset.page === page);
+function setView(view) {
+  state.view = view;
+  document.querySelectorAll(".nav-item").forEach((button) => {
+    const active = button.dataset.view === view;
+    button.classList.toggle("active", active);
+    if (active) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
   });
-  const commissionPages = ["aggregate", "transactions", "config", "team", "middle"];
-  document.querySelectorAll("[data-commission-entry]").forEach((item) => {
-    item.classList.toggle("active", commissionPages.includes(page));
+  document.querySelectorAll(".page-view").forEach((page) => {
+    page.classList.toggle("active", page.dataset.page === view);
   });
-  document.querySelectorAll(".page-view").forEach((panel) => {
-    panel.classList.toggle("active", panel.dataset.pagePanel === page);
-  });
-  if (els.content) {
-    els.content.classList.toggle("org-canvas-mode", page === "team");
-    els.content.classList.toggle("config-page-mode", page === "config");
-  }
-  if (els.filterRow) {
-    els.filterRow.classList.toggle("month-only", page === "config");
-  }
-  if (els.pageHeading) els.pageHeading.textContent = "达播提成";
 }
 
-function setConfigTab(tab) {
-  state.configTab = tab;
-  document.querySelectorAll(".config-tab").forEach((button) => {
-    button.classList.toggle("active", button.dataset.configTab === tab);
-  });
-  renderConfigPanel();
-}
-
-function showToast(message) {
-  els.toast.textContent = message;
-  els.toast.classList.add("show");
-  window.clearTimeout(showToast.timer);
-  showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1800);
-}
-
-function openDrawer(orderId) {
-  const row = getCalculations().find((item) => item.orderId === orderId);
-  if (!row) return;
-  els.drawerTitle.textContent = row.orderId;
-  els.drawerBody.innerHTML = `
-    <div class="detail-line"><span>商务归属</span><strong>${row.owner} · ${row.team}</strong></div>
-    <div class="detail-line"><span>达人 UID</span><strong>${row.uid}</strong></div>
-    <div class="detail-line"><span>产品品类</span><strong>${row.category}</strong></div>
-    <div class="detail-line"><span>支付金额</span><strong>${money(row.payment)}</strong></div>
-    <div class="detail-line"><span>合作佣金</span><strong>${row.commissionRate == null ? "#N/A" : pct(row.commissionRate)}</strong></div>
-    <div class="detail-line"><span>专场计算系数</span><strong>${row.specialCoef}</strong></div>
-    <div class="detail-line"><span>新老客系数</span><strong>${row.newCustomer ? "新客 " : "老客 "}${row.customerCoef}</strong></div>
-    <div class="detail-line"><span>品类激励系数</span><strong>${row.categoryBoost}</strong></div>
-    <div class="detail-line"><span>提成比例</span><strong>${pct(row.tierRate)}</strong></div>
-    <div class="detail-line"><span>激励判断</span><strong>${money(row.incentiveSales)} / 门槛 ${money(state.config.incentive.threshold)}</strong></div>
-    <div class="detail-line"><span>激励倍数</span><strong>×${row.incentiveMultiplier}</strong></div>
-    <div class="detail-line"><span>最终提成</span><strong class="orange-text">${money(row.finalAmount)}</strong></div>
-    <div class="detail-formula">
-      ${row.computable
-        ? `公式：${money(row.payment)} × ${row.specialCoef} × ${row.customerCoef} × ${row.categoryBoost} × ${pct(row.tierRate)} × ${row.incentiveMultiplier} = <strong>${money(row.finalAmount)}</strong>`
-        : `该订单不计算：<strong>${row.reasons.join("、")}</strong>`}
-      ${row.yangjieRule ? `<br>A组杨洁表：${state.config.yangjie.useSpecialCoef ? "当前启用专场折扣" : "当前不使用专场折扣"}，首播截止日 ${state.config.yangjie.cutoff}。` : ""}
-    </div>
-  `;
+function openDrawer({ kicker, title, body }) {
+  els.drawerKicker.textContent = kicker;
+  els.drawerTitle.textContent = title;
+  els.drawerBody.innerHTML = body;
+  els.drawerBackdrop.hidden = false;
   els.drawer.classList.add("open");
   els.drawer.setAttribute("aria-hidden", "false");
+  els.drawerCloseBtn.focus();
 }
 
 function closeDrawer() {
   els.drawer.classList.remove("open");
   els.drawer.setAttribute("aria-hidden", "true");
+  els.drawerBackdrop.hidden = true;
 }
 
-function openBaseDetailModal(personName) {
-  if (!els.baseDetailModal || !els.baseDetailBody || !els.baseDetailTitle) return;
-  const rows = getCalculations().filter((row) => row.owner === personName);
-  const totalIncome = rows.reduce((sum, row) => sum + row.payment, 0);
-  const totalCommission = rows.reduce((sum, row) => sum + row.finalAmount, 0);
-  const belowThreshold = state.config.gsvThreshold > 0 && totalIncome < state.config.gsvThreshold;
+function openRecordDrawer(recordId) {
+  const record = state.records.find((item) => item.id === Number(recordId));
+  if (!record) return;
+  const stage = stageMeta(record.stage);
+  const tier = tierMeta[record.tier];
+  const currentIndex = stageIndex(record.stage);
+  const nextStage = STAGES[currentIndex + 1]?.label;
+  const previousStage = STAGES[currentIndex - 1]?.label;
 
-  if (els.baseDetailExport) els.baseDetailExport.hidden = false;
-  els.baseDetailTitle.textContent = `${personName} · ${monthLabel(state.selectedMonth)} 基础提成明细`;
-  els.baseDetailBody.innerHTML = `
-    <div class="base-summary">
-      <span>共 <strong>${rows.length}</strong> 条基础提成明细</span>
-      <span>合计收入：<strong class="blue-text">${decimalMoney(totalIncome)}</strong> 元</span>
-      <span>基础提成合计：<strong class="orange-text">${decimalMoney(totalCommission)}</strong> 元</span>
-      ${belowThreshold ? `<span class="base-warning">当月总 GSV 未达到门槛 ${decimalMoney(state.config.gsvThreshold)} 元，本月不计算提成</span>` : ""}
-    </div>
-    <div class="base-detail-table-wrap">
-      <table class="base-detail-table">
-        <thead>
-          <tr>
-            <th>达人名称</th>
-            <th>品类</th>
-            <th>当月收入（元）</th>
-            <th>佣金率</th>
-            <th>提成比例</th>
-            <th>新/老客</th>
-            <th>新老客系数</th>
-            <th>是否专场</th>
-            <th>专场系数</th>
-            <th>品类激励系数</th>
-            <th>小计提成</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.length ? rows.map((row) => `
-            <tr>
-              <td>${row.influencer}</td>
-              <td>${row.category}</td>
-              <td>${decimalMoney(row.payment)}</td>
-              <td><span class="base-pill">${row.commissionRate == null ? "#N/A" : pctFixed(row.commissionRate)}</span></td>
-              <td><span class="base-pill">${pct(row.tierRate)}</span></td>
-              <td><span class="base-pill ${row.newCustomer ? "blue" : ""}">${row.newCustomer ? "新客" : "老客"}</span></td>
-              <td>${row.customerCoef}</td>
-              <td><span class="base-pill">${row.isSpecial ? "专场" : "非专场"}</span></td>
-              <td>${row.specialCoef}</td>
-              <td>${row.categoryBoost}</td>
-              <td><strong>${decimalMoney(row.finalAmount)}</strong></td>
-            </tr>
-          `).join("") : `<tr><td colspan="11"><div class="empty-state">暂无基础提成明细</div></td></tr>`}
-        </tbody>
-      </table>
-    </div>
-  `;
-  els.baseDetailModal.classList.add("open");
-  els.baseDetailModal.setAttribute("aria-hidden", "false");
-}
-
-function openTeamCommissionModal(personName) {
-  if (!els.baseDetailModal || !els.baseDetailBody || !els.baseDetailTitle) return;
-  const { personRows } = getSettlement();
-  const person = personRows.find((item) => item.name === personName);
-  const isLeader = person?.role === "leader";
-  const rows = isLeader
-    ? personRows
-      .filter((item) => item.team === person.team && item.name !== person.name && item.rawAmount > 0)
-      .map((item) => ({
-        name: item.name,
-        role: item.role === "leader" ? "团队负责人" : "普通成员",
-        base: item.rawAmount,
-        rate: state.config.leaderShare,
-        source: "团队成员基础提成 × 50%",
-        contribution: item.rawAmount * state.config.leaderShare,
-      }))
-    : [];
-  const total = rows.reduce((sum, row) => sum + row.contribution, 0);
-
-  if (els.baseDetailExport) els.baseDetailExport.hidden = true;
-  els.baseDetailTitle.textContent = `${personName} · ${monthLabel(state.selectedMonth)} 团队提成明细`;
-  els.baseDetailBody.innerHTML = `
-    <div class="team-detail-table-wrap">
-      <table class="team-detail-table">
-        <thead>
-          <tr>
-            <th>下级姓名</th>
-            <th>角色</th>
-            <th>计算基数（元）</th>
-            <th>抽成比例</th>
-            <th>来源说明</th>
-            <th>贡献金额（元）</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.length ? rows.map((row) => `
-            <tr>
-              <td>${row.name}</td>
-              <td>${row.role}</td>
-              <td>${decimalMoney(row.base)}</td>
-              <td>${pctFixed(row.rate)}</td>
-              <td>${row.source}</td>
-              <td><strong>${decimalMoney(row.contribution)}</strong></td>
-            </tr>
-          `).join("") : `<tr><td colspan="6"><div class="team-empty-state">暂无团队提成明细</div></td></tr>`}
-        </tbody>
-      </table>
-    </div>
-    <div class="team-total-strip">团队提成合计：<strong class="orange-text">${decimalMoney(total)}</strong> 元</div>
-  `;
-  els.baseDetailModal.classList.add("open");
-  els.baseDetailModal.setAttribute("aria-hidden", "false");
-}
-
-function closeBaseDetailModal() {
-  if (!els.baseDetailModal) return;
-  els.baseDetailModal.classList.remove("open");
-  els.baseDetailModal.setAttribute("aria-hidden", "true");
-}
-
-function updateConfig(target) {
-  const edit = target.dataset.edit;
-  const value = target.type === "checkbox" ? target.checked : target.value;
-  const asNumber = Number(value);
-  const tier = target.dataset.tier
-    ? state.config.tiers.find((item) => item.id === target.dataset.tier)
-    : null;
-  const person = target.dataset.person
-    ? people.find((item) => item.id === target.dataset.person)
-    : null;
-  const customCoef = target.dataset.coef
-    ? state.config.customCoefficients.find((item) => item.id === target.dataset.coef)
-    : null;
-  const drawShare = target.dataset.draw
-    ? state.config.drawShares.find((item) => item.id === target.dataset.draw)
-    : null;
-  const categoryBoost = target.dataset.category
-    ? state.config.categoryBoosts.find((item) => item.id === target.dataset.category)
-    : null;
-  const excludedProduct = target.dataset.product
-    ? state.config.excludedProducts.find((item) => item.id === target.dataset.product)
-    : null;
-
-  if (edit === "tier-min" && tier) tier.min = asNumber / 100;
-  if (edit === "tier-max" && tier) tier.max = value === "" ? null : asNumber / 100;
-  if (edit === "tier-rate" && tier) tier.rate = asNumber / 100;
-  if (edit === "special-coef") state.config.special.specialCoef = asNumber;
-  if (edit === "normal-coef") state.config.special.normalCoef = asNumber;
-  if (edit === "rolling-months") state.config.customer.rollingMonths = Math.max(0, Math.round(asNumber));
-  if (edit === "new-coef") state.config.customer.newCoef = asNumber;
-  if (edit === "old-coef") state.config.customer.oldCoef = asNumber;
-  if (edit === "incentive-categories") {
-    state.config.incentive.categories = value
-      .split(/[、,，\s]+/)
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-  if (edit === "incentive-threshold") state.config.incentive.threshold = asNumber;
-  if (edit === "incentive-multiplier") state.config.incentive.multiplier = asNumber;
-  if (edit === "leader-share") state.config.leaderShare = asNumber / 100;
-  if (edit === "person-performance" && person) person.performance = asNumber;
-  if (edit === "person-arrears" && person) person.arrears = asNumber;
-  if (edit === "yangjie-cutoff") state.config.yangjie.cutoff = value;
-  if (edit === "yangjie-special") state.config.yangjie.useSpecialCoef = value;
-  if (edit === "middle-fixed" && person) person.fixed = asNumber;
-  if (edit === "custom-name" && customCoef) customCoef.name = value.trim() || "未命名系数";
-  if (edit === "custom-scope" && customCoef) customCoef.scope = value;
-  if (edit === "custom-value" && customCoef) customCoef.value = asNumber;
-  if (edit === "custom-enabled" && customCoef) customCoef.enabled = value;
-  if (edit === "custom-note" && customCoef) customCoef.note = value.trim();
-  if (edit === "draw-rate" && drawShare) drawShare.rate = asNumber / 100;
-  if (edit === "category-boost" && categoryBoost) categoryBoost.value = asNumber;
-  if (edit === "gsv-threshold") state.config.gsvThreshold = Math.max(0, asNumber);
-  if (edit === "excluded-image" && excludedProduct) excludedProduct.image = value.trim();
-  if (edit === "excluded-id" && excludedProduct) excludedProduct.productId = value.trim();
-  if (edit === "excluded-name" && excludedProduct) excludedProduct.name = value.trim();
-
-  renderAll();
-  setConfigTab(state.configTab);
-  setPage(state.activePage);
-  showToast("配置已更新，结算结果已重算");
-}
-
-document.addEventListener("click", (event) => {
-  const monthStep = event.target.closest("[data-month-step]");
-  if (monthStep) {
-    const offset = Number(monthStep.dataset.monthStep || 0);
-    setSelectedMonth(shiftMonth(state.selectedMonth, offset));
-    return;
-  }
-
-  const stepButton = event.target.closest("[data-step-button]");
-  if (stepButton) {
-    const input = stepButton.parentElement.querySelector("input[data-edit]");
-    if (input) {
-      const step = Number(input.step || 0.01);
-      const direction = Number(stepButton.dataset.stepButton || 0);
-      const min = input.min === "" ? -Infinity : Number(input.min);
-      const max = input.max === "" ? Infinity : Number(input.max);
-      const nextValue = Math.min(max, Math.max(min, Number(input.value || 0) + direction * step));
-      input.value = Number(nextValue.toFixed(4)).toString();
-      input.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-    return;
-  }
-
-  const closeTier = event.target.closest("[data-tier-modal-close]");
-  if (closeTier || event.target === els.tierModal) {
-    closeTierModal();
-    return;
-  }
-
-  const confirmTier = event.target.closest("[data-tier-modal-confirm]");
-  if (confirmTier) {
-    confirmTierModal();
-    return;
-  }
-
-  const closeBaseDetail = event.target.closest("[data-base-modal-close]");
-  if (closeBaseDetail || event.target === els.baseDetailModal) {
-    closeBaseDetailModal();
-    return;
-  }
-
-  const exportBaseDetail = event.target.closest("[data-export-base-detail]");
-  if (exportBaseDetail) {
-    showToast("当前商务基础提成明细已准备导出");
-    return;
-  }
-
-  const addTier = event.target.closest("[data-add-tier]");
-  if (addTier) {
-    openTierModal();
-    return;
-  }
-
-  const deleteTier = event.target.closest("[data-delete-tier]");
-  if (deleteTier) {
-    if (state.config.tiers.length > 1) {
-      state.config.tiers = state.config.tiers.filter((tier) => tier.id !== deleteTier.dataset.deleteTier);
-      renderAll();
-      setPage(state.activePage);
-      showToast("已删除提成档位");
-    }
-    return;
-  }
-
-  const editTier = event.target.closest("[data-edit-tier]");
-  if (editTier) {
-    openTierModal(editTier.dataset.editTier);
-    return;
-  }
-
-  const copyLastMonth = event.target.closest("[data-copy-last-month]");
-  if (copyLastMonth) {
-    state.config.tiers = [
-      { id: "t1", label: "≤ 29%", min: 0, max: 0.29, rate: 0.025 },
-      { id: "t2", label: "30% - 39%", min: 0.3, max: 0.39, rate: 0.02 },
-      { id: "t3", label: "40% - 45%", min: 0.4, max: 0.45, rate: 0.015 },
-      { id: "t4", label: "46% - 55%", min: 0.46, max: 0.55, rate: 0.01 },
-      { id: "t5", label: "56% - 60%", min: 0.56, max: 0.6, rate: 0.005 },
-      { id: "t6", label: "61% - 65%", min: 0.61, max: 0.65, rate: 0.003 },
-      { id: "t7", label: "66% - 999%", min: 0.66, max: 9.99, rate: 0 },
-    ];
-    renderAll();
-    setPage(state.activePage);
-    showToast("已复制上月提成比例阶梯");
-    return;
-  }
-
-  const resetDraw = event.target.closest("[data-reset-draw]");
-  if (resetDraw) {
-    ensureCoefficientConfig();
-    const drawShare = state.config.drawShares.find((item) => item.id === resetDraw.dataset.resetDraw);
-    if (drawShare) drawShare.rate = drawShare.defaultRate;
-    renderAll();
-    setPage(state.activePage);
-    showToast("抽成比例已恢复默认");
-    return;
-  }
-
-  const addExcludedProduct = event.target.closest("[data-add-excluded-product]");
-  if (addExcludedProduct) {
-    ensureCoefficientConfig();
-    state.config.excludedProducts.push({
-      id: `excluded-${Date.now()}`,
-      image: "",
-      productId: "",
-      name: "",
-    });
-    renderAll();
-    setPage(state.activePage);
-    showToast("已新增排除产品");
-    return;
-  }
-
-  const deleteProduct = event.target.closest("[data-delete-product]");
-  if (deleteProduct) {
-    state.config.excludedProducts = state.config.excludedProducts.filter((item) => item.id !== deleteProduct.dataset.deleteProduct);
-    renderAll();
-    setPage(state.activePage);
-    showToast("已删除排除产品");
-    return;
-  }
-
-  const commissionEntry = event.target.closest("[data-commission-entry]");
-  if (commissionEntry) {
-    setPage("aggregate");
-    return;
-  }
-
-  const placeholderNav = event.target.closest("[data-placeholder-nav]");
-  if (placeholderNav) {
-    showToast("该模块已保留在左侧导航");
-    return;
-  }
-
-  const nav = event.target.closest("[data-page]");
-  if (nav) {
-    setPage(nav.dataset.page);
-    return;
-  }
-
-  const aggregateButton = event.target.closest("[data-aggregate-mode]");
-  if (aggregateButton) {
-    state.aggregateMode = aggregateButton.dataset.aggregateMode;
-    document.querySelectorAll("[data-aggregate-mode]").forEach((button) => {
-      button.classList.toggle("active", button.dataset.aggregateMode === state.aggregateMode);
-    });
-    renderSettlement();
-    return;
-  }
-
-  const configButton = event.target.closest("[data-config-tab]");
-  if (configButton) {
-    setConfigTab(configButton.dataset.configTab);
-    return;
-  }
-
-  const addCustomCoef = event.target.closest("[data-add-custom-coef]");
-  if (addCustomCoef) {
-    addCustomCoefficient();
-    return;
-  }
-
-  const deleteCustomCoef = event.target.closest("[data-delete-coef]");
-  if (deleteCustomCoef) {
-    deleteCustomCoefficient(deleteCustomCoef.dataset.deleteCoef);
-    return;
-  }
-
-  const metric = event.target.closest("[data-metric]");
-  if (metric) {
-    const metricId = metric.dataset.metric;
-    if (metric.dataset.teamMetric) {
-      state.team = metric.dataset.teamMetric;
-      state.filterMode = "all";
-      if (els.teamSelect) els.teamSelect.value = state.team;
-      setPage("aggregate");
-      renderAll();
-      return;
-    }
-    if (["invalid", "incentive"].includes(metricId)) {
-      state.filterMode = state.filterMode === metricId ? "all" : metricId;
-      setPage("transactions");
-      renderAll();
-      return;
-    }
-    state.filterMode = "all";
-    setPage("aggregate");
-    renderAll();
-    return;
-  }
-
-  const order = event.target.closest("[data-order]");
-  if (order) {
-    openDrawer(order.dataset.order);
-    return;
-  }
-
-  const baseDetail = event.target.closest("[data-base-detail]");
-  if (baseDetail) {
-    openBaseDetailModal(baseDetail.dataset.baseDetail);
-    return;
-  }
-
-  const teamCommissionDetail = event.target.closest("[data-team-commission-detail]");
-  if (teamCommissionDetail) {
-    openTeamCommissionModal(teamCommissionDetail.dataset.teamCommissionDetail);
-    return;
-  }
-
-  const personDetail = event.target.closest("[data-person-detail]");
-  if (personDetail) {
-    state.query = personDetail.dataset.personDetail;
-    els.searchInput.value = state.query;
-    state.filterMode = "all";
-    setPage("transactions");
-    renderAll();
-    return;
-  }
-
-  const teamDetail = event.target.closest("[data-team-detail]");
-  if (teamDetail) {
-    state.team = teamDetail.dataset.teamDetail;
-    els.teamSelect.value = state.team;
-    setPage("transactions");
-    renderAll();
-    return;
-  }
-});
-
-document.addEventListener("change", (event) => {
-  const target = event.target;
-  if (target.dataset.edit) {
-    updateConfig(target);
-    return;
-  }
-
-  if (target.id === "monthSelect") {
-    setSelectedMonth(target.value);
-  }
-
-  if (target.matches("[data-org-month]")) {
-    setSelectedMonth(target.value);
-  }
-
-  if (target.id === "teamSelect") {
-    state.team = target.value;
-    renderAll();
-  }
-});
-
-els.searchInput.addEventListener("input", (event) => {
-  state.query = event.target.value.trim();
-  renderSettlement();
-  renderTransactions();
-});
-
-if (els.orgPeopleSearch) {
-  els.orgPeopleSearch.addEventListener("input", renderOrgBoard);
-}
-
-document.getElementById("clearBtn").addEventListener("click", () => {
-  state.query = "";
-  state.team = "all";
-  state.filterMode = "all";
-  els.searchInput.value = "";
-  els.teamSelect.value = "all";
-  renderAll();
-  showToast("筛选条件已清空");
-});
-
-document.getElementById("moreFilterBtn").addEventListener("click", () => {
-  showToast("可继续扩展平台、是否专场、佣金档位等筛选");
-});
-
-const onlyInvalidBtn = document.getElementById("onlyInvalidBtn");
-if (onlyInvalidBtn) {
-  onlyInvalidBtn.addEventListener("click", () => {
-    state.filterMode = state.filterMode === "invalid" ? "all" : "invalid";
-    renderAll();
+  openDrawer({
+    kicker: "达人详情",
+    title: record.name,
+    body: `
+      <div class="detail-stack">
+        <div class="detail-block">
+          <h4>基础信息</h4>
+          <div class="detail-line"><span>等级</span><strong style="color:${tier.color}">${record.tier}级</strong></div>
+          <div class="detail-line"><span>类型</span><strong>${record.type}</strong></div>
+          <div class="detail-line"><span>产品</span><strong>${record.product}</strong></div>
+          <div class="detail-line"><span>组别</span><strong>${record.group}组</strong></div>
+          <div class="detail-line"><span>玩法</span><strong>${record.format}</strong></div>
+          <div class="detail-line"><span>负责商务</span><strong>${record.person}</strong></div>
+          <div class="detail-line"><span>状态</span><strong style="color:${stage.color}">${record.stage}</strong></div>
+        </div>
+        <div class="detail-block">
+          <h4>卡点 / 备注</h4>
+          <p>${record.bottleneck || "暂无卡点。"}</p>
+        </div>
+        <div class="drawer-actions">
+          ${previousStage ? `<button class="small-button" type="button" data-move-record="${record.id}" data-target-stage="${previousStage}">退回到${previousStage}</button>` : ""}
+          ${nextStage ? `<button class="primary-button" type="button" data-move-record="${record.id}" data-target-stage="${nextStage}">${icon("arrow-right")}推进到${nextStage}</button>` : ""}
+          <button class="small-button" type="button" data-edit-record="${record.id}">${icon("edit")}编辑</button>
+        </div>
+      </div>
+    `,
   });
 }
 
-els.settlementSortBtn.addEventListener("click", () => {
-  state.settlementSort = state.settlementSort === "desc" ? "asc" : "desc";
-  renderSettlement();
-  showToast(state.settlementSort === "desc" ? "最终提成已按降序排序" : "最终提成已按升序排序");
-});
+function openEditDrawer(recordId) {
+  const record = recordId
+    ? state.records.find((item) => item.id === Number(recordId))
+    : { id: "", name: "", tier: "A", type: "美垂", product: "定妆喷雾", group: "A", format: "专场", stage: "待触达", person: "张三", bottleneck: "" };
+  if (!record) return;
 
-document.getElementById("saveConfigBtn").addEventListener("click", () => {
-  showToast("提成系数配置已保存");
-});
+  openDrawer({
+    kicker: record.id ? "编辑达人" : "添加达人",
+    title: record.id ? record.name : "新达人",
+    body: `
+      <form class="form-grid two-col" id="recordForm">
+        <input type="hidden" name="id" value="${record.id}" />
+        <label class="form-field full">
+          <span>达人名称</span>
+          <input name="name" value="${record.name}" required placeholder="输入达人名称" />
+        </label>
+        ${selectField("tier", "达人等级", TIERS, record.tier)}
+        ${selectField("type", "达人类型", TYPES, record.type)}
+        ${selectField("product", "产品", PRODUCTS, record.product)}
+        ${selectField("group", "组别", GROUPS, record.group)}
+        ${selectField("format", "达人玩法", FORMATS, record.format)}
+        ${selectField("stage", "当前状态", STAGES.map((stage) => stage.label), record.stage)}
+        ${selectField("person", "负责商务", PERSONS, record.person)}
+        <label class="form-field full">
+          <span>卡点 / 备注</span>
+          <textarea name="bottleneck" placeholder="输入当前卡点或备注信息">${record.bottleneck}</textarea>
+        </label>
+        <button class="primary-button full" type="submit">${record.id ? "保存修改" : "保存达人"}</button>
+      </form>
+    `,
+  });
+}
 
-document.getElementById("closeDrawer").addEventListener("click", closeDrawer);
+function selectField(name, label, options, value) {
+  return `
+    <label class="form-field">
+      <span>${label}</span>
+      <select name="${name}">
+        ${options.map((option) => `<option value="${option}" ${option === value ? "selected" : ""}>${option}</option>`).join("")}
+      </select>
+    </label>
+  `;
+}
 
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    closeDrawer();
-    closeTierModal();
-    closeBaseDetailModal();
+function saveRecord(form) {
+  const data = new FormData(form);
+  const id = data.get("id") ? Number(data.get("id")) : null;
+  const nextRecord = {
+    id: id || state.nextId++,
+    name: String(data.get("name") || "未命名").trim(),
+    tier: String(data.get("tier")),
+    type: String(data.get("type")),
+    product: String(data.get("product")),
+    group: String(data.get("group")),
+    format: String(data.get("format")),
+    stage: String(data.get("stage")),
+    person: String(data.get("person")),
+    bottleneck: String(data.get("bottleneck") || "").trim(),
+  };
+
+  if (id) {
+    state.records = state.records.map((record) => (record.id === id ? nextRecord : record));
+    showToast("达人信息已更新");
+  } else {
+    state.records.unshift(nextRecord);
+    showToast("达人已添加");
   }
-});
+  updateTimestamp();
+  renderAll();
+  openRecordDrawer(nextRecord.id);
+}
 
-renderAll();
-setPage("aggregate");
+function moveRecord(recordId, targetStage) {
+  const record = state.records.find((item) => item.id === Number(recordId));
+  if (!record) return;
+  record.stage = targetStage;
+  if (targetStage !== "已流失") record.bottleneck = "";
+  updateTimestamp();
+  renderAll();
+  openRecordDrawer(record.id);
+  showToast(`${record.name} 已更新为「${targetStage}」`);
+}
+
+function resetFilters() {
+  state.query = "";
+  state.filters = { product: "", group: "", format: "", type: "", tier: "", stage: "", person: "" };
+  els.searchInput.value = "";
+  Object.entries(filterMap()).forEach(([key, select]) => {
+    select.value = "";
+  });
+  renderAll();
+  showToast("筛选已重置");
+}
+
+function exportCsv() {
+  const header = ["ID", "达人名称", "等级", "类型", "产品", "组", "玩法", "状态", "商务", "卡点"];
+  const rows = filteredRecords().map((record) => [
+    record.id,
+    record.name,
+    record.tier,
+    record.type,
+    record.product,
+    record.group,
+    record.format,
+    record.stage,
+    record.person,
+    record.bottleneck,
+  ]);
+  const csv = [header, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `达人跟进CRM_${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+  showToast("CSV 已生成");
+}
+
+function filterMap() {
+  return {
+    product: els.filterProduct,
+    group: els.filterGroup,
+    format: els.filterFormat,
+    type: els.filterType,
+    tier: els.filterTier,
+    stage: els.filterStage,
+    person: els.filterPerson,
+  };
+}
+
+let toastTimer;
+function showToast(message) {
+  els.toast.textContent = message;
+  els.toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2600);
+}
+
+function updateTimestamp() {
+  els.lastUpdate.textContent = new Date().toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function bindEvents() {
+  document.addEventListener("click", (event) => {
+    const nav = event.target.closest("[data-view]");
+    if (nav) {
+      setView(nav.dataset.view);
+      return;
+    }
+
+    const recordDetail = event.target.closest("[data-record-detail]");
+    if (recordDetail) {
+      openRecordDrawer(recordDetail.dataset.recordDetail);
+      return;
+    }
+
+    const editRecord = event.target.closest("[data-edit-record]");
+    if (editRecord) {
+      openEditDrawer(editRecord.dataset.editRecord);
+      return;
+    }
+
+    const moveRecordButton = event.target.closest("[data-move-record]");
+    if (moveRecordButton) {
+      moveRecord(moveRecordButton.dataset.moveRecord, moveRecordButton.dataset.targetStage);
+    }
+  });
+
+  els.searchInput.addEventListener("input", (event) => {
+    state.query = normalize(event.target.value);
+    renderAll();
+  });
+
+  Object.entries(filterMap()).forEach(([key, select]) => {
+    select.addEventListener("change", (event) => {
+      state.filters[key] = event.target.value;
+      renderAll();
+    });
+  });
+
+  els.resetFiltersBtn.addEventListener("click", resetFilters);
+  els.exportBtn.addEventListener("click", exportCsv);
+  els.addRecordBtn.addEventListener("click", () => openEditDrawer());
+  els.drawerCloseBtn.addEventListener("click", closeDrawer);
+  els.drawerBackdrop.addEventListener("click", closeDrawer);
+
+  els.drawerBody.addEventListener("submit", (event) => {
+    if (event.target.id === "recordForm") {
+      event.preventDefault();
+      saveRecord(event.target);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && els.drawer.classList.contains("open")) {
+      closeDrawer();
+    }
+  });
+}
+
+function init() {
+  renderFilterOptions();
+  updateTimestamp();
+  bindEvents();
+  renderAll();
+}
+
+init();

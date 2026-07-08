@@ -1,284 +1,291 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>新池工作台 - 商务提成分析</title>
+  <title>达人管理 CRM 看板</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="icon-board" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="18" rx="2"></rect>
+      <rect x="14" y="3" width="7" height="10" rx="2"></rect>
+      <path d="M14 17h7"></path>
+      <path d="M14 21h5"></path>
+    </symbol>
+    <symbol id="icon-users" viewBox="0 0 24 24">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </symbol>
+    <symbol id="icon-funnel" viewBox="0 0 24 24">
+      <path d="M3 4h18l-7 8v6l-4 2v-8L3 4Z"></path>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="m21 21-4.3-4.3"></path>
+    </symbol>
+    <symbol id="icon-filter" viewBox="0 0 24 24">
+      <path d="M3 5h18"></path>
+      <path d="M7 12h10"></path>
+      <path d="M10 19h4"></path>
+    </symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14"></path>
+      <path d="M5 12h14"></path>
+    </symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <path d="M7 10l5 5 5-5"></path>
+      <path d="M12 15V3"></path>
+    </symbol>
+    <symbol id="icon-x" viewBox="0 0 24 24">
+      <path d="M18 6 6 18"></path>
+      <path d="m6 6 12 12"></path>
+    </symbol>
+    <symbol id="icon-arrow-right" viewBox="0 0 24 24">
+      <path d="M5 12h14"></path>
+      <path d="m12 5 7 7-7 7"></path>
+    </symbol>
+    <symbol id="icon-alert" viewBox="0 0 24 24">
+      <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path>
+      <path d="M12 9v4"></path>
+      <path d="M12 17h.01"></path>
+    </symbol>
+    <symbol id="icon-target" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"></circle>
+      <circle cx="12" cy="12" r="5"></circle>
+      <circle cx="12" cy="12" r="1"></circle>
+    </symbol>
+    <symbol id="icon-edit" viewBox="0 0 24 24">
+      <path d="M12 20h9"></path>
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"></path>
+    </symbol>
+  </svg>
+
   <div class="app-shell">
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="达人 CRM 导航">
       <div class="brand">
-        <div class="brand-mark">X</div>
+        <div class="brand-mark">达</div>
         <div>
-          <strong>新池集团</strong>
-          <span>新池工作台</span>
+          <strong>达人 CRM</strong>
+          <span>跟进管理</span>
         </div>
       </div>
 
-      <nav class="side-nav" aria-label="主导航">
-        <button class="nav-item" data-placeholder-nav type="button">
-          <span class="nav-icon">♙</span>
-          客户线索管理
+      <nav class="side-nav">
+        <button class="nav-item active" type="button" data-view="pipeline" aria-current="page">
+          <svg><use href="#icon-board"></use></svg>
+          跟进流水线
         </button>
-        <button class="nav-item" data-placeholder-nav type="button">
-          <span class="nav-icon">▥</span>
-          团队数据看板
+        <button class="nav-item" type="button" data-view="insight">
+          <svg><use href="#icon-funnel"></use></svg>
+          数据分析
         </button>
-        <button class="nav-item" data-placeholder-nav type="button">
-          <span class="nav-icon">☷</span>
-          CRM规则设置
-        </button>
-        <button class="nav-item" data-placeholder-nav type="button">
-          <span class="nav-icon">▤</span>
-          创建寄样订单
-        </button>
-        <button class="nav-item commission-entry active" data-commission-entry type="button">
-          <span class="nav-icon">◎</span>
-          达播提成
+        <button class="nav-item" type="button" data-view="directory">
+          <svg><use href="#icon-users"></use></svg>
+          达人列表
         </button>
       </nav>
 
-      <button class="collapse-handle" aria-label="收起侧栏">‹</button>
+      <div class="sidebar-footer">
+        <span>最后更新</span>
+        <strong id="lastUpdate">--</strong>
+      </div>
     </aside>
 
     <main class="workspace">
       <header class="topbar">
-        <div class="commission-tabs topbar-tabs" id="commissionTabs">
-          <button class="commission-tab" data-page="config" type="button">达播提成规则设置</button>
-          <button class="commission-tab active" data-page="aggregate" type="button">达播提成明细</button>
-          <button class="commission-tab" data-page="team" type="button">达播关系画板</button>
+        <div class="page-heading">
+          <span class="eyebrow">Influencer Operations</span>
+          <h1>达人管理 CRM 看板</h1>
         </div>
-        <div class="user-actions">
-          <button class="link-button">返回工作台</button>
-          <div class="avatar">BABI</div>
-          <span>管理员</span>
+
+        <div class="toolbar" aria-label="筛选与操作">
+          <label class="search-field">
+            <svg><use href="#icon-search"></use></svg>
+            <input id="searchInput" type="search" placeholder="搜索达人、产品、商务、卡点" autocomplete="off" />
+          </label>
+          <button class="icon-button" id="resetFiltersBtn" type="button" aria-label="重置筛选" title="重置筛选">
+            <svg><use href="#icon-filter"></use></svg>
+          </button>
+          <button class="icon-button" id="exportBtn" type="button" aria-label="导出 CSV" title="导出 CSV">
+            <svg><use href="#icon-download"></use></svg>
+          </button>
+          <button class="primary-button" id="addRecordBtn" type="button">
+            <svg><use href="#icon-plus"></use></svg>
+            添加达人
+          </button>
         </div>
       </header>
 
+      <section class="filter-strip" aria-label="达人筛选">
+        <label class="select-field">
+          <span>产品</span>
+          <select id="filterProduct"></select>
+        </label>
+        <label class="select-field">
+          <span>组别</span>
+          <select id="filterGroup"></select>
+        </label>
+        <label class="select-field">
+          <span>玩法</span>
+          <select id="filterFormat"></select>
+        </label>
+        <label class="select-field">
+          <span>类型</span>
+          <select id="filterType"></select>
+        </label>
+        <label class="select-field">
+          <span>等级</span>
+          <select id="filterTier"></select>
+        </label>
+        <label class="select-field">
+          <span>状态</span>
+          <select id="filterStage"></select>
+        </label>
+        <label class="select-field">
+          <span>商务</span>
+          <select id="filterPerson"></select>
+        </label>
+      </section>
+
       <section class="content">
-        <div class="page-title">
-          <div>
-            <h1 id="pageHeading">达播提成</h1>
-          </div>
-        </div>
+        <div class="kpi-grid" id="kpiGrid"></div>
 
-        <div class="metric-flow" id="metricFlow"></div>
-
-        <div class="filter-row">
-          <label class="search-box" data-filter-extra>
-            <span>⌕</span>
-            <input id="searchInput" type="search" placeholder="搜索商务/达人UID/品类/订单号" />
-          </label>
-          <div class="month-control">
-            <span class="month-title">结算月份：</span>
-            <button class="month-step-button" type="button" data-month-step="-1" aria-label="上个月">‹</button>
-            <label class="field-select month-field">
-              <span class="month-inline-label">结算月份：</span>
-              <input id="monthSelect" type="month" value="2026-05" />
-            </label>
-            <button class="month-step-button" type="button" data-month-step="1" aria-label="下个月">›</button>
-          </div>
-          <label class="field-select" data-filter-extra>
-            <span>团队：</span>
-            <select id="teamSelect">
-              <option value="all">全部团队</option>
-              <option value="A组">A组</option>
-              <option value="B组">B组</option>
-              <option value="C组">C组</option>
-            </select>
-          </label>
-          <button class="ghost-button" id="moreFilterBtn" data-filter-extra><span class="button-icon">▽</span> 更多筛选</button>
-          <button class="ghost-button" id="clearBtn" data-filter-extra><span class="button-icon">↺</span> 清空</button>
-        </div>
-
-        <section class="page-view active" id="aggregatePage" data-page-panel="aggregate">
-          <div class="section-grid aggregate-grid">
-            <article class="panel wide-panel">
+        <section class="page-view active" data-page="pipeline" id="pipelinePage">
+          <div class="page-layout">
+            <article class="panel pipeline-panel">
               <div class="panel-head">
                 <div>
-                  <h2>提成最终聚合</h2>
+                  <span class="panel-kicker">Pipeline</span>
+                  <h2>达人跟进流水线</h2>
                 </div>
-                <div class="panel-tabs">
-                  <button class="mini-tab active" data-aggregate-mode="person">按人</button>
-                  <button class="mini-tab" data-aggregate-mode="team">按团队</button>
+                <div class="legend" id="tierLegend"></div>
+              </div>
+              <div class="kanban-columns" id="kanbanColumns"></div>
+            </article>
+
+            <aside class="side-panels">
+              <article class="panel">
+                <div class="panel-head compact">
+                  <div>
+                    <span class="panel-kicker">Blocked</span>
+                    <h2>卡点 / 阻塞项</h2>
+                  </div>
+                </div>
+                <div class="bottleneck-list" id="bottleneckList"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head compact">
+                  <div>
+                    <span class="panel-kicker">Owners</span>
+                    <h2>商务跟进量</h2>
+                  </div>
+                </div>
+                <div class="owner-list" id="ownerList"></div>
+              </article>
+            </aside>
+          </div>
+        </section>
+
+        <section class="page-view" data-page="insight" id="insightPage">
+          <div class="insight-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">Funnel</span>
+                  <h2>流水线漏斗</h2>
                 </div>
               </div>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>结算对象</th>
-                      <th>负责人</th>
-                      <th>基础提成</th>
-                      <th>团队提成</th>
-                      <th>绩效系数</th>
-                      <th>
-                        <button class="sort-button" id="settlementSortBtn" type="button">
-                          最终提成 <span id="settlementSortIcon">↓</span>
-                        </button>
-                      </th>
-                      <th>操作</th>
-                    </tr>
-                  </thead>
-                  <tbody id="settlementBody"></tbody>
-                </table>
+              <div class="funnel-chart" id="funnelChart"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">Type</span>
+                  <h2>达人类型分布</h2>
+                </div>
               </div>
+              <div class="bar-chart" id="typeChart"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">Group</span>
+                  <h2>各组活跃达人</h2>
+                </div>
+              </div>
+              <div class="stack-chart" id="groupChart"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">Mix</span>
+                  <h2>玩法结构</h2>
+                </div>
+              </div>
+              <div class="format-grid" id="formatGrid"></div>
             </article>
           </div>
         </section>
 
-        <section class="page-view" id="transactionsPage" data-page-panel="transactions">
-          <article class="panel">
+        <section class="page-view" data-page="directory" id="directoryPage">
+          <div class="panel">
             <div class="panel-head">
               <div>
-                <h2>单条交易计算明细</h2>
+                <span class="panel-kicker">Directory</span>
+                <h2>达人列表</h2>
               </div>
+              <span class="table-count" id="tableCount">0 条记录</span>
             </div>
             <div class="table-wrap">
-              <table>
+              <table class="record-table">
                 <thead>
                   <tr>
-                    <th>订单号</th>
-                    <th>商务/团队</th>
-                    <th>达人UID</th>
-                    <th>产品品类</th>
-                    <th>支付金额</th>
-                    <th>合作佣金</th>
-                    <th>系数</th>
-                    <th>最终提成</th>
+                    <th>达人</th>
+                    <th>等级</th>
+                    <th>类型</th>
+                    <th>产品</th>
+                    <th>组别</th>
+                    <th>玩法</th>
                     <th>状态</th>
+                    <th>商务</th>
+                    <th>卡点</th>
                     <th>操作</th>
                   </tr>
                 </thead>
-                <tbody id="transactionBody"></tbody>
+                <tbody id="recordTableBody"></tbody>
               </table>
             </div>
-          </article>
-        </section>
-
-        <section class="page-view" id="configPage" data-page-panel="config">
-          <article class="panel">
-            <div class="panel-head config-panel-head">
-              <div>
-                <h2>提成系数编辑</h2>
-              </div>
-              <button class="primary-button" id="saveConfigBtn">保存配置</button>
-            </div>
-
-            <div class="config-layout">
-              <div class="config-tabs" id="configTabs">
-                <button class="config-tab active" data-config-tab="tier">提成比例阶梯</button>
-                <button class="config-tab" data-config-tab="customer">新客 / 老客系数</button>
-                <button class="config-tab" data-config-tab="special">专场系数</button>
-                <button class="config-tab" data-config-tab="draw">抽成比例设置</button>
-                <button class="config-tab" data-config-tab="category">品类激励系数</button>
-                <button class="config-tab" data-config-tab="gsv">GSV 门槛配置</button>
-                <button class="config-tab" data-config-tab="excluded">排除产品配置</button>
-              </div>
-              <div class="config-panel" id="configPanel"></div>
-            </div>
-          </article>
-        </section>
-
-        <section class="page-view" id="teamPage" data-page-panel="team">
-          <div class="org-board-page">
-            <div class="org-board-toolbar">
-              <h2>组织架构画板</h2>
-              <div class="org-month-switch">
-                <button type="button" data-month-step="-1" aria-label="上个月">‹</button>
-                <label>
-                  <span>▦</span>
-                  <input type="month" value="2026-05" data-org-month />
-                </label>
-                <button type="button" data-month-step="1" aria-label="下个月">›</button>
-              </div>
-              <div class="org-toolbar-actions">
-                <button class="ghost-button small-button" type="button">人员绩效系数</button>
-                <button class="ghost-button small-button" type="button">▣ 复制上月组织架构</button>
-                <button class="ghost-button small-button" type="button">重置视图</button>
-                <button class="primary-button small-button" type="button">保存</button>
-              </div>
-            </div>
-
-            <div class="org-board-shell">
-              <aside class="org-people-panel">
-                <div class="org-panel-title">
-                  <h3>人员列表</h3>
-                  <span>拖拽到画布</span>
-                </div>
-                <label class="org-search">
-                  <span>⌕</span>
-                  <input id="orgPeopleSearch" type="search" placeholder="搜索姓名" />
-                </label>
-                <div id="orgPeopleList" class="org-people-list"></div>
-              </aside>
-
-              <div class="org-canvas">
-                <svg class="org-links" viewBox="0 0 1160 620" preserveAspectRatio="none" aria-hidden="true">
-                  <path d="M585 120 C480 170 410 180 365 260" />
-                  <path d="M585 120 C700 178 720 190 760 260" />
-                  <path d="M365 340 C300 420 292 440 274 500" />
-                  <path d="M365 340 C430 430 430 455 438 520" />
-                  <path d="M760 340 C820 420 825 450 835 500" />
-                </svg>
-                <div id="orgNodes" class="org-nodes"></div>
-              </div>
-            </div>
           </div>
-        </section>
-
-        <section class="page-view" id="middlePage" data-page-panel="middle">
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <h2>中台独立结算</h2>
-              </div>
-            </div>
-            <div class="middle-grid" id="middleGrid"></div>
-          </article>
         </section>
       </section>
     </main>
   </div>
 
-  <aside class="drawer" id="detailDrawer" aria-hidden="true">
+  <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+  <aside class="detail-drawer" id="detailDrawer" aria-hidden="true" aria-labelledby="drawerTitle">
     <div class="drawer-head">
       <div>
-        <span class="drawer-kicker">订单计算详情</span>
+        <span class="drawer-kicker" id="drawerKicker">达人详情</span>
         <h3 id="drawerTitle">-</h3>
       </div>
-      <button class="icon-button" id="closeDrawer" aria-label="关闭">×</button>
+      <button class="icon-button" id="drawerCloseBtn" type="button" aria-label="关闭详情">
+        <svg><use href="#icon-x"></use></svg>
+      </button>
     </div>
     <div class="drawer-body" id="drawerBody"></div>
   </aside>
 
-  <div class="modal-backdrop" id="tierModal" aria-hidden="true">
-    <div class="coef-modal" role="dialog" aria-modal="true" aria-labelledby="tierModalTitle">
-      <button class="modal-close" type="button" data-tier-modal-close aria-label="关闭">×</button>
-      <h3 id="tierModalTitle">编辑档位</h3>
-      <div class="modal-form" id="tierModalBody"></div>
-      <div class="modal-actions">
-        <button class="ghost-button" type="button" data-tier-modal-close>取消</button>
-        <button class="primary-button" type="button" data-tier-modal-confirm>确定</button>
-      </div>
-    </div>
-  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <div class="modal-backdrop" id="baseDetailModal" aria-hidden="true">
-    <div class="base-detail-modal" role="dialog" aria-modal="true" aria-labelledby="baseDetailTitle">
-      <button class="modal-close" type="button" data-base-modal-close aria-label="关闭">×</button>
-      <h3 id="baseDetailTitle">基础提成明细</h3>
-      <div id="baseDetailBody" class="base-detail-body"></div>
-      <div class="base-detail-actions">
-        <button class="ghost-button" type="button" data-export-base-detail><span class="button-icon">⇩</span> 导出当前商务明细</button>
-        <button class="ghost-button" type="button" data-base-modal-close>关闭</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast">已重新计算</div>
-  <script src="./app.js"></script>
+  <script src="./app.js" defer></script>
 </body>
 </html>
