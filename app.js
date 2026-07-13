@@ -32,7 +32,7 @@ const DISPLAY_STAGE_TO_SOURCE = {
 };
 
 const PRODUCTS = ["定型", "定妆", "粉底", "防晒喷雾", "气垫", "遮瑕", "防晒素颜霜", "防晒定妆喷雾", "双头修容", "四色修容盘", "防晒水", "其他"];
-const FORMATS = ["专场", "混播", "单品直播间", "短视频挂车", "IP小号"];
+const FORMATS = ["专场", "混播", "短视频挂车", "切片号", "单品直播间", "美垂日播"];
 const TYPES = ["美垂", "生活分享", "三农", "时尚穿搭", "美食", "母婴", "剧情搞笑", "其他"];
 const TIERS = ["S", "A", "B", "C"];
 const MANAGER = "六六";
@@ -102,9 +102,10 @@ const typeIconMap = {
 const formatIconMap = {
   专场: "calendar",
   混播: "funnel",
-  单品直播间: "package",
   短视频挂车: "play",
-  IP小号: "users",
+  切片号: "play",
+  单品直播间: "package",
+  美垂日播: "star",
 };
 const orderStatusMeta = [
   { label: "已支付", color: "#2563eb", soft: "#eaf2ff" },
@@ -112,7 +113,7 @@ const orderStatusMeta = [
   { label: "已发货", color: "#8b5cf6", soft: "#f3edff" },
   { label: "已完成", color: "#22c55e", soft: "#eaf8f1" },
 ];
-const orderChannels = ["专场成交", "混播成交", "短视频挂车", "私域复购"];
+const orderChannels = ["专场成交", "混播成交", "短视频挂车", "切片号成交", "单品直播间", "美垂日播"];
 
 const productSalesBase = {
   定型: 82000,
@@ -143,9 +144,10 @@ const stageSalesFactor = {
 const formatSalesFactor = {
   专场: 1.28,
   混播: 1.05,
-  单品直播间: 1.12,
   短视频挂车: 0.78,
-  IP小号: 0.52,
+  切片号: 0.62,
+  单品直播间: 1.12,
+  美垂日播: 1.18,
 };
 
 const initialRecords = [
@@ -153,20 +155,20 @@ const initialRecords = [
   { id: 2, name: "乡村阿花", tier: "A", type: "三农", product: "防晒素颜霜", group: "A3组", format: "短视频挂车", stage: "试播中", person: "周鸿美", bottleneck: "排期冲突，等达人档期" },
   { id: 3, name: "生活达人Lily", tier: "A", type: "生活分享", product: "气垫", group: "B1组", format: "混播", stage: "沟通中", person: "窦婉婷", bottleneck: "达人对佣金比例有异议" },
   { id: 4, name: "潮流小K", tier: "B", type: "时尚穿搭", product: "定妆", group: "B1组", format: "单品直播间", stage: "已寄样", person: "池维杞", bottleneck: "" },
-  { id: 5, name: "美食控阿强", tier: "C", type: "美食", product: "防晒喷雾", group: "B1组", format: "IP小号", stage: "待触达", person: "姚慧英", bottleneck: "" },
+  { id: 5, name: "美食控阿强", tier: "C", type: "美食", product: "防晒喷雾", group: "B1组", format: "切片号", stage: "待触达", person: "姚慧英", bottleneck: "" },
   { id: 6, name: "辣妈CC", tier: "S", type: "母婴", product: "粉底", group: "达播合作", format: "专场", stage: "洽谈排期", person: "刘则宇黄娇", bottleneck: "报价超出预算30%" },
   { id: 7, name: "化妆师老罗", tier: "A", type: "美垂", product: "定型", group: "专场B组", format: "混播", stage: "已触达", person: "马雯", bottleneck: "" },
   { id: 8, name: "田野阿宝", tier: "B", type: "三农", product: "遮瑕", group: "专场B组", format: "短视频挂车", stage: "沟通中", person: "郑若楠", bottleneck: "" },
   { id: 9, name: "Vicky爱分享", tier: "A", type: "生活分享", product: "防晒定妆喷雾", group: "专场B组", format: "专场", stage: "已寄样", person: "谭燕琳", bottleneck: "样品物流延迟" },
-  { id: 10, name: "段子手大刘", tier: "B", type: "剧情搞笑", product: "双头修容", group: "专场B组", format: "短视频挂车", stage: "待触达", person: "郭洁玲", bottleneck: "" },
+  { id: 10, name: "段子手大刘", tier: "B", type: "剧情搞笑", product: "双头修容", group: "专场B组", format: "切片号", stage: "待触达", person: "郭洁玲", bottleneck: "" },
   { id: 11, name: "美妆课代表", tier: "S", type: "美垂", product: "四色修容盘", group: "B2组", format: "单品直播间", stage: "已签约", person: "徐怀玉", bottleneck: "" },
-  { id: 12, name: "小城日记", tier: "C", type: "生活分享", product: "定妆", group: "B2组", format: "IP小号", stage: "已触达", person: "王娅兰", bottleneck: "" },
+  { id: 12, name: "小城日记", tier: "C", type: "生活分享", product: "定妆", group: "B2组", format: "切片号", stage: "已触达", person: "王娅兰", bottleneck: "" },
   { id: 13, name: "穿搭达人Nina", tier: "A", type: "时尚穿搭", product: "气垫", group: "B2组", format: "混播", stage: "试播中", person: "俞梦薇", bottleneck: "试播数据不达标，需二次评估" },
   { id: 14, name: "农家胖哥", tier: "B", type: "三农", product: "防晒水", group: "B2组", format: "单品直播间", stage: "洽谈排期", person: "邓斯婕", bottleneck: "" },
-  { id: 15, name: "小白的美妆日记", tier: "B", type: "美垂", product: "防晒定妆喷雾", group: "数据中台组", format: "短视频挂车", stage: "沟通中", person: "黄建新", bottleneck: "" },
-  { id: 16, name: "厨神阿欢", tier: "C", type: "美食", product: "其他", group: "数据中台组", format: "IP小号", stage: "已流失", person: "叶倩文", bottleneck: "达人明确拒绝合作" },
+  { id: 15, name: "小白的美妆日记", tier: "B", type: "美垂", product: "防晒定妆喷雾", group: "数据中台组", format: "美垂日播", stage: "沟通中", person: "黄建新", bottleneck: "" },
+  { id: 16, name: "厨神阿欢", tier: "C", type: "美食", product: "其他", group: "数据中台组", format: "切片号", stage: "已流失", person: "叶倩文", bottleneck: "达人明确拒绝合作" },
   { id: 17, name: "国际庄小马", tier: "B", type: "剧情搞笑", product: "粉底", group: "A1组", format: "短视频挂车", stage: "待触达", person: "黄欣瑜", bottleneck: "" },
-  { id: 18, name: "辣妹CC酱", tier: "A", type: "美垂", product: "防晒喷雾", group: "A1组", format: "混播", stage: "已寄样", person: "张如茜", bottleneck: "" },
+  { id: 18, name: "辣妹CC酱", tier: "A", type: "美垂", product: "防晒喷雾", group: "A1组", format: "美垂日播", stage: "已寄样", person: "张如茜", bottleneck: "" },
   { id: 19, name: "宝妈的精致生活", tier: "C", type: "母婴", product: "气垫", group: "A1组", format: "专场", stage: "沟通中", person: "郎嘉欣", bottleneck: "需等618大促结束后再谈" },
   { id: 20, name: "三叔的院子", tier: "A", type: "三农", product: "防晒素颜霜", group: "A1组", format: "短视频挂车", stage: "已签约", person: "欧阳婉怡", bottleneck: "" },
 ];
