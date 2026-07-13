@@ -730,7 +730,7 @@ svg {
 
 .page-layout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: 16px;
 }
 
@@ -876,14 +876,6 @@ svg {
   height: 9px;
   border-radius: 999px;
   background: var(--legend-color, var(--tier-color));
-}
-
-.legend-dot.status-waiting {
-  background: #2563eb;
-}
-
-.legend-dot.status-missed {
-  background: #ef4444;
 }
 
 .legend-row strong,
@@ -1186,120 +1178,12 @@ svg {
 }
 
 .kanban-columns {
-  display: block;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(218px, 1fr);
+  gap: 12px;
   overflow-x: auto;
-  padding: 18px;
-}
-
-.follow-status-flow {
-  min-width: 1080px;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(126px, 1fr));
-  align-items: stretch;
-  gap: 26px;
-}
-
-.follow-status-step {
-  position: relative;
-  min-width: 0;
-}
-
-.follow-status-card {
-  position: relative;
-  min-height: 118px;
-  display: grid;
-  align-content: center;
-  gap: 7px;
-  border: 1px solid #e8eef7;
-  border-radius: 12px;
-  padding: 15px 16px;
-  background: #f8fafc;
-  box-shadow: 0 8px 20px rgba(31, 45, 79, 0.045);
-}
-
-.follow-status-card.is-primary {
-  border-color: #fb923c;
-  background: #fff7ed;
-  box-shadow: 0 14px 32px rgba(249, 115, 22, 0.12);
-}
-
-.follow-status-title {
-  color: #52627a;
-  font-size: 16px;
-  font-weight: 850;
-}
-
-.follow-status-card.is-primary .follow-status-title,
-.follow-status-card.is-primary strong {
-  color: #f97316;
-}
-
-.follow-status-card strong {
-  color: #07142f;
-  font-size: clamp(25px, 2vw, 30px);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.follow-status-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 3px;
-  color: #94a3b8;
-  font-size: 12px;
-  line-height: 1.2;
-}
-
-.follow-status-meta span {
-  white-space: nowrap;
-}
-
-.follow-status-meta b {
-  color: #2563eb;
-  font-weight: 950;
-}
-
-.follow-status-meta span:last-child b {
-  color: #ef4444;
-}
-
-.follow-status-card.is-primary .follow-status-meta b {
-  color: #f97316;
-}
-
-.follow-status-card.is-primary .follow-status-meta span:last-child b {
-  color: #b45309;
-}
-
-.follow-status-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  min-width: 24px;
-  height: 24px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 999px;
-  padding: 0 7px;
-  background: #fb5a5f;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 950;
-  box-shadow: 0 8px 18px rgba(251, 90, 95, 0.24);
-}
-
-.follow-status-arrow {
-  position: absolute;
-  top: 50%;
-  right: -22px;
-  width: 0;
-  height: 0;
-  border-top: 11px solid transparent;
-  border-bottom: 11px solid transparent;
-  border-left: 14px solid #eef2f7;
-  transform: translateY(-50%);
+  padding: 14px;
 }
 
 .kanban-col {
@@ -1482,7 +1366,6 @@ svg {
 
 .side-panels {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
   gap: 16px;
 }
@@ -2761,18 +2644,5 @@ body::before {
 
   .side-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .side-panels {
-    grid-template-columns: 1fr;
-  }
-
-  .kanban-columns {
-    padding: 14px;
-  }
-
-  .follow-status-flow {
-    min-width: 960px;
-    gap: 22px;
   }
 }
