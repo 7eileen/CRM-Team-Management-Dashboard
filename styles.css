@@ -2549,6 +2549,42 @@ body::before {
   background: #f7faff;
 }
 
+.dashboard-grid {
+  --management-panel-height: clamp(460px, calc(100vh - 336px), 640px);
+  align-items: start;
+}
+
+.panel-table {
+  height: var(--management-panel-height);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-table .person-rank-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.dashboard-rail {
+  height: var(--management-panel-height);
+  min-height: 0;
+  align-content: start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.panel-table .person-rank-list,
+.dashboard-rail {
+  scrollbar-width: thin;
+  scrollbar-color: #b8c7df transparent;
+}
+
 .rank-avatar,
 .record-name-icon,
 .talent-icon {
