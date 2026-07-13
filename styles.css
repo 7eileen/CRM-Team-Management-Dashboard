@@ -309,6 +309,11 @@ svg {
   gap: 12px;
 }
 
+.period-popover-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
 .search-field,
 .top-control,
 .icon-button,
@@ -356,9 +361,189 @@ svg {
   padding: 0 16px;
 }
 
+.top-control.active {
+  color: var(--color-primary);
+  border-color: rgba(37, 99, 235, 0.35);
+  background: #f8fbff;
+}
+
 .chevron {
   width: 15px;
   height: 15px;
+}
+
+.quarter-popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 70;
+  width: min(560px, calc(100vw - 32px));
+  border: 1px solid rgba(225, 232, 245, 0.96);
+  border-radius: 20px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 22px 48px rgba(31, 45, 79, 0.16);
+  backdrop-filter: blur(18px);
+}
+
+.quarter-popover[hidden] {
+  display: none;
+}
+
+.quarter-popover::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  right: 38px;
+  width: 14px;
+  height: 14px;
+  border-top: 1px solid rgba(225, 232, 245, 0.96);
+  border-left: 1px solid rgba(225, 232, 245, 0.96);
+  background: rgba(255, 255, 255, 0.96);
+  transform: rotate(45deg);
+}
+
+.quarter-popover-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.quarter-popover-head h3 {
+  margin: 3px 0 0;
+  color: #101936;
+  font-size: 18px;
+}
+
+.quarter-popover-head > strong {
+  color: #101936;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quarter-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.quarter-summary div {
+  min-width: 0;
+  border: 1px solid #edf2f8;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: #f8fbff;
+}
+
+.quarter-summary span,
+.quarter-card-top span,
+.quarter-meta span,
+.quarter-card small {
+  color: #66758e;
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.quarter-summary strong {
+  display: block;
+  margin-top: 5px;
+  color: #101936;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quarter-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.quarter-card {
+  min-width: 0;
+  border: 1px solid #e5ecf8;
+  border-radius: 17px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.quarter-card.active {
+  border-color: var(--quarter-color, #2563eb);
+  background: linear-gradient(180deg, #f7faff, #ffffff);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.1);
+}
+
+.quarter-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quarter-card-top h4 {
+  margin: 3px 0 0;
+  color: #101936;
+  font-size: 18px;
+}
+
+.quarter-card-top em {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 8px;
+  background: #eef4ff;
+  color: var(--quarter-color, #2563eb);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.quarter-card > strong {
+  display: block;
+  margin-top: 12px;
+  color: #101936;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quarter-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.quarter-meta span:last-child {
+  color: #16a34a;
+}
+
+.quarter-meta span.down {
+  color: #dc2626;
+}
+
+.quarter-progress {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  margin-top: 12px;
+  background: #edf2fb;
+}
+
+.quarter-progress i {
+  width: var(--quarter-progress, 0%);
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--quarter-color, #2563eb), #72a2ff);
+}
+
+.quarter-card small {
+  display: block;
+  margin-top: 8px;
 }
 
 .icon-button {
@@ -2634,6 +2819,10 @@ svg {
   .search-field {
     width: 100%;
   }
+
+  .period-popover-wrap {
+    width: 100%;
+  }
 }
 
 @media (max-width: 760px) {
@@ -2657,7 +2846,9 @@ svg {
   .annual-summary,
   .team-choice-list,
   .team-focus-metrics,
-  .team-detail-columns {
+  .team-detail-columns,
+  .quarter-summary,
+  .quarter-card-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2722,6 +2913,22 @@ svg {
   .top-control,
   .primary-button {
     width: 100%;
+  }
+
+  .period-popover-wrap {
+    width: 100%;
+  }
+
+  .quarter-popover {
+    position: fixed;
+    inset: 96px 14px auto;
+    width: auto;
+    max-height: calc(100dvh - 116px);
+    overflow: auto;
+  }
+
+  .quarter-popover::before {
+    display: none;
   }
 
   .form-grid.two-col {

@@ -253,11 +253,14 @@
             <svg><use href="#icon-search"></use></svg>
             <input id="searchInput" type="search" placeholder="搜索达人、品类、商务、卡点" autocomplete="off" />
           </label>
-          <button class="top-control" type="button">
-            <svg><use href="#icon-calendar"></use></svg>
-            2026 Q3
-            <svg class="chevron"><use href="#icon-chevron"></use></svg>
-          </button>
+          <div class="period-popover-wrap" id="quarterControl">
+            <button class="top-control" id="quarterControlBtn" type="button" aria-expanded="false" aria-controls="quarterPopover">
+              <svg><use href="#icon-calendar"></use></svg>
+              <span id="quarterControlLabel">2026 Q3</span>
+              <svg class="chevron"><use href="#icon-chevron"></use></svg>
+            </button>
+            <div class="quarter-popover" id="quarterPopover" hidden></div>
+          </div>
           <button class="top-control" type="button">
             Compare: 近30天
             <svg class="chevron"><use href="#icon-chevron"></use></svg>

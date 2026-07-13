@@ -196,6 +196,7 @@ const state = {
   salesViewMode: "product",
   salesViewProduct: PRODUCTS[0],
   managementTeam: "",
+  quarterPopoverOpen: false,
   nextId: 21,
 };
 
@@ -205,6 +206,9 @@ const els = {
   resetFiltersBtn: document.getElementById("resetFiltersBtn"),
   exportBtn: document.getElementById("exportBtn"),
   addRecordBtn: document.getElementById("addRecordBtn"),
+  quarterControlBtn: document.getElementById("quarterControlBtn"),
+  quarterControlLabel: document.getElementById("quarterControlLabel"),
+  quarterPopover: document.getElementById("quarterPopover"),
   filterProduct: document.getElementById("filterProduct"),
   filterGroup: document.getElementById("filterGroup"),
   filterFormat: document.getElementById("filterFormat"),
@@ -434,6 +438,94 @@ function loadSalesMetrics() {
 function getSalesMetrics() {
   if (!state.salesMetrics) state.salesMetrics = loadSalesMetrics();
   return state.salesMetrics;
+}
+
+function currentQuarterInfo(metrics = getSalesMetrics()) {
+  const match = String(metrics.month || "").match(/^(\d{4})-(\d{2})$/);
+  const year = match ? Number(match[1]) : new Date().getFullYear();
+  const month = match ? Number(match[2]) : new Date().getMonth() + 1;
+  return { year, quarter: Math.max(1, Math.min(4, Math.ceil(month / 3))) };
+}
+
+function quarterSalesRows(metrics = getSalesMetrics()) {
+  const { quarter } = currentQuarterInfo(metrics);
+  const targetWeights = [0.22, 0.24, 0.27, 0.27];
+  const salesWeights = [0.2, 0.25, 0.32, 0.23];
+  const annualTarget = metrics.annualTarget;
+  const annualSales = metrics.annualCompletedSales;
+  return targetWeights.map((targetWeight, index) => {
+    const sales = Math.round((annualSales * salesWeights[index]) / 100) * 100;
+    const target = Math.round((annualTarget * targetWeight) / 100) * 100;
+    const previousSales = index === 0
+      ? Math.round((annualSales * 0.19) / 100) * 100
+      : Math.round((annualSales * salesWeights[index - 1]) / 100) * 100;
+    const mom = previousSales ? (sales - previousSales) / previousSales : 0;
+    return {
+      label: `Q${index + 1}`,
+      range: `${index * 3 + 1}-${index * 3 + 3}月`,
+      sales,
+      target,
+      completion: target ? (sales / target) * 100 : 0,
+      mom,
+      active: index + 1 === quarter,
+      color: chartPalette[index % chartPalette.length],
+    };
+  });
+}
+
+function renderQuarterPopover() {
+  if (!els.quarterControlBtn || !els.quarterPopover) return;
+  const metrics = getSalesMetrics();
+  const { year, quarter } = currentQuarterInfo(metrics);
+  const rows = quarterSalesRows(metrics);
+  const annualTarget = sumBy(rows, (row) => row.target);
+  const annualSales = sumBy(rows, (row) => row.sales);
+  const bestQuarter = rows.slice().sort((a, b) => b.sales - a.sales)[0];
+
+  if (els.quarterControlLabel) {
+    els.quarterControlLabel.textContent = `${year} Q${quarter}`;
+  }
+  els.quarterControlBtn.setAttribute("aria-expanded", String(state.quarterPopoverOpen));
+  els.quarterControlBtn.classList.toggle("active", state.quarterPopoverOpen);
+  els.quarterPopover.hidden = !state.quarterPopoverOpen;
+  if (!state.quarterPopoverOpen) return;
+
+  els.quarterPopover.innerHTML = `
+    <div class="quarter-popover-head">
+      <div>
+        <span class="panel-kicker">Quarter Sales</span>
+        <h3>${year}年四季度销售情况</h3>
+      </div>
+      <strong>${compactCurrency(annualSales)}</strong>
+    </div>
+    <div class="quarter-summary">
+      <div><span>全年目标</span><strong>${compactCurrency(annualTarget)}</strong></div>
+      <div><span>整体完成率</span><strong>${Math.round(annualTarget ? (annualSales / annualTarget) * 100 : 0)}%</strong></div>
+      <div><span>最高季度</span><strong>${bestQuarter.label}</strong></div>
+    </div>
+    <div class="quarter-card-grid">
+      ${rows.map((row) => `
+        <article class="quarter-card ${row.active ? "active" : ""}" style="--quarter-color:${row.color}">
+          <div class="quarter-card-top">
+            <div>
+              <span>${row.range}</span>
+              <h4>${row.label}</h4>
+            </div>
+            ${row.active ? `<em>当前</em>` : ""}
+          </div>
+          <strong>${compactCurrency(row.sales)}</strong>
+          <div class="quarter-meta">
+            <span>目标 ${compactCurrency(row.target)}</span>
+            <span class="${row.mom < 0 ? "down" : ""}">${signedPercent(row.mom * 100)} 环比</span>
+          </div>
+          <div class="quarter-progress">
+            <i style="--quarter-progress:${clamp(row.completion, 0, 100)}%"></i>
+          </div>
+          <small>完成率 ${Math.round(row.completion)}%</small>
+        </article>
+      `).join("")}
+    </div>
+  `;
 }
 
 function groupSales(data, key, orderedKeys) {
@@ -1566,6 +1658,7 @@ function renderDirectoryRow(record) {
 
 function renderAll() {
   renderKpis();
+  renderQuarterPopover();
   renderManagementDashboard();
   renderPersonalDashboard();
   renderLegend();
@@ -1907,6 +2000,23 @@ function updateTimestamp() {
 
 function bindEvents() {
   document.addEventListener("click", (event) => {
+    const quarterControl = event.target.closest("#quarterControl");
+    if (!quarterControl && state.quarterPopoverOpen) {
+      state.quarterPopoverOpen = false;
+      renderQuarterPopover();
+    }
+
+    const quarterButton = event.target.closest("#quarterControlBtn");
+    if (quarterButton) {
+      state.quarterPopoverOpen = !state.quarterPopoverOpen;
+      renderQuarterPopover();
+      return;
+    }
+
+    if (event.target.closest("#quarterPopover")) {
+      return;
+    }
+
     const nav = event.target.closest("[data-view]");
     if (nav) {
       setView(nav.dataset.view);
@@ -1984,6 +2094,14 @@ function bindEvents() {
   els.addRecordBtn.addEventListener("click", openSalesMetricsDrawer);
   els.drawerCloseBtn.addEventListener("click", closeDrawer);
   els.drawerBackdrop.addEventListener("click", closeDrawer);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && state.quarterPopoverOpen) {
+      state.quarterPopoverOpen = false;
+      renderQuarterPopover();
+      els.quarterControlBtn?.focus();
+    }
+  });
 
   els.drawerBody.addEventListener("submit", (event) => {
     if (event.target.id === "recordForm") {
