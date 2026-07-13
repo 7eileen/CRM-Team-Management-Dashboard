@@ -713,45 +713,6 @@ svg {
   gap: 16px;
 }
 
-.personal-summary {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(150px, 1fr));
-  gap: 14px;
-  padding: 18px;
-}
-
-.summary-tile {
-  min-height: 98px;
-  display: grid;
-  align-content: center;
-  gap: 10px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 14px;
-  background: #f8fbff;
-}
-
-.summary-tile span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #40516c;
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.summary-tile span svg {
-  width: 17px;
-  height: 17px;
-  color: var(--color-primary);
-}
-
-.summary-tile strong {
-  color: #07142f;
-  font-size: 25px;
-  font-variant-numeric: tabular-nums;
-}
-
 .personal-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2052,8 +2013,7 @@ svg {
   .dashboard-grid,
   .report-strip,
   .format-grid,
-  .quick-filters,
-  .personal-summary {
+  .quick-filters {
     grid-template-columns: 1fr;
   }
 
@@ -2532,7 +2492,6 @@ body::before {
 
 .panel,
 .report-card,
-.summary-tile,
 .format-card,
 .detail-profile,
 .detail-block {

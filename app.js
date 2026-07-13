@@ -194,9 +194,6 @@ const els = {
   managementTierSales: document.getElementById("managementTierSales"),
   managementStageSales: document.getElementById("managementStageSales"),
   managementTalentRank: document.getElementById("managementTalentRank"),
-  personalTitle: document.getElementById("personalTitle"),
-  personalScopeBadge: document.getElementById("personalScopeBadge"),
-  personalSummary: document.getElementById("personalSummary"),
   personalProductSales: document.getElementById("personalProductSales"),
   personalTierSales: document.getElementById("personalTierSales"),
   personalStageSales: document.getElementById("personalStageSales"),
@@ -689,34 +686,6 @@ function renderManagementPersonRank(data) {
 function renderPersonalDashboard() {
   const person = selectedPerson();
   const data = recordsForPerson(person);
-  const allRows = personSalesRows(enrichedRecords(filteredRecords({ ignorePerson: true })));
-  const row = allRows.find((item) => item.person === person) || allRows[0];
-  const rank = allRows.findIndex((item) => item.person === row.person) + 1;
-  const previous = allRows[rank - 2];
-  const gap = previous ? previous.sales - row.sales : 0;
-
-  if (els.personalTitle) els.personalTitle.textContent = `${row.person} CRM 个人看板`;
-  if (els.personalScopeBadge) els.personalScopeBadge.textContent = state.filters.person ? "当前商务" : `默认${PERSONS[0]}`;
-  if (els.personalSummary) {
-    els.personalSummary.innerHTML = `
-      <div class="summary-tile">
-        <span>${icon("chart")}当月销售额</span>
-        <strong>${compactCurrency(row.sales)}</strong>
-      </div>
-      <div class="summary-tile">
-        <span>${icon("star")}销售排名</span>
-        <strong>第 ${rank}</strong>
-      </div>
-      <div class="summary-tile">
-        <span>${icon("target")}距上一名</span>
-        <strong>${rank === 1 ? "领先" : compactCurrency(gap)}</strong>
-      </div>
-      <div class="summary-tile">
-        <span>${icon("calendar")}专场数量</span>
-        <strong>${row.specialCount}</strong>
-      </div>
-    `;
-  }
 
   const productRows = groupSales(data, "product", PRODUCTS).map((item, index) => ({ ...item, icon: "package", color: chartPalette[index] }));
   const tierRows = groupSales(data, "tier", TIERS).map((item) => ({ ...item, label: `${item.label}级`, icon: "star", color: tierMeta[item.label]?.color }));
