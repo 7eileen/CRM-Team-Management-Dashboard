@@ -942,7 +942,7 @@ function renderDashboardRow(record) {
       <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span></td>
       <td>${escapeHtml(record.person)}</td>
       <td>${record.bottleneck ? `<span class="risk-pill">${icon("alert")}有卡点</span>` : `<span class="muted">无</span>`}</td>
-      <td><button class="small-button" type="button" data-record-detail="${record.id}">${icon("edit")}详情</button></td>
+      <td><strong class="gmv-value">${compactCurrency(record.sales)}</strong></td>
     </tr>
   `;
 }
@@ -1168,7 +1168,7 @@ function renderDirectoryRow(record) {
       <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span></td>
       <td>${escapeHtml(record.person)}</td>
       <td>${record.bottleneck ? `<span class="risk-pill">${icon("alert")}有卡点</span>` : `<span class="muted">无</span>`}</td>
-      <td><button class="small-button" type="button" data-record-detail="${record.id}">${icon("edit")}详情</button></td>
+      <td><strong class="gmv-value">${compactCurrency(record.sales)}</strong></td>
     </tr>
   `;
 }

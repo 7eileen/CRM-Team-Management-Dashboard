@@ -1687,6 +1687,13 @@ svg {
   font-size: 12px;
 }
 
+.gmv-value {
+  color: #101936;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .small-button {
   min-height: 36px;
   display: inline-flex;
