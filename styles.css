@@ -729,6 +729,7 @@ svg {
 }
 
 .page-layout {
+  --pipeline-panel-height: clamp(480px, calc(100vh - 330px), 660px);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 16px;
@@ -1178,16 +1179,19 @@ svg {
 }
 
 .kanban-columns {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(218px, 1fr);
   gap: 12px;
-  overflow-x: auto;
+  overflow: auto;
   padding: 14px;
 }
 
 .kanban-col {
-  min-height: 560px;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   border: 1px solid #e8eef7;
@@ -1264,6 +1268,8 @@ svg {
 }
 
 .kanban-stack {
+  flex: 1;
+  min-height: 0;
   display: grid;
   align-content: start;
   gap: 10px;
@@ -1370,9 +1376,22 @@ svg {
   gap: 16px;
 }
 
+.pipeline-panel,
+.side-panels > .panel:first-child {
+  height: var(--pipeline-panel-height);
+  display: flex;
+  flex-direction: column;
+}
+
 .bottleneck-list,
 .owner-list {
   display: grid;
+}
+
+.owner-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .bottleneck-item,
