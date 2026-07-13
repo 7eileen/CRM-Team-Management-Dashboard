@@ -2050,7 +2050,7 @@ svg {
   }
 }
 
-/* Showcase skin inspired by polished web dashboard presentation boards. */
+/* Light SaaS dashboard skin inspired by polished web analytics products. */
 :root {
   --color-primary: #4f63ff;
   --color-primary-strong: #3548e8;
@@ -2070,27 +2070,18 @@ svg {
 }
 
 html {
-  background: #050505;
+  background: #f6f8fc;
 }
 
 body {
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 86% 7%, rgba(255, 255, 255, 0.2), transparent 20%),
-    radial-gradient(circle at 12% 24%, rgba(255, 255, 255, 0.08), transparent 18%),
-    linear-gradient(132deg, #000000 0%, #070707 42%, #202020 78%, #3b3b3b 100%);
+  background: #f6f8fc;
   color: var(--color-text);
 }
 
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(118deg, transparent 0 52%, rgba(255, 255, 255, 0.16) 52.2%, transparent 52.8%),
-    repeating-linear-gradient(118deg, transparent 0 26px, rgba(255, 255, 255, 0.035) 27px 29px, transparent 30px 74px);
-  opacity: 0.34;
+  content: none;
+  display: none;
 }
 
 .showcase-hero,
@@ -2175,7 +2166,7 @@ body::before {
 }
 
 .app-shell {
-  min-height: 840px;
+  min-height: 100vh;
   background: linear-gradient(180deg, #f7f9ff 0%, #f2f6ff 100%);
 }
 
