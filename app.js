@@ -60,6 +60,7 @@ const BUSINESS_GROUP_BY_PERSON = BUSINESS_PEOPLE.reduce((acc, person) => {
 }, {});
 
 const chartPalette = ["#2563eb", "#8b5cf6", "#ec4899", "#f59e0b", "#14b8a6", "#3b82f6", "#ef4444", "#84cc16"];
+const SALES_METRICS_STORAGE_KEY = "crm-sales-metrics-v1";
 
 const tierMeta = {
   S: { color: "#d97706", soft: "#fff7e6", score: 35 },
@@ -149,6 +150,7 @@ const state = {
     person: "",
   },
   records: initialRecords.map((record) => ({ ...record })),
+  salesMetrics: null,
   nextId: 21,
 };
 
@@ -278,6 +280,21 @@ function recordLastMonthSales(record) {
   return Math.round((recordSales(record) * factor) / 100) * 100;
 }
 
+function currentMonthKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function formatMetricMonth(month) {
+  const match = String(month || "").match(/^(\d{4})-(\d{2})$/);
+  return match ? `${match[1]}年${Number(match[2])}月` : "当月";
+}
+
+function moneyInputValue(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? Math.round(number) : fallback;
+}
+
 function recordSpecialCount(record) {
   if (record.format !== "专场") return 0;
   return Math.max(1, { S: 5, A: 4, B: 3, C: 2 }[record.tier] - (record.stage === "已流失" ? 2 : 0));
@@ -303,6 +320,44 @@ function enrichedRecords(data = filteredRecords()) {
 
 function sumBy(data, selector) {
   return data.reduce((sum, item) => sum + selector(item), 0);
+}
+
+function defaultSalesMetrics() {
+  const data = enrichedRecords();
+  const currentMonthSales = sumBy(data, (record) => record.sales);
+  const previousMonthSales = sumBy(data, (record) => record.lastMonthSales);
+  return {
+    month: currentMonthKey(),
+    currentMonthSales,
+    previousMonthSales,
+    annualTarget: 6800000,
+    annualCompletedSales: Math.round((currentMonthSales * 6.4) / 100) * 100,
+  };
+}
+
+function normalizeSalesMetrics(metrics = {}, defaults = defaultSalesMetrics()) {
+  return {
+    month: String(metrics.month || defaults.month),
+    currentMonthSales: moneyInputValue(metrics.currentMonthSales, defaults.currentMonthSales),
+    previousMonthSales: moneyInputValue(metrics.previousMonthSales, defaults.previousMonthSales),
+    annualTarget: Math.max(1, moneyInputValue(metrics.annualTarget, defaults.annualTarget)),
+    annualCompletedSales: moneyInputValue(metrics.annualCompletedSales, defaults.annualCompletedSales),
+  };
+}
+
+function loadSalesMetrics() {
+  const defaults = defaultSalesMetrics();
+  try {
+    const saved = JSON.parse(localStorage.getItem(SALES_METRICS_STORAGE_KEY) || "null");
+    return normalizeSalesMetrics(saved || defaults, defaults);
+  } catch {
+    return defaults;
+  }
+}
+
+function getSalesMetrics() {
+  if (!state.salesMetrics) state.salesMetrics = loadSalesMetrics();
+  return state.salesMetrics;
 }
 
 function groupSales(data, key, orderedKeys) {
@@ -441,16 +496,17 @@ function renderKpis() {
 }
 
 function managementKpiCards() {
-  const data = enrichedRecords();
-  const monthlySales = sumBy(data, (record) => record.sales);
-  const lastMonthSales = sumBy(data, (record) => record.lastMonthSales);
-  const annualTarget = 6800000;
-  const yearlySales = monthlySales * 6.4;
+  const metrics = getSalesMetrics();
+  const monthlySales = metrics.currentMonthSales;
+  const lastMonthSales = metrics.previousMonthSales;
+  const annualTarget = metrics.annualTarget;
+  const yearlySales = metrics.annualCompletedSales;
   const progress = yearlySales / annualTarget;
   const mom = lastMonthSales ? (monthlySales - lastMonthSales) / lastMonthSales : 0;
+  const monthLabel = formatMetricMonth(metrics.month);
   return [
-    { label: "当月销售额", value: compactCurrency(monthlySales), sub: "筛选后当月", trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#2563eb", soft: "#eaf2ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#8b5cf6", soft: "#f3edff", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
+    { label: "当月销售额", value: compactCurrency(monthlySales), sub: monthLabel, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#2563eb", soft: "#eaf2ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#8b5cf6", soft: "#f3edff", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
     { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#22c55e", soft: "#eaf8f1", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
     { label: "环比上月", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 上月`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f59e0b" : "#ef4444", soft: mom >= 0 ? "#fff7e6" : "#feecec", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
   ];
@@ -1156,6 +1212,64 @@ function openEditDrawer(recordId) {
   });
 }
 
+function openSalesMetricsDrawer() {
+  const metrics = getSalesMetrics();
+  const mom = metrics.previousMonthSales ? (metrics.currentMonthSales - metrics.previousMonthSales) / metrics.previousMonthSales : 0;
+  const progress = metrics.annualTarget ? metrics.annualCompletedSales / metrics.annualTarget : 0;
+
+  openDrawer({
+    kicker: "销售指标",
+    title: "月度销售额维护",
+    body: `
+      <div class="detail-stack">
+        <div class="detail-block metric-editor-summary">
+          <h4>当前指标预览</h4>
+          <div class="metric-preview-grid">
+            <span>
+              <em>${formatMetricMonth(metrics.month)}</em>
+              <strong>${compactCurrency(metrics.currentMonthSales)}</strong>
+            </span>
+            <span>
+              <em>环比上月</em>
+              <strong class="${mom < 0 ? "negative" : ""}">${signedPercent(mom * 100)}</strong>
+            </span>
+            <span>
+              <em>年度进度</em>
+              <strong>${percent(progress)}</strong>
+            </span>
+          </div>
+        </div>
+        <form class="form-grid two-col metric-form" id="salesMetricsForm">
+          <label class="form-field">
+            <span>月份</span>
+            <input name="month" type="month" value="${escapeHtml(metrics.month)}" required />
+          </label>
+          <label class="form-field">
+            <span>当月销售额（元）</span>
+            <input name="currentMonthSales" type="number" min="0" step="1" value="${metrics.currentMonthSales}" required />
+          </label>
+          <label class="form-field">
+            <span>上月销售额（元）</span>
+            <input name="previousMonthSales" type="number" min="0" step="1" value="${metrics.previousMonthSales}" required />
+          </label>
+          <label class="form-field">
+            <span>全年已完成销售额（元）</span>
+            <input name="annualCompletedSales" type="number" min="0" step="1" value="${metrics.annualCompletedSales}" required />
+          </label>
+          <label class="form-field full">
+            <span>全年销售额目标（元）</span>
+            <input name="annualTarget" type="number" min="1" step="1" value="${metrics.annualTarget}" required />
+          </label>
+          <div class="drawer-actions full">
+            <button class="small-button" type="button" data-reset-sales-metrics>恢复系统测算</button>
+            <button class="primary-button" type="submit">${icon("edit")}保存指标</button>
+          </div>
+        </form>
+      </div>
+    `,
+  });
+}
+
 function selectField(name, label, options, value) {
   return `
     <label class="form-field">
@@ -1194,6 +1308,43 @@ function saveRecord(form) {
   updateTimestamp();
   renderAll();
   openRecordDrawer(nextRecord.id);
+}
+
+function saveSalesMetrics(form) {
+  const data = new FormData(form);
+  const defaults = defaultSalesMetrics();
+  const nextMetrics = normalizeSalesMetrics({
+    month: data.get("month"),
+    currentMonthSales: data.get("currentMonthSales"),
+    previousMonthSales: data.get("previousMonthSales"),
+    annualTarget: data.get("annualTarget"),
+    annualCompletedSales: data.get("annualCompletedSales"),
+  }, defaults);
+
+  state.salesMetrics = nextMetrics;
+  try {
+    localStorage.setItem(SALES_METRICS_STORAGE_KEY, JSON.stringify(nextMetrics));
+  } catch {
+    // localStorage can be unavailable in restrictive browser modes; keep in-memory edits.
+  }
+
+  updateTimestamp();
+  renderAll();
+  closeDrawer();
+  showToast("销售指标已更新");
+}
+
+function resetSalesMetrics() {
+  state.salesMetrics = defaultSalesMetrics();
+  try {
+    localStorage.removeItem(SALES_METRICS_STORAGE_KEY);
+  } catch {
+    // Ignore storage failures and keep the reset value in memory.
+  }
+  updateTimestamp();
+  renderAll();
+  openSalesMetricsDrawer();
+  showToast("已恢复系统测算");
 }
 
 function moveRecord(recordId, targetStage) {
@@ -1304,6 +1455,12 @@ function bindEvents() {
     const moveRecordButton = event.target.closest("[data-move-record]");
     if (moveRecordButton) {
       moveRecord(moveRecordButton.dataset.moveRecord, moveRecordButton.dataset.targetStage);
+      return;
+    }
+
+    const resetSalesButton = event.target.closest("[data-reset-sales-metrics]");
+    if (resetSalesButton) {
+      resetSalesMetrics();
     }
   });
 
@@ -1321,7 +1478,7 @@ function bindEvents() {
 
   els.resetFiltersBtn.addEventListener("click", resetFilters);
   els.exportBtn.addEventListener("click", exportCsv);
-  els.addRecordBtn.addEventListener("click", () => openEditDrawer());
+  els.addRecordBtn.addEventListener("click", openSalesMetricsDrawer);
   els.drawerCloseBtn.addEventListener("click", closeDrawer);
   els.drawerBackdrop.addEventListener("click", closeDrawer);
 
@@ -1329,6 +1486,9 @@ function bindEvents() {
     if (event.target.id === "recordForm") {
       event.preventDefault();
       saveRecord(event.target);
+    } else if (event.target.id === "salesMetricsForm") {
+      event.preventDefault();
+      saveSalesMetrics(event.target);
     }
   });
 

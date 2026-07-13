@@ -1840,7 +1840,8 @@ svg {
 }
 
 .form-field.full,
-.primary-button.full {
+.primary-button.full,
+.drawer-actions.full {
   grid-column: 1 / -1;
 }
 
@@ -1865,6 +1866,47 @@ svg {
 .form-field textarea {
   min-height: 92px;
   resize: vertical;
+}
+
+.metric-editor-summary {
+  background: #f8fbff;
+}
+
+.metric-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric-preview-grid span {
+  min-width: 0;
+  border-radius: 14px;
+  padding: 12px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #edf2f8;
+}
+
+.metric-preview-grid em,
+.metric-preview-grid strong {
+  display: block;
+}
+
+.metric-preview-grid em {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.metric-preview-grid strong {
+  margin-top: 6px;
+  color: var(--color-primary);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-preview-grid strong.negative {
+  color: var(--color-danger);
 }
 
 .toast {
@@ -2057,6 +2099,10 @@ svg {
 }
 
 @media (max-width: 520px) {
+  .metric-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
   .ranking-row {
     grid-template-columns: 24px 34px minmax(0, 1fr) 34px;
   }
