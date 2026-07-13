@@ -665,6 +665,10 @@ svg {
   grid-template-columns: 26px 38px minmax(130px, 1fr) minmax(108px, 0.82fr) 84px 58px;
 }
 
+.order-row {
+  grid-template-columns: 26px 38px minmax(150px, 1fr) 76px 86px;
+}
+
 .person-rank-row:hover,
 .talent-sales-row:hover {
   background: #f8fbff;
@@ -685,6 +689,19 @@ svg {
 
 .rank-growth.negative {
   color: var(--color-danger);
+}
+
+.order-status {
+  justify-self: start;
+  min-width: 58px;
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--order-color);
+  background: var(--order-soft);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .personal-shell {
@@ -2091,9 +2108,17 @@ svg {
     grid-template-columns: 24px 34px minmax(0, 1fr) 74px;
   }
 
+  .order-row {
+    grid-template-columns: 24px 34px minmax(0, 1fr) 76px;
+  }
+
   .person-rank-row .rank-meter,
   .person-rank-row .rank-growth,
   .talent-sales-row .rank-meter {
+    display: none;
+  }
+
+  .order-row .order-status {
     display: none;
   }
 }

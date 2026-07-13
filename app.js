@@ -99,6 +99,13 @@ const formatIconMap = {
   短视频挂车: "play",
   IP小号: "users",
 };
+const orderStatusMeta = [
+  { label: "已支付", color: "#2563eb", soft: "#eaf2ff" },
+  { label: "待发货", color: "#f59e0b", soft: "#fff7e6" },
+  { label: "已发货", color: "#8b5cf6", soft: "#f3edff" },
+  { label: "已完成", color: "#22c55e", soft: "#eaf8f1" },
+];
+const orderChannels = ["专场成交", "混播成交", "短视频挂车", "私域复购"];
 
 const productSalesBase = {
   定妆喷雾: 82000,
@@ -715,7 +722,7 @@ function renderPersonalDashboard() {
   renderSalesBars(els.personalProductSales, productRows);
   renderSalesDonut(els.personalTierSales, tierRows, "Personal Sales");
   renderSalesBars(els.personalStageSales, stageRows, { showPercent: true });
-  renderTalentSalesRank(els.personalTalentRank, data.slice().sort((a, b) => b.sales - a.sales), "sales");
+  renderTalentOrders(els.personalTalentRank, personalTalentOrders(data, person));
 }
 
 function renderTalentSalesRank(container, data, metric = "sales") {
@@ -738,6 +745,52 @@ function renderTalentSalesRank(container, data, metric = "sales") {
       </button>
     `;
   }).join("") : `<div class="empty-state">暂无匹配达人</div>`;
+}
+
+function personalTalentOrders(data, person) {
+  const allRecords = enrichedRecords(state.records);
+  const sourceRecords = data.length
+    ? data
+    : allRecords.filter((record) => record.person === person);
+  const personRecords = sourceRecords.length ? sourceRecords : allRecords.slice(0, 4);
+  if (!personRecords.length) return [];
+
+  return Array.from({ length: 20 }, (_, index) => {
+    const record = personRecords[index % personRecords.length];
+    const status = orderStatusMeta[index % orderStatusMeta.length];
+    const amountFactor = 0.075 + ((index % 6) * 0.012) + ((index % 3) * 0.006);
+    const day = String(Math.max(1, 13 - (index % 13))).padStart(2, "0");
+    return {
+      id: `ORD-202607-${String(index + 1).padStart(3, "0")}`,
+      recordId: record.id,
+      talent: record.name,
+      product: record.product,
+      format: record.format,
+      date: `07/${day}`,
+      channel: orderChannels[index % orderChannels.length],
+      amount: Math.max(1800, Math.round(record.sales * amountFactor)),
+      status,
+    };
+  });
+}
+
+function renderTalentOrders(container, orders) {
+  if (!container) return;
+  container.innerHTML = orders.length ? orders.map((order, index) => {
+    const formatColor = chartPalette[index % chartPalette.length];
+    return `
+      <button class="talent-sales-row order-row" type="button" data-record-detail="${order.recordId}">
+        <span class="rank-number">${index + 1}</span>
+        <span class="rank-avatar" style="--tier-color:${formatColor}; --tier-soft:#f4f7ff">${icon(formatIcon(order.format))}</span>
+        <span class="rank-info">
+          <strong>${escapeHtml(order.id)} · ${escapeHtml(order.talent)}</strong>
+          <em>${escapeHtml(order.date)} · ${escapeHtml(order.product)} · ${escapeHtml(order.channel)}</em>
+        </span>
+        <span class="order-status" style="--order-color:${order.status.color}; --order-soft:${order.status.soft}">${escapeHtml(order.status.label)}</span>
+        <b>${compactCurrency(order.amount)}</b>
+      </button>
+    `;
+  }).join("") : `<div class="empty-state">暂无订单数据</div>`;
 }
 
 function renderTypeDonut() {
