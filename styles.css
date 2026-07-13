@@ -1517,6 +1517,260 @@ svg {
   line-height: 1.45;
 }
 
+.sales-explorer {
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.sales-explorer-toolbar {
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dimension-switch,
+.period-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dimension-switch span,
+.period-control span {
+  color: #40516c;
+  font-weight: 850;
+}
+
+.dimension-switch button,
+.sales-product-tabs button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 9px;
+  padding: 0 18px;
+  background: transparent;
+  color: #273650;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.dimension-switch button.active,
+.sales-product-tabs button.active {
+  background: #ff7a1a;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(255, 122, 26, 0.2);
+}
+
+.dimension-switch button:active,
+.sales-product-tabs button:active {
+  transform: scale(0.98);
+}
+
+.period-control strong {
+  min-width: 160px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: #ffffff;
+  color: #101936;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.period-chev {
+  color: #97a4b7;
+  font-size: 22px;
+}
+
+.sales-product-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sales-product-tabs button {
+  flex: 0 0 auto;
+  background: #f8fbff;
+}
+
+.sales-view-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px 20px 20px;
+}
+
+.sales-section-head,
+.sales-card-head,
+.team-card-head,
+.annual-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.sales-section-head h3,
+.sales-card-head h3,
+.team-card-head h3,
+.annual-head h3 {
+  margin: 2px 0 0;
+  color: #101936;
+  font-size: 20px;
+}
+
+.sales-section-head > strong,
+.annual-head > strong {
+  color: #ff7a1a;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sales-group-list,
+.team-sales-list,
+.annual-progress-list {
+  display: grid;
+  gap: 12px;
+}
+
+.sales-group-list,
+.team-sales-list {
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.sales-group-card,
+.team-sales-card,
+.annual-sales-card {
+  border: 1px solid #e5ecf8;
+  border: 1px solid color-mix(in srgb, var(--accent, #ff7a1a) 22%, #e5ecf8);
+  border-radius: 14px;
+  padding: 18px;
+  background: #ffffff;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft, #fff7ed) 62%, #ffffff) 0%, #ffffff 100%);
+}
+
+.sales-card-head span,
+.team-card-head span {
+  color: var(--color-muted);
+  font-weight: 800;
+}
+
+.sales-metric-row,
+.team-metric-grid,
+.annual-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.annual-summary {
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+}
+
+.sales-metric-row div,
+.team-metric-grid div,
+.annual-summary div {
+  min-width: 0;
+}
+
+.sales-metric-row span,
+.team-metric-grid span,
+.annual-summary span,
+.sales-progress-line span {
+  display: block;
+  color: #66758e;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.sales-metric-row strong,
+.team-metric-grid strong,
+.annual-summary strong {
+  display: block;
+  margin-top: 6px;
+  color: #101936;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sales-metric-row strong.hot {
+  color: #ef233c;
+}
+
+.team-metric-grid strong.green,
+.annual-summary strong.green {
+  color: #22c55e;
+}
+
+.team-metric-grid strong.blue,
+.annual-summary strong.blue {
+  color: #3b82f6;
+}
+
+.sales-progress-line {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.sales-progress-track {
+  height: 11px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf2fb;
+}
+
+.sales-progress-track i {
+  width: var(--progress, 0%);
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--progress-color, #ff7a1a), #ffb36d);
+}
+
+.sales-progress-line em,
+.annual-row em {
+  color: #66758e;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.annual-sales-card {
+  --accent: #3b82f6;
+  --accent-soft: #edf5ff;
+}
+
+.annual-progress-list {
+  margin-top: 16px;
+}
+
+.annual-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) minmax(170px, auto);
+  align-items: center;
+  gap: 14px;
+}
+
+.annual-row > span {
+  color: var(--accent);
+  font-weight: 950;
+}
+
 .insight-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
@@ -1976,6 +2230,17 @@ svg {
   .report-strip {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
   }
+
+  .sales-explorer-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .sales-metric-row,
+  .team-metric-grid,
+  .annual-summary {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
 }
 
 @media (max-width: 1040px) {
@@ -2040,7 +2305,27 @@ svg {
   .dashboard-grid,
   .report-strip,
   .format-grid,
-  .quick-filters {
+  .quick-filters,
+  .sales-metric-row,
+  .team-metric-grid,
+  .annual-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .dimension-switch {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .dimension-switch button,
+  .period-control,
+  .period-control strong {
+    width: 100%;
+  }
+
+  .sales-progress-line,
+  .annual-row {
     grid-template-columns: 1fr;
   }
 
