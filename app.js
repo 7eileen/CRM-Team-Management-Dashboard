@@ -528,20 +528,23 @@ function renderKpis() {
   const cards = state.view === "personal" ? personalKpiCards() : managementKpiCards();
   els.kpiGrid.classList.toggle("management-kpis", state.view !== "personal");
   els.kpiGrid.classList.toggle("personal-kpis", state.view === "personal");
-  els.kpiGrid.innerHTML = cards.map((card) => `
-    <article class="kpi-card" style="--metric-color:${card.color}; --metric-soft:${card.soft}">
-      <div class="metric-icon">${icon(card.icon)}</div>
-      <div class="metric-body">
-        <span>${card.label}</span>
-        <strong>${card.value}</strong>
-        <div class="metric-trend ${card.trendValue < 0 ? "down" : ""}">
-          ${icon(card.trendValue < 0 ? "arrow-right" : "arrow-up")} ${card.trend}
-          <span class="vs">${card.sub}</span>
+  els.kpiGrid.innerHTML = cards.map((card) => {
+    const hasTrend = Boolean(card.trend);
+    return `
+      <article class="kpi-card" style="--metric-color:${card.color}; --metric-soft:${card.soft}">
+        <div class="metric-icon">${icon(card.icon)}</div>
+        <div class="metric-body">
+          <span>${card.label}</span>
+          <strong>${card.value}</strong>
+          <div class="metric-trend ${hasTrend && card.trendValue < 0 ? "down" : ""} ${hasTrend ? "" : "no-label"}">
+            ${hasTrend ? `${icon(card.trendValue < 0 ? "arrow-right" : "arrow-up")} ${card.trend}` : ""}
+            <span class="vs">${card.sub}</span>
+          </div>
         </div>
-      </div>
-      ${sparkline(card.path)}
-    </article>
-  `).join("");
+        ${sparkline(card.path)}
+      </article>
+    `;
+  }).join("");
 }
 
 function managementKpiCards() {
@@ -573,11 +576,11 @@ function personalKpiCards() {
   const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
   return [
     { label: "当月销售额", value: compactCurrency(row.sales), sub: `${row.person} 当月`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#2563eb", soft: "#eaf2ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: "当月销售额排名", value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: rank === 1 ? "领先" : "追赶", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#f59e0b", soft: "#fff7e6", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
-    { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: rank === 1 ? "Top 1" : "差距", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#8b5cf6", soft: "#f3edff", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
-    { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "专场", trendValue: row.specialCount, icon: "calendar", color: "#14b8a6", soft: "#e8fbf8", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
-    { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: specialGap ? "待追赶" : "Top", trendValue: specialGap ? -1 : 1, icon: "file", color: "#ec4899", soft: "#fdf2f8", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
-    { label: "环比上月", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 上月`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#22c55e" : "#ef4444", soft: mom >= 0 ? "#eaf8f1" : "#feecec", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
+    { label: "当月销售额排名", value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#f59e0b", soft: "#fff7e6", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
+    { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#8b5cf6", soft: "#f3edff", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
+    { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#14b8a6", soft: "#e8fbf8", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
+    { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#ec4899", soft: "#fdf2f8", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
+    { label: "环比上月", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 上月`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#22c55e" : "#ef4444", soft: mom >= 0 ? "#eaf8f1" : "#feecec", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
   ];
 }
 

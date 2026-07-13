@@ -497,6 +497,10 @@ svg {
   white-space: nowrap;
 }
 
+.metric-trend.no-label .vs {
+  margin-left: 0;
+}
+
 .metric-trend.down {
   color: var(--color-danger);
 }
