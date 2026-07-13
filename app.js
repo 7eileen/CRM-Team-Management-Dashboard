@@ -771,30 +771,64 @@ function recordNameCell(record) {
 }
 
 function renderLegend() {
-  els.tierLegend.innerHTML = TIERS.map((tier) => `
-    <span class="legend-item">
-      <span class="legend-dot" style="--tier-color:${tierMeta[tier].color}"></span>
-      ${tier}级
-    </span>
-  `).join("");
+  els.tierLegend.innerHTML = `
+    <span class="legend-item"><span class="legend-dot status-waiting"></span>待跟进</span>
+    <span class="legend-item"><span class="legend-dot status-missed"></span>未跟进</span>
+  `;
 }
 
 function renderKanban() {
   const data = filteredRecords();
-  els.kanbanColumns.innerHTML = STAGES.map((stage) => {
-    const stageRecords = data.filter((record) => record.stage === stage.label);
-    return `
-      <section class="kanban-col" data-drop-stage="${escapeHtml(stage.label)}">
-        <div class="kanban-col-head" style="--stage-color:${stage.color}">
-          <div class="kanban-title">${icon(stage.icon)}<span>${stage.label}</span></div>
-          <span class="count-pill">${stageRecords.length}</span>
+  const groups = followStatusGroups(data);
+  els.kanbanColumns.innerHTML = `
+    <div class="follow-status-flow" role="list" aria-label="达人跟进状态">
+      ${groups.map((group, index) => renderFollowStatusCard(group, index < groups.length - 1)).join("")}
+    </div>
+  `;
+}
+
+function followStatusGroups(data) {
+  const byStages = (labels) => data.filter((record) => labels.includes(record.stage));
+  const deepPartners = data.filter((record) => record.stage === "已签约" && (record.tier === "S" || record.format === "专场"));
+  return [
+    { label: "公海达人", records: data, color: "#f97316", soft: "#fff7ed", primary: true },
+    { label: "待建联", records: byStages(["待触达"]), color: "#64748b", soft: "#f8fafc" },
+    { label: "建联中", records: byStages(["已触达", "沟通中"]), color: "#2563eb", soft: "#eff6ff" },
+    { label: "已寄样", records: byStages(["已寄样"]), color: "#8b5cf6", soft: "#f5f3ff" },
+    { label: "待排期", records: byStages(["试播中", "洽谈排期"]), color: "#f59e0b", soft: "#fffbeb" },
+    { label: "已合作", records: byStages(["已签约"]), color: "#22c55e", soft: "#f0fdf4" },
+    { label: "深度合作", records: deepPartners, color: "#0f766e", soft: "#ecfdf5" },
+  ].map((group) => {
+    const active = group.records.filter((record) => record.stage !== "已签约" && record.stage !== "已流失");
+    const waiting = group.primary ? active.length : group.records.filter((record) => record.bottleneck || record.stage !== "已签约").length;
+    const missed = group.primary
+      ? group.records.filter((record) => record.stage === "待触达").length
+      : group.records.filter((record) => !record.bottleneck && record.stage !== "已签约").length;
+    return {
+      ...group,
+      total: group.records.length,
+      waiting,
+      missed,
+      badge: group.primary ? 0 : group.records.filter((record) => record.bottleneck).length,
+    };
+  });
+}
+
+function renderFollowStatusCard(group, hasArrow) {
+  return `
+    <div class="follow-status-step" role="listitem">
+      <article class="follow-status-card ${group.primary ? "is-primary" : ""}" style="--status-color:${group.color}; --status-soft:${group.soft}">
+        ${group.badge ? `<span class="follow-status-badge">${group.badge}</span>` : ""}
+        <span class="follow-status-title">${escapeHtml(group.label)}</span>
+        <strong>${group.total.toLocaleString("zh-CN")}</strong>
+        <div class="follow-status-meta">
+          <span>待跟进 <b>${group.waiting ? group.waiting.toLocaleString("zh-CN") : "-"}</b></span>
+          <span>未跟进 <b>${group.missed ? group.missed.toLocaleString("zh-CN") : "-"}</b></span>
         </div>
-        <div class="kanban-stack">
-          ${stageRecords.length ? stageRecords.map(renderTalentCard).join("") : `<div class="empty-state">暂无达人</div>`}
-        </div>
-      </section>
-    `;
-  }).join("");
+      </article>
+      ${hasArrow ? `<span class="follow-status-arrow" aria-hidden="true"></span>` : ""}
+    </div>
+  `;
 }
 
 function renderTalentCard(record) {
