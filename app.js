@@ -548,7 +548,7 @@ function renderManagementDashboard() {
   renderSalesDonut(els.managementTierSales, tierRows, "SABC Sales");
   renderSalesBars(els.managementStageSales, stageRows, { showPercent: true });
   renderManagementPersonRank(data);
-  renderTalentSalesRank(els.managementTalentRank, data.slice().sort((a, b) => b.sales - a.sales).slice(0, 6), "sales");
+  renderTalentSalesRank(els.managementTalentRank, data.slice().sort((a, b) => b.sales - a.sales), "sales");
   if (els.dashboardTableCount) {
     els.dashboardTableCount.textContent = `${PERSONS.length} 位商务`;
   }
@@ -687,8 +687,7 @@ function talentScore(record) {
 function renderTopTalents() {
   const topTalents = filteredRecords()
     .map((record) => ({ ...record, score: talentScore(record) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+    .sort((a, b) => b.score - a.score);
   const max = topTalents[0]?.score || 1;
 
   els.topTalentBars.innerHTML = topTalents.length ? topTalents.map((record, index) => {
@@ -787,7 +786,7 @@ function renderFormatContribution() {
 
 function renderDashboardTable() {
   const data = filteredRecords();
-  const rows = data.slice(0, 8);
+  const rows = data;
   els.dashboardTableCount.textContent = `Showing ${rows.length} of ${data.length}`;
   els.dashboardTableBody.innerHTML = rows.length ? rows.map(renderDashboardRow).join("") : `<tr><td colspan="8"><div class="empty-state">暂无匹配记录</div></td></tr>`;
 }
@@ -876,7 +875,7 @@ function renderTalentCard(record) {
 }
 
 function renderBottlenecks() {
-  const items = filteredRecords().filter((record) => record.bottleneck).slice(0, 5);
+  const items = filteredRecords().filter((record) => record.bottleneck);
   els.bottleneckList.innerHTML = items.length ? items.map((record) => {
     const stage = stageMeta(record.stage);
     return `

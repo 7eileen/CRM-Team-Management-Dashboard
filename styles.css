@@ -19,6 +19,15 @@
   --shadow-soft: 0 5px 14px rgba(15, 34, 64, 0.06);
   --radius: 8px;
   --sidebar-width: 222px;
+  --rank-list-max-height: 646px;
+  --ranking-list-max-height: 606px;
+  --owner-list-max-height: 880px;
+  --bottleneck-list-max-height: 1000px;
+  --sales-list-max-height: 440px;
+  --compact-sales-list-max-height: 412px;
+  --table-list-max-height: 636px;
+  --kanban-list-max-height: 1380px;
+  --management-list-panel-height: 710px;
   color-scheme: light;
   font-family: Inter, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
 }
@@ -2550,20 +2559,20 @@ body::before {
 }
 
 .dashboard-grid {
-  --management-panel-height: clamp(460px, calc(100vh - 336px), 640px);
-  align-items: start;
+  --management-panel-height: var(--management-list-panel-height);
+  align-items: stretch;
 }
 
 .panel-table {
-  height: var(--management-panel-height);
-  min-height: 0;
+  min-height: var(--management-panel-height);
   display: flex;
   flex-direction: column;
 }
 
 .panel-table .person-rank-list {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
+  max-height: var(--rank-list-max-height);
   align-content: start;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -2571,18 +2580,77 @@ body::before {
 }
 
 .dashboard-rail {
-  height: var(--management-panel-height);
+  height: auto;
   min-height: 0;
   align-content: start;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+  overflow: visible;
 }
 
-.panel-table .person-rank-list,
-.dashboard-rail {
+.person-rank-list,
+.talent-sales-list,
+.ranking-list,
+.bottleneck-list,
+.owner-list,
+.sales-bars,
+.legend-list,
+.status-list,
+.contribution-list,
+.table-wrap,
+.kanban-stack {
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: #b8c7df transparent;
+}
+
+.person-rank-list,
+.talent-sales-list {
+  max-height: var(--rank-list-max-height);
+  overflow-y: auto;
+}
+
+.ranking-list {
+  max-height: var(--ranking-list-max-height);
+  overflow-y: auto;
+}
+
+.bottleneck-list {
+  max-height: var(--bottleneck-list-max-height);
+  overflow-y: auto;
+}
+
+.owner-list {
+  max-height: var(--owner-list-max-height);
+}
+
+.sales-bars {
+  max-height: var(--sales-list-max-height);
+  overflow-y: auto;
+}
+
+.legend-list,
+.status-list,
+.contribution-list {
+  max-height: var(--sales-list-max-height);
+  overflow-y: auto;
+}
+
+.compact-bars {
+  max-height: var(--compact-sales-list-max-height);
+}
+
+.kanban-stack {
+  max-height: var(--kanban-list-max-height);
+}
+
+.table-wrap {
+  max-height: var(--table-list-max-height);
+}
+
+.table-wrap .record-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .rank-avatar,
