@@ -9,6 +9,16 @@ const STAGES = [
   { id: "lost", label: "已流失", color: "#ef4444", soft: "#feecec", icon: "ban" },
 ];
 
+const PIPELINE_STAGES = [
+  { id: "pool", label: "公海达人", sourceStages: ["待触达"], color: "#f97316", soft: "#fff7ed", icon: "target" },
+  { id: "waiting-connect", label: "待建联", sourceStages: ["已触达"], color: "#64748b", soft: "#f8fafc", icon: "user-check" },
+  { id: "connecting", label: "建联中", sourceStages: ["沟通中"], color: "#2563eb", soft: "#eaf2ff", icon: "handshake" },
+  { id: "sampled", label: "已寄样", sourceStages: ["已寄样"], color: "#8b5cf6", soft: "#f3edff", icon: "truck" },
+  { id: "scheduling", label: "待排期", sourceStages: ["试播中", "洽谈排期"], color: "#f59e0b", soft: "#fff7e6", icon: "calendar" },
+  { id: "partnered", label: "已合作", color: "#22c55e", soft: "#eaf8f1", icon: "star", predicate: (record) => record.stage === "已签约" && !isDeepPartner(record) },
+  { id: "deep-partnered", label: "深度合作", color: "#0f766e", soft: "#ecfdf5", icon: "star", predicate: isDeepPartner },
+];
+
 const PRODUCTS = ["定妆喷雾", "气垫pro", "防晒素颜霜", "防晒喷雾"];
 const GROUPS = ["A", "B", "C"];
 const FORMATS = ["专场", "混播", "单品直播间", "短视频挂车", "IP小号"];
@@ -188,6 +198,15 @@ function stageMeta(label) {
 
 function stageIndex(label) {
   return STAGES.findIndex((stage) => stage.label === label);
+}
+
+function isDeepPartner(record) {
+  return record.stage === "已签约" && (record.tier === "S" || record.format === "专场");
+}
+
+function pipelineStageRecords(data, stage) {
+  if (typeof stage.predicate === "function") return data.filter(stage.predicate);
+  return data.filter((record) => stage.sourceStages.includes(record.stage));
 }
 
 function typeIcon(type) {
@@ -781,8 +800,8 @@ function renderLegend() {
 
 function renderKanban() {
   const data = filteredRecords();
-  els.kanbanColumns.innerHTML = STAGES.map((stage) => {
-    const stageRecords = data.filter((record) => record.stage === stage.label);
+  els.kanbanColumns.innerHTML = PIPELINE_STAGES.map((stage) => {
+    const stageRecords = pipelineStageRecords(data, stage);
     return `
       <section class="kanban-col" data-drop-stage="${escapeHtml(stage.label)}">
         <div class="kanban-col-head" style="--stage-color:${stage.color}">
