@@ -81,6 +81,13 @@ const tierMeta = {
   C: { color: "#94a3b8", soft: "#f8fafc", score: 14 },
 };
 
+const tierChartMeta = {
+  S: { color: "#2f6bff" },
+  A: { color: "#8b6cff" },
+  B: { color: "#5edfc0" },
+  C: { color: "#d6deea" },
+};
+
 const typeIconMap = {
   美垂: "star",
   生活分享: "home",
@@ -503,18 +510,25 @@ function countBy(data, key) {
   }, {});
 }
 
-function conicGradient(items, total) {
+function conicGradient(items, total, gapDegrees = 0, gapColor = "#ffffff") {
   if (!total) return "#e8eef8 0deg 360deg";
+  const visibleItems = items.filter((item) => item.count > 0);
+  const gap = visibleItems.length > 1 ? gapDegrees : 0;
+  const drawableDegrees = Math.max(0, 360 - (visibleItems.length * gap));
   let cursor = 0;
-  return items
-    .filter((item) => item.count > 0)
-    .map((item) => {
-      const start = cursor;
-      const end = cursor + (item.count / total) * 360;
-      cursor = end;
-      return `${item.color} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`;
-    })
-    .join(", ");
+  const segments = [];
+
+  visibleItems.forEach((item) => {
+    const start = cursor;
+    const end = cursor + (item.count / total) * drawableDegrees;
+    segments.push(`${item.color} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`);
+    if (gap) {
+      segments.push(`${gapColor} ${end.toFixed(2)}deg ${(end + gap).toFixed(2)}deg`);
+    }
+    cursor = end + gap;
+  });
+
+  return segments.join(", ");
 }
 
 function sparkline(path = "M2 34 C12 23 17 31 25 20 C33 9 38 25 47 15 C56 5 61 20 70 7") {
@@ -611,7 +625,7 @@ function renderSalesDonut(container, rows, centerLabel) {
     color: row.color || chartPalette[index % chartPalette.length],
     icon: row.icon,
   }));
-  const gradient = conicGradient(items, total);
+  const gradient = conicGradient(items, total, 4);
   container.innerHTML = `
     <div class="donut-layout sales-donut-layout">
       <div class="donut-chart">
@@ -644,7 +658,7 @@ function renderManagementDashboard() {
   const productRows = groupSales(data, "product", PRODUCTS).map((row, index) => ({ ...row, icon: "package", color: chartPalette[index] }));
   const typeRows = groupSales(data, "type", TYPES).map((row, index) => ({ ...row, icon: typeIcon(row.label), color: chartPalette[index] }));
   const teamRows = groupSales(data, "group", GROUPS).map((row, index) => ({ label: row.label, value: row.value, icon: "users", color: chartPalette[(index + 2) % chartPalette.length] }));
-  const tierRows = groupSales(data, "tier", TIERS).map((row) => ({ ...row, label: `${row.label}级`, icon: "star", color: tierMeta[row.label]?.color }));
+  const tierRows = groupSales(data, "tier", TIERS).map((row) => ({ ...row, label: `${row.label}级`, icon: "star", color: tierChartMeta[row.label]?.color || tierMeta[row.label]?.color }));
   const stageRows = displayStageRows(data, (record) => record.sales);
 
   renderSalesBars(els.managementProductSales, productRows);
@@ -688,7 +702,7 @@ function renderPersonalDashboard() {
   const data = recordsForPerson(person);
 
   const productRows = groupSales(data, "product", PRODUCTS).map((item, index) => ({ ...item, icon: "package", color: chartPalette[index] }));
-  const tierRows = groupSales(data, "tier", TIERS).map((item) => ({ ...item, label: `${item.label}级`, icon: "star", color: tierMeta[item.label]?.color }));
+  const tierRows = groupSales(data, "tier", TIERS).map((item) => ({ ...item, label: `${item.label}级`, icon: "star", color: tierChartMeta[item.label]?.color || tierMeta[item.label]?.color }));
   const stageRows = displayStageRows(data, (record) => record.sales);
 
   renderSalesBars(els.personalProductSales, productRows);
