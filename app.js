@@ -1,6 +1,5 @@
 const PIPELINE_STAGES = [
-  { id: "pool", label: "公海达人", sourceStages: ["待触达", "已流失"], color: "#f97316", soft: "#fff7ed", icon: "target" },
-  { id: "waiting-connect", label: "待建联", sourceStages: ["已触达"], color: "#64748b", soft: "#f8fafc", icon: "user-check" },
+  { id: "waiting-connect", label: "待建联", sourceStages: ["待触达", "已触达", "已流失", "公海达人"], color: "#64748b", soft: "#f8fafc", icon: "user-check" },
   { id: "connecting", label: "建联中", sourceStages: ["沟通中"], color: "#2563eb", soft: "#eaf2ff", icon: "handshake" },
   { id: "sampled", label: "已寄样", sourceStages: ["已寄样"], color: "#8b5cf6", soft: "#f3edff", icon: "truck" },
   { id: "scheduling", label: "待排期", sourceStages: ["试播中", "洽谈排期"], color: "#f59e0b", soft: "#fff7e6", icon: "calendar" },
@@ -8,15 +7,15 @@ const PIPELINE_STAGES = [
   { id: "deep-partnered", label: "深度合作", color: "#0f766e", soft: "#ecfdf5", icon: "star", predicate: isDeepPartner },
 ];
 const DISPLAY_STAGE_SOURCE_FALLBACK = {
-  待触达: "公海达人",
+  待触达: "待建联",
   已触达: "待建联",
   沟通中: "建联中",
   已寄样: "已寄样",
   试播中: "待排期",
   洽谈排期: "待排期",
   已签约: "已合作",
-  已流失: "公海达人",
-  公海达人: "公海达人",
+  已流失: "待建联",
+  公海达人: "待建联",
   待建联: "待建联",
   建联中: "建联中",
   待排期: "待排期",
@@ -24,7 +23,6 @@ const DISPLAY_STAGE_SOURCE_FALLBACK = {
   深度合作: "深度合作",
 };
 const DISPLAY_STAGE_TO_SOURCE = {
-  公海达人: "待触达",
   待建联: "已触达",
   建联中: "沟通中",
   已寄样: "已寄样",
@@ -1219,7 +1217,7 @@ function openRecordDrawer(recordId) {
 function openEditDrawer(recordId) {
   const record = recordId
     ? state.records.find((item) => item.id === Number(recordId))
-    : { id: "", name: "", tier: "A", type: "美垂", product: "定妆喷雾", group: BUSINESS_PEOPLE[0].group, format: "专场", stage: "公海达人", person: BUSINESS_PEOPLE[0].name, bottleneck: "" };
+    : { id: "", name: "", tier: "A", type: "美垂", product: "定妆喷雾", group: BUSINESS_PEOPLE[0].group, format: "专场", stage: "待建联", person: BUSINESS_PEOPLE[0].name, bottleneck: "" };
   if (!record) return;
   const selectedStage = displayStageLabelForRecord(record);
 
