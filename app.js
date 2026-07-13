@@ -195,6 +195,7 @@ const state = {
   salesMetrics: null,
   salesViewMode: "product",
   salesViewProduct: PRODUCTS[0],
+  managementTeam: "",
   nextId: 21,
 };
 
@@ -215,6 +216,8 @@ const els = {
   managementProductSales: document.getElementById("managementProductSales"),
   managementTypeSales: document.getElementById("managementTypeSales"),
   managementTeamSales: document.getElementById("managementTeamSales"),
+  managementTeamDetail: document.getElementById("managementTeamDetail"),
+  managementTeamPeriod: document.getElementById("managementTeamPeriod"),
   managementPersonRank: document.getElementById("managementPersonRank"),
   managementTierSales: document.getElementById("managementTierSales"),
   managementStageSales: document.getElementById("managementStageSales"),
@@ -674,6 +677,183 @@ function renderSalesDonut(container, rows, centerLabel) {
   `;
 }
 
+function teamSalesDetailRows(data) {
+  const rows = SALES_TEAM_META.map((team, teamIndex) => {
+    const records = data.filter((record) => teamLabelForGroup(record.group) === team.label);
+    const sales = sumBy(records, (record) => record.sales);
+    const lastMonthSales = sumBy(records, (record) => record.lastMonthSales);
+    const targetMultiplier = [1.1, 1.18, 1.14][teamIndex % 3];
+    const target = computedSalesTarget(sales, targetMultiplier);
+    const sprintTarget = computedSalesTarget(sales, targetMultiplier + 0.16);
+    const signedCount = records.filter((record) => ["已合作", "深度合作"].includes(displayStageLabelForRecord(record))).length;
+    const bottleneckCount = records.filter((record) => record.bottleneck).length;
+    const personSet = new Set(records.map((record) => record.person));
+    const groupRows = GROUPS.filter((group) => teamLabelForGroup(group) === team.label).map((group, groupIndex) => {
+      const groupRecords = records.filter((record) => record.group === group);
+      const groupSales = sumBy(groupRecords, (record) => record.sales);
+      return {
+        label: group,
+        sales: groupSales,
+        target: computedSalesTarget(groupSales, 1.1 + ((teamIndex + groupIndex) % 3) * 0.05),
+        talentCount: groupRecords.length,
+        personCount: new Set(groupRecords.map((record) => record.person)).size,
+        color: chartPalette[(teamIndex + groupIndex + 2) % chartPalette.length],
+        icon: "users",
+      };
+    }).filter((row) => row.sales > 0 || row.talentCount > 0);
+    const personRows = PERSONS.map((person) => {
+      const personRecords = records.filter((record) => record.person === person);
+      return {
+        label: person,
+        sales: sumBy(personRecords, (record) => record.sales),
+        talentCount: personRecords.length,
+        specialCount: sumBy(personRecords, (record) => record.specialCount),
+        icon: "user-check",
+      };
+    }).filter((row) => row.sales > 0).sort((a, b) => b.sales - a.sales);
+    const productRows = groupSales(records, "product", PRODUCTS)
+      .filter((row) => row.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .map((row, index) => ({ ...row, sales: row.value, color: chartPalette[index % chartPalette.length], icon: "package" }));
+    const stageRows = displayStageRows(records).filter((row) => row.value > 0);
+
+    return {
+      ...team,
+      records,
+      sales,
+      lastMonthSales,
+      target,
+      sprintTarget,
+      completion: completionPercent(sales, target),
+      mom: lastMonthSales ? (sales - lastMonthSales) / lastMonthSales : 0,
+      signedCount,
+      bottleneckCount,
+      personCount: personSet.size,
+      conversion: records.length ? signedCount / records.length : 0,
+      groupRows,
+      personRows,
+      productRows,
+      stageRows,
+    };
+  });
+  const totalSales = sumBy(rows, (row) => row.sales);
+  return rows.map((row) => ({ ...row, share: totalSales ? row.sales / totalSales : 0 }));
+}
+
+function renderTeamDetailLines(rows, max, options = {}) {
+  if (!rows.length) return `<div class="empty-state compact">暂无数据</div>`;
+  const valueKey = options.valueKey || "sales";
+  const formatter = options.formatter || compactCurrency;
+  return rows.slice(0, options.limit || 6).map((row, index) => {
+    const value = row[valueKey] || 0;
+    const color = row.color || chartPalette[index % chartPalette.length];
+    const meta = typeof options.meta === "function" ? options.meta(row) : row.meta;
+    return `
+      <div class="team-detail-line">
+        <span class="team-line-title">
+          ${row.icon ? icon(row.icon) : ""}
+          <strong>${escapeHtml(row.label)}</strong>
+          ${meta ? `<em>${escapeHtml(meta)}</em>` : ""}
+        </span>
+        <span class="team-line-meter"><i style="--line-width:${max ? (value / max) * 100 : 0}%; --line-color:${color}"></i></span>
+        <b>${formatter(value)}</b>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderManagementTeamDetail(data) {
+  if (!els.managementTeamDetail) return;
+  const rows = teamSalesDetailRows(data);
+  const topTeam = rows.slice().sort((a, b) => b.sales - a.sales)[0] || rows[0];
+  const selected = rows.find((row) => row.label === state.managementTeam) || topTeam;
+  state.managementTeam = selected?.label || "";
+  if (els.managementTeamPeriod) els.managementTeamPeriod.textContent = formatMetricMonth(getSalesMetrics().month);
+
+  if (!selected) {
+    els.managementTeamDetail.innerHTML = `<div class="empty-state">暂无团队数据</div>`;
+    return;
+  }
+
+  const maxTeamSales = Math.max(...rows.map((row) => row.sales), 1);
+  const maxGroupSales = Math.max(...selected.groupRows.map((row) => row.sales), 1);
+  const maxPersonSales = Math.max(...selected.personRows.map((row) => row.sales), 1);
+  const maxProductSales = Math.max(...selected.productRows.map((row) => row.sales), 1);
+
+  els.managementTeamDetail.innerHTML = `
+    <div class="team-detail-layout">
+      <div class="team-choice-list" role="tablist" aria-label="团队切换">
+        ${rows.map((row) => `
+          <button class="team-choice ${row.label === selected.label ? "active" : ""}" type="button" data-management-team="${escapeHtml(row.label)}" aria-pressed="${row.label === selected.label}" style="--team-color:${row.color}; --team-soft:${row.soft}">
+            <span><i></i>${escapeHtml(row.label)}</span>
+            <strong>${compactCurrency(row.sales)}</strong>
+            <em>完成 ${Math.round(row.completion)}% · ${row.records.length} 位达人</em>
+            <b><i style="--line-width:${(row.sales / maxTeamSales) * 100}%"></i></b>
+          </button>
+        `).join("")}
+      </div>
+
+      <div class="team-focus" style="--team-color:${selected.color}; --team-soft:${selected.soft}">
+        <div class="team-focus-head">
+          <div>
+            <span class="panel-kicker">Selected Team</span>
+            <h3>${escapeHtml(selected.label)} 完成概览</h3>
+          </div>
+          <strong>${compactCurrency(selected.sales)}</strong>
+        </div>
+        <div class="team-focus-progress">
+          <span>保底目标完成率</span>
+          <div class="team-progress-track"><i style="--line-width:${selected.completion}%"></i></div>
+          <em>${Math.round(selected.completion)}%</em>
+        </div>
+        <div class="team-focus-metrics">
+          <div><span>保底目标</span><strong>${selected.target ? compactCurrency(selected.target) : "¥0"}</strong></div>
+          <div><span>冲刺目标</span><strong>${selected.sprintTarget ? compactCurrency(selected.sprintTarget) : "¥0"}</strong></div>
+          <div><span>环比上月</span><strong class="${selected.mom < 0 ? "danger" : "success"}">${signedPercent(selected.mom * 100)}</strong></div>
+          <div><span>团队商务</span><strong>${selected.personCount} 人</strong></div>
+          <div><span>合作转化</span><strong>${percent(selected.conversion)}</strong></div>
+          <div><span>卡点数量</span><strong class="${selected.bottleneckCount ? "danger" : ""}">${selected.bottleneckCount}</strong></div>
+        </div>
+        <div class="team-stage-strip">
+          ${selected.stageRows.map((row) => `
+            <span style="--stage-color:${row.color}">${icon(row.icon)}${escapeHtml(row.label)} <b>${row.value}</b></span>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="team-detail-columns">
+        <section class="team-detail-section">
+          <div class="team-section-head">
+            <span>小组完成</span>
+            <strong>${selected.groupRows.length} 组</strong>
+          </div>
+          ${renderTeamDetailLines(selected.groupRows, maxGroupSales, {
+            meta: (row) => `${row.personCount} 商务 · ${row.talentCount} 达人`,
+          })}
+        </section>
+        <section class="team-detail-section">
+          <div class="team-section-head">
+            <span>商务贡献</span>
+            <strong>Top ${Math.min(selected.personRows.length, 6)}</strong>
+          </div>
+          ${renderTeamDetailLines(selected.personRows, maxPersonSales, {
+            meta: (row) => `${row.talentCount} 达人 · ${row.specialCount} 专场`,
+          })}
+        </section>
+        <section class="team-detail-section">
+          <div class="team-section-head">
+            <span>品类结构</span>
+            <strong>${percent(selected.share)}</strong>
+          </div>
+          ${renderTeamDetailLines(selected.productRows, maxProductSales, {
+            meta: (row) => `${percent(selected.sales ? row.sales / selected.sales : 0)} 占比`,
+          })}
+        </section>
+      </div>
+    </div>
+  `;
+}
+
 function renderManagementDashboard() {
   const data = enrichedRecords();
   const productRows = groupSales(data, "product", PRODUCTS).map((row, index) => ({ ...row, icon: "package", color: chartPalette[index] }));
@@ -687,6 +867,7 @@ function renderManagementDashboard() {
   renderSalesBars(els.managementTeamSales, teamRows);
   renderSalesDonut(els.managementTierSales, tierRows, "SABC Sales");
   renderSalesBars(els.managementStageSales, stageRows, { showPercent: true });
+  renderManagementTeamDetail(data);
   renderManagementPersonRank(data);
   renderTalentSalesRank(els.managementTalentRank, data.slice().sort((a, b) => b.sales - a.sales), "sales");
   if (els.dashboardTableCount) {
@@ -1752,6 +1933,13 @@ function bindEvents() {
     if (salesProduct) {
       state.salesViewProduct = salesProduct.dataset.salesProduct;
       renderSalesExplorer();
+      return;
+    }
+
+    const managementTeam = event.target.closest("[data-management-team]");
+    if (managementTeam) {
+      state.managementTeam = managementTeam.dataset.managementTeam;
+      renderManagementTeamDetail(enrichedRecords());
       return;
     }
 
