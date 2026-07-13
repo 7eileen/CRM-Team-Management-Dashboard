@@ -404,6 +404,14 @@ svg {
   margin-bottom: 16px;
 }
 
+.kpi-grid.management-kpis {
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+}
+
+.kpi-grid.personal-kpis {
+  grid-template-columns: repeat(6, minmax(154px, 1fr));
+}
+
 .kpi-card {
   position: relative;
   min-height: 128px;
@@ -480,6 +488,10 @@ svg {
   white-space: nowrap;
 }
 
+.metric-trend.down {
+  color: var(--color-danger);
+}
+
 .sparkline {
   position: absolute;
   right: 12px;
@@ -515,15 +527,15 @@ svg {
   gap: 16px;
 }
 
-.panel-type {
+.panel-product-sales {
   grid-area: type;
 }
 
-.panel-rank {
+.panel-type-sales {
   grid-area: rank;
 }
 
-.panel-stage {
+.panel-team-sales {
   grid-area: stage;
 }
 
@@ -535,6 +547,184 @@ svg {
   grid-area: rail;
   display: grid;
   align-content: start;
+  gap: 16px;
+}
+
+.sales-bars {
+  display: grid;
+  gap: 13px;
+  padding: 18px;
+}
+
+.compact-bars {
+  gap: 10px;
+}
+
+.sales-bar-row {
+  display: grid;
+  grid-template-columns: minmax(108px, 0.82fr) minmax(0, 1fr) 82px;
+  align-items: center;
+  gap: 12px;
+}
+
+.sales-bar-row:has(em) {
+  grid-template-columns: minmax(108px, 0.82fr) minmax(0, 1fr) 82px 50px;
+}
+
+.sales-bar-label {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #1f2a44;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sales-bar-label svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary);
+}
+
+.sales-bar-track {
+  height: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8eef8;
+}
+
+.sales-bar-track i {
+  width: var(--bar-width);
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: var(--bar-color);
+}
+
+.sales-bar-row strong,
+.sales-bar-row em {
+  color: #101936;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sales-bar-row em {
+  color: var(--color-muted);
+  font-weight: 750;
+}
+
+.sales-donut .donut-layout {
+  min-height: 0;
+  padding: 18px;
+}
+
+.sales-donut .donut-ring {
+  width: min(100%, 178px);
+}
+
+.sales-donut .donut-ring strong {
+  font-size: 18px;
+}
+
+.person-rank-list,
+.talent-sales-list {
+  display: grid;
+  padding: 12px 14px 14px;
+}
+
+.person-rank-row,
+.talent-sales-row {
+  width: 100%;
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: 26px 38px minmax(120px, 1fr) minmax(96px, 0.82fr) 78px;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-bottom: 1px solid #edf2f8;
+  background: #ffffff;
+  color: inherit;
+  text-align: left;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.person-rank-row {
+  grid-template-columns: 26px 38px minmax(130px, 1fr) minmax(108px, 0.82fr) 84px 58px;
+}
+
+.person-rank-row:hover,
+.talent-sales-row:hover {
+  background: #f8fbff;
+}
+
+.person-avatar {
+  color: var(--color-primary);
+  background: #eaf2ff;
+}
+
+.rank-growth {
+  color: var(--color-success);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+  text-align: right;
+}
+
+.rank-growth.negative {
+  color: var(--color-danger);
+}
+
+.personal-shell {
+  display: grid;
+  gap: 16px;
+}
+
+.personal-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 14px;
+  padding: 18px;
+}
+
+.summary-tile {
+  min-height: 98px;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px;
+  background: #f8fbff;
+}
+
+.summary-tile span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #40516c;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.summary-tile span svg {
+  width: 17px;
+  height: 17px;
+  color: var(--color-primary);
+}
+
+.summary-tile strong {
+  color: #07142f;
+  font-size: 25px;
+  font-variant-numeric: tabular-nums;
+}
+
+.personal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -1665,7 +1855,9 @@ svg {
 }
 
 @media (max-width: 1180px) {
-  .kpi-grid {
+  .kpi-grid,
+  .kpi-grid.management-kpis,
+  .kpi-grid.personal-kpis {
     grid-template-columns: repeat(3, minmax(180px, 1fr));
   }
 }
@@ -1690,7 +1882,8 @@ svg {
   }
 
   .page-layout,
-  .insight-grid {
+  .insight-grid,
+  .personal-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1756,10 +1949,13 @@ svg {
   }
 
   .kpi-grid,
+  .kpi-grid.management-kpis,
+  .kpi-grid.personal-kpis,
   .dashboard-grid,
   .report-strip,
   .format-grid,
-  .quick-filters {
+  .quick-filters,
+  .personal-summary {
     grid-template-columns: 1fr;
   }
 
@@ -1800,6 +1996,28 @@ svg {
 
   .form-grid.two-col {
     grid-template-columns: 1fr;
+  }
+
+  .sales-bar-row,
+  .sales-bar-row:has(em) {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .sales-bar-row strong,
+  .sales-bar-row em {
+    text-align: left;
+  }
+
+  .person-rank-row,
+  .talent-sales-row {
+    grid-template-columns: 24px 34px minmax(0, 1fr) 74px;
+  }
+
+  .person-rank-row .rank-meter,
+  .person-rank-row .rank-growth,
+  .talent-sales-row .rank-meter {
+    display: none;
   }
 }
 

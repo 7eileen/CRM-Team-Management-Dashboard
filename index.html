@@ -174,7 +174,11 @@
       <nav class="side-nav">
         <button class="nav-item active" type="button" data-view="dashboard" aria-current="page">
           <svg><use href="#icon-grid"></use></svg>
-          数据总览
+          CRM管理
+        </button>
+        <button class="nav-item" type="button" data-view="personal">
+          <svg><use href="#icon-user-check"></use></svg>
+          CRM个人
         </button>
         <button class="nav-item" type="button" data-view="pipeline">
           <svg><use href="#icon-board"></use></svg>
@@ -241,8 +245,8 @@
     <main class="workspace">
       <header class="topbar">
         <div class="page-heading">
-          <h1>达人跟进 CRM 看板</h1>
-          <p>Monitor influencer pipeline, product collaboration, blockers and conversion.</p>
+          <h1>CRM 销售管理看板</h1>
+          <p>Monitor sales target, product performance, talent structure and personal contribution.</p>
         </div>
 
         <div class="toolbar" aria-label="筛选与操作">
@@ -274,100 +278,138 @@
 
         <section class="page-view active" data-page="dashboard" id="dashboardPage">
           <div class="dashboard-grid">
-            <article class="panel panel-type">
+            <article class="panel panel-product-sales">
               <div class="panel-head">
                 <div>
-                  <span class="panel-kicker">Category</span>
-                  <h2>达人类型分布</h2>
+                  <span class="panel-kicker">Product Sales</span>
+                  <h2>分品销售额</h2>
                 </div>
-                <span class="panel-badge">筛选后</span>
+                <span class="panel-badge">当月</span>
               </div>
-              <div class="donut-layout">
-                <div class="donut-chart" id="typeDonut"></div>
-                <div class="legend-list" id="typeLegend"></div>
-              </div>
+              <div class="sales-bars" id="managementProductSales"></div>
             </article>
 
-            <article class="panel panel-rank">
+            <article class="panel panel-type-sales">
               <div class="panel-head">
                 <div>
-                  <span class="panel-kicker">Top Talents</span>
-                  <h2>重点达人推进榜</h2>
+                  <span class="panel-kicker">Talent Type</span>
+                  <h2>分达人类型销售额</h2>
                 </div>
-                <span class="panel-badge">Top 5</span>
+                <span class="panel-badge">类型</span>
               </div>
-              <div class="ranking-list" id="topTalentBars"></div>
+              <div class="sales-bars" id="managementTypeSales"></div>
             </article>
 
-            <article class="panel panel-stage">
+            <article class="panel panel-team-sales">
               <div class="panel-head">
                 <div>
-                  <span class="panel-kicker">Status</span>
-                  <h2>流水线状态概览</h2>
+                  <span class="panel-kicker">Team Sales</span>
+                  <h2>分团队销售额</h2>
                 </div>
               </div>
-              <div class="stage-summary" id="stageOverview"></div>
+              <div class="sales-bars" id="managementTeamSales"></div>
             </article>
 
             <article class="panel panel-table">
               <div class="panel-head">
                 <div>
-                  <span class="panel-kicker">Performance</span>
-                  <h2>达人跟进明细</h2>
+                  <span class="panel-kicker">Ranking</span>
+                  <h2>个人销售额排行榜</h2>
                 </div>
-                <span class="table-count" id="dashboardTableCount">0 条记录</span>
+                <span class="table-count" id="dashboardTableCount">当月排行</span>
               </div>
-              <div class="table-wrap">
-                <table class="record-table dashboard-table">
-                  <thead>
-                    <tr>
-                      <th>达人</th>
-                      <th>等级</th>
-                      <th>类型</th>
-                      <th>产品</th>
-                      <th>状态</th>
-                      <th>商务</th>
-                      <th>卡点</th>
-                      <th>操作</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dashboardTableBody"></tbody>
-                </table>
-              </div>
+              <div class="person-rank-list" id="managementPersonRank"></div>
             </article>
 
             <aside class="dashboard-rail">
               <article class="panel">
                 <div class="panel-head compact">
                   <div>
-                    <span class="panel-kicker">Trend</span>
-                    <h2>阶段分布趋势</h2>
+                    <span class="panel-kicker">SABC Mix</span>
+                    <h2>分 SABC 销售额占比</h2>
                   </div>
-                  <span class="panel-badge">Stage</span>
+                  <span class="panel-badge">等级</span>
                 </div>
-                <div class="stage-trend" id="stageTrendChart"></div>
+                <div class="sales-donut" id="managementTierSales"></div>
               </article>
 
               <article class="panel">
                 <div class="panel-head compact">
                   <div>
-                    <span class="panel-kicker">Contribution</span>
-                    <h2>玩法贡献</h2>
+                    <span class="panel-kicker">Status Sales</span>
+                    <h2>分达人状态</h2>
                   </div>
                 </div>
-                <div class="contribution-list" id="formatContribution"></div>
+                <div class="sales-bars compact-bars" id="managementStageSales"></div>
               </article>
 
               <article class="panel">
                 <div class="panel-head compact">
                   <div>
-                    <span class="panel-kicker">Blocked</span>
-                    <h2>卡点 / 阻塞项</h2>
+                    <span class="panel-kicker">Talent Rank</span>
+                    <h2>达人销售额 Top</h2>
                   </div>
                 </div>
-                <div class="bottleneck-list" id="bottleneckList"></div>
+                <div class="talent-sales-list" id="managementTalentRank"></div>
               </article>
             </aside>
+          </div>
+        </section>
+
+        <section class="page-view" data-page="personal" id="personalPage">
+          <div class="personal-shell">
+            <article class="panel personal-hero">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">Personal CRM</span>
+                  <h2 id="personalTitle">个人销售看板</h2>
+                </div>
+                <span class="panel-badge" id="personalScopeBadge">按商务筛选</span>
+              </div>
+              <div class="personal-summary" id="personalSummary"></div>
+            </article>
+
+            <div class="personal-grid">
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="panel-kicker">Product</span>
+                    <h2>个人销售额分品</h2>
+                  </div>
+                </div>
+                <div class="sales-bars" id="personalProductSales"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="panel-kicker">SABC</span>
+                    <h2>个人分 SABC 销售额</h2>
+                  </div>
+                </div>
+                <div class="sales-donut" id="personalTierSales"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="panel-kicker">Status</span>
+                    <h2>个人分达人状态</h2>
+                  </div>
+                </div>
+                <div class="sales-bars" id="personalStageSales"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="panel-kicker">Talent Ranking</span>
+                    <h2>达人排名</h2>
+                  </div>
+                </div>
+                <div class="talent-sales-list" id="personalTalentRank"></div>
+              </article>
+            </div>
           </div>
         </section>
 

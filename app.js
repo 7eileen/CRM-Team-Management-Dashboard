@@ -44,6 +44,32 @@ const formatIconMap = {
   IP小号: "users",
 };
 
+const productSalesBase = {
+  定妆喷雾: 82000,
+  "气垫pro": 96000,
+  防晒素颜霜: 76000,
+  防晒喷雾: 68000,
+};
+
+const stageSalesFactor = {
+  待触达: 0.18,
+  已触达: 0.28,
+  沟通中: 0.48,
+  已寄样: 0.68,
+  试播中: 0.82,
+  洽谈排期: 0.92,
+  已签约: 1.18,
+  已流失: 0.08,
+};
+
+const formatSalesFactor = {
+  专场: 1.28,
+  混播: 1.05,
+  单品直播间: 1.12,
+  短视频挂车: 0.78,
+  IP小号: 0.52,
+};
+
 const initialRecords = [
   { id: 1, name: "小美酱", tier: "S", type: "美垂", product: "定妆喷雾", group: "A", format: "专场", stage: "已签约", person: "张三", bottleneck: "" },
   { id: 2, name: "乡村阿花", tier: "A", type: "三农", product: "防晒素颜霜", group: "B", format: "短视频挂车", stage: "试播中", person: "李四", bottleneck: "排期冲突，等达人档期" },
@@ -97,17 +123,23 @@ const els = {
   filterStage: document.getElementById("filterStage"),
   filterPerson: document.getElementById("filterPerson"),
   kpiGrid: document.getElementById("kpiGrid"),
-  typeDonut: document.getElementById("typeDonut"),
-  typeLegend: document.getElementById("typeLegend"),
-  topTalentBars: document.getElementById("topTalentBars"),
-  stageOverview: document.getElementById("stageOverview"),
-  stageTrendChart: document.getElementById("stageTrendChart"),
-  formatContribution: document.getElementById("formatContribution"),
+  managementProductSales: document.getElementById("managementProductSales"),
+  managementTypeSales: document.getElementById("managementTypeSales"),
+  managementTeamSales: document.getElementById("managementTeamSales"),
+  managementPersonRank: document.getElementById("managementPersonRank"),
+  managementTierSales: document.getElementById("managementTierSales"),
+  managementStageSales: document.getElementById("managementStageSales"),
+  managementTalentRank: document.getElementById("managementTalentRank"),
+  personalTitle: document.getElementById("personalTitle"),
+  personalScopeBadge: document.getElementById("personalScopeBadge"),
+  personalSummary: document.getElementById("personalSummary"),
+  personalProductSales: document.getElementById("personalProductSales"),
+  personalTierSales: document.getElementById("personalTierSales"),
+  personalStageSales: document.getElementById("personalStageSales"),
+  personalTalentRank: document.getElementById("personalTalentRank"),
   dashboardTableCount: document.getElementById("dashboardTableCount"),
-  dashboardTableBody: document.getElementById("dashboardTableBody"),
   tierLegend: document.getElementById("tierLegend"),
   kanbanColumns: document.getElementById("kanbanColumns"),
-  bottleneckList: document.getElementById("bottleneckList"),
   ownerList: document.getElementById("ownerList"),
   insightSummary: document.getElementById("insightSummary"),
   funnelChart: document.getElementById("funnelChart"),
@@ -166,6 +198,92 @@ function formatIcon(format) {
   return formatIconMap[format] || "tag";
 }
 
+function currency(value) {
+  return `¥${Math.round(value).toLocaleString("zh-CN")}`;
+}
+
+function compactCurrency(value) {
+  if (Math.abs(value) >= 10000) return `¥${(value / 10000).toFixed(1)}万`;
+  return currency(value);
+}
+
+function signedPercent(value) {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(1)}%`;
+}
+
+function recordSales(record) {
+  const base = productSalesBase[record.product] || 60000;
+  const stageFactor = stageSalesFactor[record.stage] || 0.4;
+  const formatFactor = formatSalesFactor[record.format] || 1;
+  const tierFactor = { S: 1.45, A: 1.18, B: 0.92, C: 0.72 }[record.tier] || 1;
+  const seedFactor = 0.92 + ((record.id * 17) % 19) / 100;
+  return Math.round((base * stageFactor * formatFactor * tierFactor * seedFactor) / 100) * 100;
+}
+
+function recordLastMonthSales(record) {
+  const factor = 0.82 + ((record.id * 11) % 17) / 100;
+  return Math.round((recordSales(record) * factor) / 100) * 100;
+}
+
+function recordSpecialCount(record) {
+  if (record.format !== "专场") return 0;
+  return Math.max(1, { S: 5, A: 4, B: 3, C: 2 }[record.tier] - (record.stage === "已流失" ? 2 : 0));
+}
+
+function recordLastMonthSpecialCount(record) {
+  return Math.max(0, recordSpecialCount(record) - (record.id % 2));
+}
+
+function enrichRecord(record) {
+  return {
+    ...record,
+    sales: recordSales(record),
+    lastMonthSales: recordLastMonthSales(record),
+    specialCount: recordSpecialCount(record),
+    lastMonthSpecialCount: recordLastMonthSpecialCount(record),
+  };
+}
+
+function enrichedRecords(data = filteredRecords()) {
+  return data.map(enrichRecord);
+}
+
+function sumBy(data, selector) {
+  return data.reduce((sum, item) => sum + selector(item), 0);
+}
+
+function groupSales(data, key, orderedKeys) {
+  const totals = data.reduce((acc, record) => {
+    acc[record[key]] = (acc[record[key]] || 0) + record.sales;
+    return acc;
+  }, {});
+  const keys = orderedKeys || Object.keys(totals);
+  return keys.map((label) => ({ label, value: totals[label] || 0 }));
+}
+
+function personSalesRows(data = enrichedRecords()) {
+  return PERSONS.map((person) => {
+    const items = data.filter((record) => record.person === person);
+    return {
+      person,
+      sales: sumBy(items, (record) => record.sales),
+      lastMonthSales: sumBy(items, (record) => record.lastMonthSales),
+      specialCount: sumBy(items, (record) => record.specialCount),
+      lastMonthSpecialCount: sumBy(items, (record) => record.lastMonthSpecialCount),
+      talentCount: items.length,
+    };
+  }).sort((a, b) => b.sales - a.sales);
+}
+
+function selectedPerson() {
+  return state.filters.person || PERSONS[0];
+}
+
+function recordsForPerson(person = selectedPerson()) {
+  return enrichedRecords(filteredRecords({ ignorePerson: true })).filter((record) => record.person === person);
+}
+
 function optionHtml(defaultLabel, values) {
   return [
     `<option value="">${defaultLabel}</option>`,
@@ -197,7 +315,7 @@ function recordSearchText(record) {
   ].join(" ").toLowerCase();
 }
 
-function filteredRecords() {
+function filteredRecords(options = {}) {
   return state.records.filter((record) => {
     const filters = state.filters;
     const matchesFilters =
@@ -207,7 +325,7 @@ function filteredRecords() {
       (!filters.type || record.type === filters.type) &&
       (!filters.tier || record.tier === filters.tier) &&
       (!filters.stage || record.stage === filters.stage) &&
-      (!filters.person || record.person === filters.person);
+      (options.ignorePerson || !filters.person || record.person === filters.person);
 
     return matchesFilters && (!state.query || recordSearchText(record).includes(state.query));
   });
@@ -251,27 +369,225 @@ function sparkline(path = "M2 34 C12 23 17 31 25 20 C33 9 38 25 47 15 C56 5 61 2
 }
 
 function renderKpis() {
-  const stats = statsFor(filteredRecords());
-  const cards = [
-    { label: "达人总数", value: stats.total, sub: "筛选后达人池", trend: "14.2%", icon: "users", color: "#8b5cf6", soft: "#f3edff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: "活跃跟进中", value: stats.active, sub: "不包含已流失", trend: "9.8%", icon: "target", color: "#22c55e", soft: "#eaf8f1", path: "M2 30 C10 24 16 25 24 18 C34 9 40 12 47 16 C56 21 62 12 70 6" },
-    { label: "已签约", value: stats.signed, sub: `转化率 ${percent(stats.conversion)}`, trend: "6.1%", icon: "star", color: "#f59e0b", soft: "#fff7e6", path: "M2 34 C12 30 20 22 28 24 C39 27 47 13 56 16 C62 17 66 10 70 6" },
-    { label: "有卡点", value: stats.bottlenecks, sub: stats.bottlenecks ? "需关注处理" : "暂无阻塞", trend: "4.1%", icon: "alert", color: "#ec4899", soft: "#fdf2f8", path: "M2 26 C12 17 19 20 26 13 C36 4 42 22 50 17 C59 11 64 23 70 15" },
-    { label: "已流失", value: stats.lost, sub: stats.total ? `${percent(stats.lost / stats.total)} 流失率` : "无流失", trend: "1.3%", icon: "ban", color: "#ef4444", soft: "#feecec", path: "M2 14 C12 15 18 11 26 18 C35 27 42 18 50 24 C59 30 64 21 70 28" },
-    { label: "S级达人", value: stats.sTier, sub: "重点合作池", trend: "2.0%", icon: "user-check", color: "#2563eb", soft: "#eaf2ff", path: "M2 35 C11 29 16 32 23 25 C32 15 39 20 47 13 C56 5 62 14 70 6" },
-  ];
-
+  const cards = state.view === "personal" ? personalKpiCards() : managementKpiCards();
+  els.kpiGrid.classList.toggle("management-kpis", state.view !== "personal");
+  els.kpiGrid.classList.toggle("personal-kpis", state.view === "personal");
   els.kpiGrid.innerHTML = cards.map((card) => `
     <article class="kpi-card" style="--metric-color:${card.color}; --metric-soft:${card.soft}">
       <div class="metric-icon">${icon(card.icon)}</div>
       <div class="metric-body">
         <span>${card.label}</span>
         <strong>${card.value}</strong>
-        <div class="metric-trend">${icon("arrow-up")} ${card.trend}<span class="vs">vs 近30天</span></div>
+        <div class="metric-trend ${card.trendValue < 0 ? "down" : ""}">
+          ${icon(card.trendValue < 0 ? "arrow-right" : "arrow-up")} ${card.trend}
+          <span class="vs">${card.sub}</span>
+        </div>
       </div>
       ${sparkline(card.path)}
     </article>
   `).join("");
+}
+
+function managementKpiCards() {
+  const data = enrichedRecords();
+  const monthlySales = sumBy(data, (record) => record.sales);
+  const lastMonthSales = sumBy(data, (record) => record.lastMonthSales);
+  const annualTarget = 6800000;
+  const yearlySales = monthlySales * 6.4;
+  const progress = yearlySales / annualTarget;
+  const mom = lastMonthSales ? (monthlySales - lastMonthSales) / lastMonthSales : 0;
+  return [
+    { label: "当月销售额", value: compactCurrency(monthlySales), sub: "筛选后当月", trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#2563eb", soft: "#eaf2ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#8b5cf6", soft: "#f3edff", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
+    { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#22c55e", soft: "#eaf8f1", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
+    { label: "环比上月", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 上月`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f59e0b" : "#ef4444", soft: mom >= 0 ? "#fff7e6" : "#feecec", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
+  ];
+}
+
+function personalKpiCards() {
+  const person = selectedPerson();
+  const rows = personSalesRows(enrichedRecords(filteredRecords({ ignorePerson: true })));
+  const row = rows.find((item) => item.person === person) || rows[0];
+  const rank = rows.findIndex((item) => item.person === row.person) + 1;
+  const previous = rows[rank - 2];
+  const nextSpecialLeader = [...rows].sort((a, b) => b.specialCount - a.specialCount).find((item) => item.specialCount > row.specialCount);
+  const gap = previous ? previous.sales - row.sales : 0;
+  const specialGap = nextSpecialLeader ? nextSpecialLeader.specialCount - row.specialCount : 0;
+  const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
+  return [
+    { label: "当月销售额", value: compactCurrency(row.sales), sub: `${row.person} 当月`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#2563eb", soft: "#eaf2ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "当月销售额排名", value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: rank === 1 ? "领先" : "追赶", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#f59e0b", soft: "#fff7e6", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
+    { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: rank === 1 ? "Top 1" : "差距", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#8b5cf6", soft: "#f3edff", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
+    { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "专场", trendValue: row.specialCount, icon: "calendar", color: "#14b8a6", soft: "#e8fbf8", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
+    { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: specialGap ? "待追赶" : "Top", trendValue: specialGap ? -1 : 1, icon: "file", color: "#ec4899", soft: "#fdf2f8", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
+    { label: "环比上月", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 上月`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#22c55e" : "#ef4444", soft: mom >= 0 ? "#eaf8f1" : "#feecec", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
+  ];
+}
+
+function renderSalesBars(container, rows, options = {}) {
+  if (!container) return;
+  const max = Math.max(...rows.map((row) => row.value), 1);
+  const total = sumBy(rows, (row) => row.value);
+  const palette = options.palette || chartPalette;
+  container.innerHTML = rows.map((row, index) => {
+    const width = row.value ? Math.max((row.value / max) * 100, 6) : 0;
+    const color = row.color || palette[index % palette.length];
+    return `
+      <div class="sales-bar-row">
+        <span class="sales-bar-label">${row.icon ? icon(row.icon) : ""}${escapeHtml(row.label)}</span>
+        <div class="sales-bar-track">
+          <i style="--bar-width:${width}%; --bar-color:${color}"></i>
+        </div>
+        <strong>${compactCurrency(row.value)}</strong>
+        ${options.showPercent ? `<em>${total ? percent(row.value / total) : "0.0%"}</em>` : ""}
+      </div>
+    `;
+  }).join("");
+}
+
+function renderSalesDonut(container, rows, centerLabel) {
+  if (!container) return;
+  const total = sumBy(rows, (row) => row.value);
+  const items = rows.map((row, index) => ({
+    label: row.label,
+    count: row.value,
+    color: row.color || chartPalette[index % chartPalette.length],
+    icon: row.icon,
+  }));
+  const gradient = conicGradient(items, total);
+  container.innerHTML = `
+    <div class="donut-layout sales-donut-layout">
+      <div class="donut-chart">
+        <div class="donut-ring" style="--donut: conic-gradient(${gradient})">
+          <div>
+            <strong>${compactCurrency(total)}</strong>
+            <span>${centerLabel}</span>
+          </div>
+        </div>
+      </div>
+      <div class="legend-list">
+        ${items.map((item) => `
+          <div class="legend-row">
+            <span class="legend-label">
+              <span class="legend-dot" style="--legend-color:${item.color}"></span>
+              ${item.icon ? icon(item.icon) : ""}
+              ${escapeHtml(item.label)}
+            </span>
+            <strong>${compactCurrency(item.count)}</strong>
+            <em>${total ? percent(item.count / total) : "0.0%"}</em>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderManagementDashboard() {
+  const data = enrichedRecords();
+  const productRows = groupSales(data, "product", PRODUCTS).map((row, index) => ({ ...row, icon: "package", color: chartPalette[index] }));
+  const typeRows = groupSales(data, "type", TYPES).map((row, index) => ({ ...row, icon: typeIcon(row.label), color: chartPalette[index] }));
+  const teamRows = groupSales(data, "group", GROUPS).map((row, index) => ({ label: `${row.label}组`, value: row.value, icon: "users", color: chartPalette[index + 2] }));
+  const tierRows = groupSales(data, "tier", TIERS).map((row) => ({ ...row, label: `${row.label}级`, icon: "star", color: tierMeta[row.label]?.color }));
+  const stageRows = groupSales(data, "stage", STAGES.map((stage) => stage.label)).map((row) => ({ ...row, icon: stageMeta(row.label).icon, color: stageMeta(row.label).color }));
+
+  renderSalesBars(els.managementProductSales, productRows);
+  renderSalesBars(els.managementTypeSales, typeRows);
+  renderSalesBars(els.managementTeamSales, teamRows);
+  renderSalesDonut(els.managementTierSales, tierRows, "SABC Sales");
+  renderSalesBars(els.managementStageSales, stageRows, { showPercent: true });
+  renderManagementPersonRank(data);
+  renderTalentSalesRank(els.managementTalentRank, data.slice().sort((a, b) => b.sales - a.sales).slice(0, 6), "sales");
+  if (els.dashboardTableCount) {
+    els.dashboardTableCount.textContent = `${PERSONS.length} 位商务`;
+  }
+}
+
+function renderManagementPersonRank(data) {
+  if (!els.managementPersonRank) return;
+  const rows = personSalesRows(data);
+  const max = rows[0]?.sales || 1;
+  els.managementPersonRank.innerHTML = rows.map((row, index) => {
+    const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
+    return `
+      <button class="person-rank-row" type="button" data-person-filter="${escapeHtml(row.person)}">
+        <span class="rank-number">${index + 1}</span>
+        <span class="rank-avatar person-avatar">${icon("user-check")}</span>
+        <span class="rank-info">
+          <strong>${escapeHtml(row.person)}</strong>
+          <em>${row.talentCount} 位达人 · ${row.specialCount} 场专场</em>
+        </span>
+        <span class="rank-meter">
+          <i style="--rank-width:${(row.sales / max) * 100}%; --rank-color:${chartPalette[index]}"></i>
+        </span>
+        <b>${compactCurrency(row.sales)}</b>
+        <em class="rank-growth ${mom < 0 ? "negative" : ""}">${signedPercent(mom * 100)}</em>
+      </button>
+    `;
+  }).join("");
+}
+
+function renderPersonalDashboard() {
+  const person = selectedPerson();
+  const data = recordsForPerson(person);
+  const allRows = personSalesRows(enrichedRecords(filteredRecords({ ignorePerson: true })));
+  const row = allRows.find((item) => item.person === person) || allRows[0];
+  const rank = allRows.findIndex((item) => item.person === row.person) + 1;
+  const previous = allRows[rank - 2];
+  const gap = previous ? previous.sales - row.sales : 0;
+
+  if (els.personalTitle) els.personalTitle.textContent = `${row.person} CRM 个人看板`;
+  if (els.personalScopeBadge) els.personalScopeBadge.textContent = state.filters.person ? "当前商务" : "默认张三";
+  if (els.personalSummary) {
+    els.personalSummary.innerHTML = `
+      <div class="summary-tile">
+        <span>${icon("chart")}当月销售额</span>
+        <strong>${compactCurrency(row.sales)}</strong>
+      </div>
+      <div class="summary-tile">
+        <span>${icon("star")}销售排名</span>
+        <strong>第 ${rank}</strong>
+      </div>
+      <div class="summary-tile">
+        <span>${icon("target")}距上一名</span>
+        <strong>${rank === 1 ? "领先" : compactCurrency(gap)}</strong>
+      </div>
+      <div class="summary-tile">
+        <span>${icon("calendar")}专场数量</span>
+        <strong>${row.specialCount}</strong>
+      </div>
+    `;
+  }
+
+  const productRows = groupSales(data, "product", PRODUCTS).map((item, index) => ({ ...item, icon: "package", color: chartPalette[index] }));
+  const tierRows = groupSales(data, "tier", TIERS).map((item) => ({ ...item, label: `${item.label}级`, icon: "star", color: tierMeta[item.label]?.color }));
+  const stageRows = groupSales(data, "stage", STAGES.map((stage) => stage.label)).map((item) => ({ ...item, icon: stageMeta(item.label).icon, color: stageMeta(item.label).color }));
+
+  renderSalesBars(els.personalProductSales, productRows);
+  renderSalesDonut(els.personalTierSales, tierRows, "Personal Sales");
+  renderSalesBars(els.personalStageSales, stageRows, { showPercent: true });
+  renderTalentSalesRank(els.personalTalentRank, data.slice().sort((a, b) => b.sales - a.sales), "sales");
+}
+
+function renderTalentSalesRank(container, data, metric = "sales") {
+  if (!container) return;
+  const max = Math.max(...data.map((record) => record[metric]), 1);
+  container.innerHTML = data.length ? data.map((record, index) => {
+    const tier = tierMeta[record.tier];
+    return `
+      <button class="talent-sales-row" type="button" data-record-detail="${record.id}">
+        <span class="rank-number">${index + 1}</span>
+        <span class="rank-avatar" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">${icon(typeIcon(record.type))}</span>
+        <span class="rank-info">
+          <strong>${escapeHtml(record.name)}</strong>
+          <em>${escapeHtml(record.product)} · ${escapeHtml(record.person)} · ${record.tier}级</em>
+        </span>
+        <span class="rank-meter">
+          <i style="--rank-width:${(record[metric] / max) * 100}%; --rank-color:${tier.color}"></i>
+        </span>
+        <b>${compactCurrency(record[metric])}</b>
+      </button>
+    `;
+  }).join("") : `<div class="empty-state">暂无匹配达人</div>`;
 }
 
 function renderTypeDonut() {
@@ -668,15 +984,10 @@ function renderDirectoryRow(record) {
 
 function renderAll() {
   renderKpis();
-  renderTypeDonut();
-  renderTopTalents();
-  renderStageOverview();
-  renderStageTrend();
-  renderFormatContribution();
-  renderDashboardTable();
+  renderManagementDashboard();
+  renderPersonalDashboard();
   renderLegend();
   renderKanban();
-  renderBottlenecks();
   renderOwners();
   renderInsightSummary();
   renderFunnelChart();
@@ -697,6 +1008,7 @@ function setView(view) {
   document.querySelectorAll(".page-view").forEach((page) => {
     page.classList.toggle("active", page.dataset.page === view);
   });
+  renderAll();
 }
 
 function openDrawer({ kicker, title, body }) {
@@ -913,6 +1225,15 @@ function bindEvents() {
     const nav = event.target.closest("[data-view]");
     if (nav) {
       setView(nav.dataset.view);
+      return;
+    }
+
+    const personFilter = event.target.closest("[data-person-filter]");
+    if (personFilter) {
+      state.filters.person = personFilter.dataset.personFilter;
+      els.filterPerson.value = state.filters.person;
+      setView("personal");
+      showToast(`已切换到 ${state.filters.person} 的个人看板`);
       return;
     }
 
