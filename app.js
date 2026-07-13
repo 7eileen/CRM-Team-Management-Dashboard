@@ -1,16 +1,5 @@
-const STAGES = [
-  { id: "contact", label: "待触达", color: "#94a3b8", soft: "#f1f5f9", icon: "target" },
-  { id: "reached", label: "已触达", color: "#2563eb", soft: "#eaf2ff", icon: "user-check" },
-  { id: "talking", label: "沟通中", color: "#f59e0b", soft: "#fff7e6", icon: "handshake" },
-  { id: "sampled", label: "已寄样", color: "#8b5cf6", soft: "#f3edff", icon: "truck" },
-  { id: "trial", label: "试播中", color: "#ec4899", soft: "#fdf2f8", icon: "play" },
-  { id: "schedule", label: "洽谈排期", color: "#14b8a6", soft: "#e8fbf8", icon: "calendar" },
-  { id: "signed", label: "已签约", color: "#22c55e", soft: "#eaf8f1", icon: "star" },
-  { id: "lost", label: "已流失", color: "#ef4444", soft: "#feecec", icon: "ban" },
-];
-
 const PIPELINE_STAGES = [
-  { id: "pool", label: "公海达人", sourceStages: ["待触达"], color: "#f97316", soft: "#fff7ed", icon: "target" },
+  { id: "pool", label: "公海达人", sourceStages: ["待触达", "已流失"], color: "#f97316", soft: "#fff7ed", icon: "target" },
   { id: "waiting-connect", label: "待建联", sourceStages: ["已触达"], color: "#64748b", soft: "#f8fafc", icon: "user-check" },
   { id: "connecting", label: "建联中", sourceStages: ["沟通中"], color: "#2563eb", soft: "#eaf2ff", icon: "handshake" },
   { id: "sampled", label: "已寄样", sourceStages: ["已寄样"], color: "#8b5cf6", soft: "#f3edff", icon: "truck" },
@@ -18,6 +7,31 @@ const PIPELINE_STAGES = [
   { id: "partnered", label: "已合作", color: "#22c55e", soft: "#eaf8f1", icon: "star", predicate: (record) => record.stage === "已签约" && !isDeepPartner(record) },
   { id: "deep-partnered", label: "深度合作", color: "#0f766e", soft: "#ecfdf5", icon: "star", predicate: isDeepPartner },
 ];
+const DISPLAY_STAGE_SOURCE_FALLBACK = {
+  待触达: "公海达人",
+  已触达: "待建联",
+  沟通中: "建联中",
+  已寄样: "已寄样",
+  试播中: "待排期",
+  洽谈排期: "待排期",
+  已签约: "已合作",
+  已流失: "公海达人",
+  公海达人: "公海达人",
+  待建联: "待建联",
+  建联中: "建联中",
+  待排期: "待排期",
+  已合作: "已合作",
+  深度合作: "深度合作",
+};
+const DISPLAY_STAGE_TO_SOURCE = {
+  公海达人: "待触达",
+  待建联: "已触达",
+  建联中: "沟通中",
+  已寄样: "已寄样",
+  待排期: "洽谈排期",
+  已合作: "已签约",
+  深度合作: "已签约",
+};
 
 const PRODUCTS = ["定妆喷雾", "气垫pro", "防晒素颜霜", "防晒喷雾"];
 const FORMATS = ["专场", "混播", "单品直播间", "短视频挂车", "IP小号"];
@@ -227,12 +241,12 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function stageMeta(label) {
-  return STAGES.find((stage) => stage.label === label) || STAGES[0];
+function displayStageMeta(label) {
+  return PIPELINE_STAGES.find((stage) => stage.label === label) || PIPELINE_STAGES[0];
 }
 
-function stageIndex(label) {
-  return STAGES.findIndex((stage) => stage.label === label);
+function sourceStageForDisplay(label) {
+  return DISPLAY_STAGE_TO_SOURCE[label] || label;
 }
 
 function isDeepPartner(record) {
@@ -242,6 +256,35 @@ function isDeepPartner(record) {
 function pipelineStageRecords(data, stage) {
   if (typeof stage.predicate === "function") return data.filter(stage.predicate);
   return data.filter((record) => stage.sourceStages.includes(record.stage));
+}
+
+function displayStageLabelForRecord(record) {
+  const stage = PIPELINE_STAGES.find((stageItem) => pipelineStageRecords([record], stageItem).length > 0);
+  return stage?.label || DISPLAY_STAGE_SOURCE_FALLBACK[record.stage] || PIPELINE_STAGES[0].label;
+}
+
+function displayStageForRecord(record) {
+  return displayStageMeta(displayStageLabelForRecord(record));
+}
+
+function displayStageIndexForRecord(record) {
+  return Math.max(PIPELINE_STAGES.findIndex((stage) => stage.label === displayStageLabelForRecord(record)), 0);
+}
+
+function displayStageRows(data, selector = () => 1) {
+  const totals = new Map(PIPELINE_STAGES.map((stage) => [stage.label, 0]));
+  data.forEach((record) => {
+    const label = displayStageLabelForRecord(record);
+    totals.set(label, (totals.get(label) || 0) + selector(record));
+  });
+  return PIPELINE_STAGES.map((stage) => ({
+    label: stage.label,
+    value: totals.get(stage.label) || 0,
+    count: totals.get(stage.label) || 0,
+    icon: stage.icon,
+    color: stage.color,
+    soft: stage.soft,
+  }));
 }
 
 function typeIcon(type) {
@@ -404,7 +447,7 @@ function renderFilterOptions() {
   els.filterFormat.innerHTML = optionHtml("全部玩法", FORMATS);
   els.filterType.innerHTML = optionHtml("全部类型", TYPES);
   els.filterTier.innerHTML = optionHtml("全部等级", TIERS);
-  els.filterStage.innerHTML = optionHtml("全部状态", STAGES.map((stage) => stage.label));
+  els.filterStage.innerHTML = optionHtml("全部状态", PIPELINE_STAGES.map((stage) => stage.label));
   els.filterPerson.innerHTML = optionHtml("全部商务", PERSONS);
 }
 
@@ -417,6 +460,7 @@ function recordSearchText(record) {
     record.group,
     record.format,
     record.stage,
+    displayStageLabelForRecord(record),
     record.person,
     record.bottleneck,
   ].join(" ").toLowerCase();
@@ -431,7 +475,7 @@ function filteredRecords(options = {}) {
       (!filters.format || record.format === filters.format) &&
       (!filters.type || record.type === filters.type) &&
       (!filters.tier || record.tier === filters.tier) &&
-      (!filters.stage || record.stage === filters.stage) &&
+      (!filters.stage || displayStageLabelForRecord(record) === filters.stage) &&
       (options.ignorePerson || !filters.person || record.person === filters.person);
 
     return matchesFilters && (!state.query || recordSearchText(record).includes(state.query));
@@ -440,14 +484,14 @@ function filteredRecords(options = {}) {
 
 function statsFor(data) {
   const total = data.length;
-  const signed = data.filter((record) => record.stage === "已签约").length;
-  const lost = data.filter((record) => record.stage === "已流失").length;
-  const active = data.filter((record) => record.stage !== "已流失").length;
+  const signed = data.filter((record) => ["已合作", "深度合作"].includes(displayStageLabelForRecord(record))).length;
+  const deepPartnered = data.filter((record) => displayStageLabelForRecord(record) === "深度合作").length;
+  const active = total;
   const bottlenecks = data.filter((record) => record.bottleneck).length;
   const sTier = data.filter((record) => record.tier === "S").length;
   const inPipeline = Math.max(active - signed, 0);
   const conversion = active ? signed / active : 0;
-  return { total, signed, lost, active, bottlenecks, sTier, inPipeline, conversion };
+  return { total, signed, deepPartnered, active, bottlenecks, sTier, inPipeline, conversion };
 }
 
 function countBy(data, key) {
@@ -596,7 +640,7 @@ function renderManagementDashboard() {
   const typeRows = groupSales(data, "type", TYPES).map((row, index) => ({ ...row, icon: typeIcon(row.label), color: chartPalette[index] }));
   const teamRows = groupSales(data, "group", GROUPS).map((row, index) => ({ label: row.label, value: row.value, icon: "users", color: chartPalette[(index + 2) % chartPalette.length] }));
   const tierRows = groupSales(data, "tier", TIERS).map((row) => ({ ...row, label: `${row.label}级`, icon: "star", color: tierMeta[row.label]?.color }));
-  const stageRows = groupSales(data, "stage", STAGES.map((stage) => stage.label)).map((row) => ({ ...row, icon: stageMeta(row.label).icon, color: stageMeta(row.label).color }));
+  const stageRows = displayStageRows(data, (record) => record.sales);
 
   renderSalesBars(els.managementProductSales, productRows);
   renderSalesBars(els.managementTypeSales, typeRows);
@@ -668,7 +712,7 @@ function renderPersonalDashboard() {
 
   const productRows = groupSales(data, "product", PRODUCTS).map((item, index) => ({ ...item, icon: "package", color: chartPalette[index] }));
   const tierRows = groupSales(data, "tier", TIERS).map((item) => ({ ...item, label: `${item.label}级`, icon: "star", color: tierMeta[item.label]?.color }));
-  const stageRows = groupSales(data, "stage", STAGES.map((stage) => stage.label)).map((item) => ({ ...item, icon: stageMeta(item.label).icon, color: stageMeta(item.label).color }));
+  const stageRows = displayStageRows(data, (record) => record.sales);
 
   renderSalesBars(els.personalProductSales, productRows);
   renderSalesDonut(els.personalTierSales, tierRows, "Personal Sales");
@@ -732,7 +776,7 @@ function renderTypeDonut() {
 }
 
 function talentScore(record) {
-  const stagePosition = Math.max(stageIndex(record.stage), 0);
+  const stagePosition = displayStageIndexForRecord(record);
   const stageScore = stagePosition * 8;
   const tierScore = tierMeta[record.tier]?.score || 12;
   const blockerPenalty = record.bottleneck ? -8 : 5;
@@ -767,18 +811,14 @@ function renderTopTalents() {
 
 function renderStageOverview() {
   const data = filteredRecords();
-  const stats = statsFor(data);
-  const segments = [
-    { label: "已签约", count: stats.signed, color: "#22c55e", icon: "star" },
-    { label: "推进中", count: stats.inPipeline, color: "#2563eb", icon: "target" },
-    { label: "已流失", count: stats.lost, color: "#ef4444", icon: "ban" },
-  ];
-  const gradient = conicGradient(segments, Math.max(stats.total, 1));
+  const segments = displayStageRows(data);
+  const total = Math.max(data.length, 1);
+  const gradient = conicGradient(segments, total);
 
   els.stageOverview.innerHTML = `
     <div class="status-donut" style="--status-donut: conic-gradient(${gradient})">
       <div>
-        <strong>${stats.total}</strong>
+        <strong>${data.length}</strong>
         <span>Pipeline Total</span>
       </div>
     </div>
@@ -786,27 +826,23 @@ function renderStageOverview() {
       ${segments.map((item) => `
         <div class="status-row">
           <span>${icon(item.icon)}<i style="--status-color:${item.color}"></i>${item.label}</span>
-          <strong>${item.count}</strong>
-          <em>${stats.total ? percent(item.count / stats.total) : "0.0%"}</em>
+          <strong>${item.value}</strong>
+          <em>${data.length ? percent(item.value / data.length) : "0.0%"}</em>
         </div>
       `).join("")}
-      <div class="status-row alert-row">
-        <span>${icon("alert")}<i style="--status-color:#ec4899"></i>有卡点</span>
-        <strong>${stats.bottlenecks}</strong>
-        <em>${stats.total ? percent(stats.bottlenecks / stats.total) : "0.0%"}</em>
-      </div>
     </div>
   `;
 }
 
 function renderStageTrend() {
   const data = filteredRecords();
-  const max = Math.max(...STAGES.map((stage) => data.filter((record) => record.stage === stage.label).length), 1);
+  const rows = displayStageRows(data);
+  const max = Math.max(...rows.map((row) => row.value), 1);
 
   els.stageTrendChart.innerHTML = `
     <div class="trend-bars">
-      ${STAGES.map((stage) => {
-        const count = data.filter((record) => record.stage === stage.label).length;
+      ${rows.map((stage) => {
+        const count = stage.value;
         return `
           <div class="trend-item" title="${stage.label} ${count} 人">
             <div class="trend-column">
@@ -848,7 +884,7 @@ function renderDashboardTable() {
 }
 
 function renderDashboardRow(record) {
-  const stage = stageMeta(record.stage);
+  const stage = displayStageForRecord(record);
   const tier = tierMeta[record.tier];
   return `
     <tr>
@@ -856,7 +892,7 @@ function renderDashboardRow(record) {
       <td><span class="tier-pill" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">${record.tier}级</span></td>
       <td>${escapeHtml(record.type)}</td>
       <td>${escapeHtml(record.product)}</td>
-      <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${record.stage}</span></td>
+      <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span></td>
       <td>${escapeHtml(record.person)}</td>
       <td>${record.bottleneck ? `<span class="risk-pill">${icon("alert")}有卡点</span>` : `<span class="muted">无</span>`}</td>
       <td><button class="small-button" type="button" data-record-detail="${record.id}">${icon("edit")}详情</button></td>
@@ -906,7 +942,7 @@ function renderKanban() {
 
 function renderTalentCard(record) {
   const tier = tierMeta[record.tier];
-  const stage = stageMeta(record.stage);
+  const stage = displayStageForRecord(record);
   return `
     <button class="talent-card" type="button" data-record-detail="${record.id}" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">
       <div class="talent-card-head">
@@ -933,12 +969,12 @@ function renderTalentCard(record) {
 function renderBottlenecks() {
   const items = filteredRecords().filter((record) => record.bottleneck);
   els.bottleneckList.innerHTML = items.length ? items.map((record) => {
-    const stage = stageMeta(record.stage);
+    const stage = displayStageForRecord(record);
     return `
       <button class="bottleneck-item" type="button" data-record-detail="${record.id}">
         <div class="bottleneck-top">
           <div class="bottleneck-title">${icon("alert")}<strong>${escapeHtml(record.name)}</strong></div>
-          <span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${record.stage}</span>
+          <span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span>
         </div>
         <p>${escapeHtml(record.bottleneck)}</p>
         <span class="muted">${escapeHtml(record.person)} · ${escapeHtml(record.product)}</span>
@@ -952,7 +988,7 @@ function renderOwners() {
   const max = Math.max(...PERSONS.map((person) => data.filter((record) => record.person === person).length), 1);
   els.ownerList.innerHTML = PERSONS.map((person) => {
     const owned = data.filter((record) => record.person === person);
-    const signed = owned.filter((record) => record.stage === "已签约").length;
+    const signed = owned.filter((record) => ["已合作", "深度合作"].includes(displayStageLabelForRecord(record))).length;
     const blocked = owned.filter((record) => record.bottleneck).length;
     return `
       <div class="owner-item">
@@ -963,7 +999,7 @@ function renderOwners() {
         <div class="progress-track">
           <div class="progress-fill" style="--progress:${(owned.length / max) * 100}%; --progress-color:#2563eb"></div>
         </div>
-        <span class="muted">已签约 ${signed} · 卡点 ${blocked}</span>
+        <span class="muted">已合作 ${signed} · 卡点 ${blocked}</span>
       </div>
     `;
   }).join("");
@@ -973,9 +1009,9 @@ function renderInsightSummary() {
   const data = filteredRecords();
   const stats = statsFor(data);
   const cards = [
-    { title: "签约转化", desc: `${percent(stats.conversion)} active-to-signed`, icon: "chart", color: "#2563eb", soft: "#eaf2ff" },
-    { title: "样品推进", desc: `${data.filter((r) => r.stage === "已寄样").length} 位达人已寄样`, icon: "truck", color: "#22c55e", soft: "#eaf8f1" },
-    { title: "试播观察", desc: `${data.filter((r) => r.stage === "试播中").length} 位达人试播中`, icon: "play", color: "#ec4899", soft: "#fdf2f8" },
+    { title: "合作转化", desc: `${percent(stats.conversion)} 已合作/深度合作`, icon: "chart", color: "#2563eb", soft: "#eaf2ff" },
+    { title: "样品推进", desc: `${data.filter((r) => displayStageLabelForRecord(r) === "已寄样").length} 位达人已寄样`, icon: "truck", color: "#22c55e", soft: "#eaf8f1" },
+    { title: "排期推进", desc: `${data.filter((r) => displayStageLabelForRecord(r) === "待排期").length} 位达人待排期`, icon: "play", color: "#ec4899", soft: "#fdf2f8" },
     { title: "卡点处理", desc: `${stats.bottlenecks} 项阻塞待跟进`, icon: "alert", color: "#ef4444", soft: "#feecec" },
     { title: "重点达人", desc: `${stats.sTier} 位 S 级达人`, icon: "star", color: "#f59e0b", soft: "#fff7e6" },
   ];
@@ -993,9 +1029,10 @@ function renderInsightSummary() {
 
 function renderFunnelChart() {
   const data = filteredRecords();
-  const max = Math.max(...STAGES.map((stage) => data.filter((record) => record.stage === stage.label).length), 1);
-  els.funnelChart.innerHTML = STAGES.map((stage) => {
-    const count = data.filter((record) => record.stage === stage.label).length;
+  const rows = displayStageRows(data);
+  const max = Math.max(...rows.map((row) => row.value), 1);
+  els.funnelChart.innerHTML = rows.map((stage) => {
+    const count = stage.value;
     const width = count ? Math.max((count / max) * 100, 12) : 0;
     return `
       <div class="funnel-row">
@@ -1039,8 +1076,8 @@ function renderGroupChart() {
           <span class="muted">${groupRecords.length} 人</span>
         </div>
         <div class="stack-bar">
-          ${STAGES.map((stage) => {
-            const count = groupRecords.filter((record) => record.stage === stage.label).length;
+          ${PIPELINE_STAGES.map((stage) => {
+            const count = groupRecords.filter((record) => displayStageLabelForRecord(record) === stage.label).length;
             return count ? `<span class="stack-segment" title="${stage.label} ${count}" style="--segment-width:${(count / total) * 100}%; --segment-color:${stage.color}"></span>` : "";
           }).join("")}
         </div>
@@ -1053,12 +1090,12 @@ function renderFormatGrid() {
   const data = filteredRecords();
   els.formatGrid.innerHTML = FORMATS.map((format) => {
     const count = data.filter((record) => record.format === format).length;
-    const signed = data.filter((record) => record.format === format && record.stage === "已签约").length;
+    const signed = data.filter((record) => record.format === format && ["已合作", "深度合作"].includes(displayStageLabelForRecord(record))).length;
     return `
       <div class="format-card">
         <div class="format-card-head">${icon(formatIcon(format))}<span>${format}</span></div>
         <strong>${count}</strong>
-        <span class="muted">已签约 ${signed}</span>
+        <span class="muted">已合作 ${signed}</span>
       </div>
     `;
   }).join("");
@@ -1071,7 +1108,7 @@ function renderDirectory() {
 }
 
 function renderDirectoryRow(record) {
-  const stage = stageMeta(record.stage);
+  const stage = displayStageForRecord(record);
   const tier = tierMeta[record.tier];
   return `
     <tr>
@@ -1081,7 +1118,7 @@ function renderDirectoryRow(record) {
       <td>${escapeHtml(record.product)}</td>
       <td>${escapeHtml(record.group)}</td>
       <td>${escapeHtml(record.format)}</td>
-      <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${record.stage}</span></td>
+      <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span></td>
       <td>${escapeHtml(record.person)}</td>
       <td>${record.bottleneck ? `<span class="risk-pill">${icon("alert")}有卡点</span>` : `<span class="muted">无</span>`}</td>
       <td><button class="small-button" type="button" data-record-detail="${record.id}">${icon("edit")}详情</button></td>
@@ -1137,11 +1174,11 @@ function closeDrawer() {
 function openRecordDrawer(recordId) {
   const record = state.records.find((item) => item.id === Number(recordId));
   if (!record) return;
-  const stage = stageMeta(record.stage);
+  const stage = displayStageForRecord(record);
   const tier = tierMeta[record.tier];
-  const currentIndex = stageIndex(record.stage);
-  const nextStage = STAGES[currentIndex + 1]?.label;
-  const previousStage = STAGES[currentIndex - 1]?.label;
+  const currentIndex = displayStageIndexForRecord(record);
+  const nextStage = PIPELINE_STAGES[currentIndex + 1]?.label;
+  const previousStage = PIPELINE_STAGES[currentIndex - 1]?.label;
 
   openDrawer({
     kicker: "达人详情",
@@ -1163,7 +1200,7 @@ function openRecordDrawer(recordId) {
           <div class="detail-line"><span>组别</span><strong>${escapeHtml(record.group)}</strong></div>
           <div class="detail-line"><span>玩法</span><strong>${escapeHtml(record.format)}</strong></div>
           <div class="detail-line"><span>负责商务</span><strong>${escapeHtml(record.person)}</strong></div>
-          <div class="detail-line"><span>状态</span><strong style="color:${stage.color}">${record.stage}</strong></div>
+          <div class="detail-line"><span>状态</span><strong style="color:${stage.color}">${stage.label}</strong></div>
         </div>
         <div class="detail-block">
           <h4>卡点 / 备注</h4>
@@ -1182,8 +1219,9 @@ function openRecordDrawer(recordId) {
 function openEditDrawer(recordId) {
   const record = recordId
     ? state.records.find((item) => item.id === Number(recordId))
-    : { id: "", name: "", tier: "A", type: "美垂", product: "定妆喷雾", group: BUSINESS_PEOPLE[0].group, format: "专场", stage: "待触达", person: BUSINESS_PEOPLE[0].name, bottleneck: "" };
+    : { id: "", name: "", tier: "A", type: "美垂", product: "定妆喷雾", group: BUSINESS_PEOPLE[0].group, format: "专场", stage: "公海达人", person: BUSINESS_PEOPLE[0].name, bottleneck: "" };
   if (!record) return;
+  const selectedStage = displayStageLabelForRecord(record);
 
   openDrawer({
     kicker: record.id ? "编辑达人" : "添加达人",
@@ -1200,7 +1238,7 @@ function openEditDrawer(recordId) {
         ${selectField("product", "产品", PRODUCTS, record.product)}
         ${selectField("group", "组别", GROUPS, record.group)}
         ${selectField("format", "达人玩法", FORMATS, record.format)}
-        ${selectField("stage", "当前状态", STAGES.map((stageItem) => stageItem.label), record.stage)}
+        ${selectField("stage", "当前状态", PIPELINE_STAGES.map((stageItem) => stageItem.label), selectedStage)}
         ${selectField("person", "负责商务", PERSONS, record.person)}
         <label class="form-field full">
           <span>卡点 / 备注</span>
@@ -1285,6 +1323,9 @@ function saveRecord(form) {
   const data = new FormData(form);
   const id = data.get("id") ? Number(data.get("id")) : null;
   const person = String(data.get("person"));
+  const selectedStage = String(data.get("stage"));
+  let nextFormat = String(data.get("format"));
+  if (selectedStage === "深度合作" && nextFormat !== "专场") nextFormat = "专场";
   const nextRecord = {
     id: id || state.nextId++,
     name: String(data.get("name") || "未命名").trim(),
@@ -1292,8 +1333,8 @@ function saveRecord(form) {
     type: String(data.get("type")),
     product: String(data.get("product")),
     group: BUSINESS_GROUP_BY_PERSON[person] || String(data.get("group")),
-    format: String(data.get("format")),
-    stage: String(data.get("stage")),
+    format: nextFormat,
+    stage: sourceStageForDisplay(selectedStage),
     person,
     bottleneck: String(data.get("bottleneck") || "").trim(),
   };
@@ -1350,8 +1391,10 @@ function resetSalesMetrics() {
 function moveRecord(recordId, targetStage) {
   const record = state.records.find((item) => item.id === Number(recordId));
   if (!record) return;
-  record.stage = targetStage;
-  if (targetStage !== "已流失") record.bottleneck = "";
+  const sourceStage = sourceStageForDisplay(targetStage);
+  record.stage = sourceStage;
+  if (targetStage === "深度合作" && record.format !== "专场") record.format = "专场";
+  if (sourceStage !== "已流失") record.bottleneck = "";
   updateTimestamp();
   renderAll();
   openRecordDrawer(record.id);
@@ -1379,7 +1422,7 @@ function exportCsv() {
     record.product,
     record.group,
     record.format,
-    record.stage,
+    displayStageLabelForRecord(record),
     record.person,
     record.bottleneck,
   ]);
