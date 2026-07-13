@@ -261,10 +261,13 @@
             </button>
             <div class="quarter-popover" id="quarterPopover" hidden></div>
           </div>
-          <button class="top-control" type="button">
-            Compare: 近30天
-            <svg class="chevron"><use href="#icon-chevron"></use></svg>
-          </button>
+          <div class="period-popover-wrap" id="timeRangeControl">
+            <button class="top-control" id="timeRangeControlBtn" type="button" aria-expanded="false" aria-controls="timeRangePopover">
+              <span id="timeRangeControlLabel">Compare: 近30天</span>
+              <svg class="chevron"><use href="#icon-chevron"></use></svg>
+            </button>
+            <div class="time-range-popover" id="timeRangePopover" hidden></div>
+          </div>
           <button class="icon-button" id="exportBtn" type="button" aria-label="导出 CSV" title="导出 CSV">
             <svg><use href="#icon-download"></use></svg>
           </button>

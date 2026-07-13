@@ -79,6 +79,14 @@ const SALES_TEAM_META = [
 
 const chartPalette = ["#2563eb", "#8b5cf6", "#ec4899", "#f59e0b", "#14b8a6", "#3b82f6", "#ef4444", "#84cc16"];
 const SALES_METRICS_STORAGE_KEY = "crm-sales-metrics-v1";
+const TIME_RANGE_OPTIONS = [
+  { id: "7d", label: "近7天", desc: "最近一周成交节奏", factor: 0.28, previousFactor: 0.26, targetFactor: 0.23, specialFactor: 0.34 },
+  { id: "30d", label: "近30天", desc: "默认滚动月口径", factor: 1, previousFactor: 1, targetFactor: 1, specialFactor: 1 },
+  { id: "90d", label: "近90天", desc: "滚动季度观察", factor: 2.9, previousFactor: 2.72, targetFactor: 3, specialFactor: 2.7 },
+  { id: "month", label: "本月", desc: "自然月累计", factor: 1.08, previousFactor: 1, targetFactor: 1, specialFactor: 1 },
+  { id: "quarter", label: "本季度", desc: "当前季度累计", factor: 3.05, previousFactor: 2.86, targetFactor: 3, specialFactor: 2.9 },
+  { id: "year", label: "全年", desc: "年度累计视角", factor: 6.4, previousFactor: 5.9, targetFactor: 12, specialFactor: 6 },
+];
 
 const tierMeta = {
   S: { color: "#d97706", soft: "#fff7e6", score: 35 },
@@ -197,6 +205,8 @@ const state = {
   salesViewProduct: PRODUCTS[0],
   managementTeam: "",
   quarterPopoverOpen: false,
+  timeRange: "30d",
+  timeRangePopoverOpen: false,
   nextId: 21,
 };
 
@@ -209,6 +219,9 @@ const els = {
   quarterControlBtn: document.getElementById("quarterControlBtn"),
   quarterControlLabel: document.getElementById("quarterControlLabel"),
   quarterPopover: document.getElementById("quarterPopover"),
+  timeRangeControlBtn: document.getElementById("timeRangeControlBtn"),
+  timeRangeControlLabel: document.getElementById("timeRangeControlLabel"),
+  timeRangePopover: document.getElementById("timeRangePopover"),
   filterProduct: document.getElementById("filterProduct"),
   filterGroup: document.getElementById("filterGroup"),
   filterFormat: document.getElementById("filterFormat"),
@@ -346,6 +359,14 @@ function signedPercent(value) {
   return `${sign}${value.toFixed(1)}%`;
 }
 
+function selectedTimeRange() {
+  return TIME_RANGE_OPTIONS.find((option) => option.id === state.timeRange) || TIME_RANGE_OPTIONS[1];
+}
+
+function scaleMoney(value, factor = 1) {
+  return Math.round((value * factor) / 100) * 100;
+}
+
 function recordSales(record) {
   const base = productSalesBase[record.product] || 60000;
   const stageFactor = stageSalesFactor[record.stage] || 0.4;
@@ -384,18 +405,23 @@ function recordLastMonthSpecialCount(record) {
   return Math.max(0, recordSpecialCount(record) - (record.id % 2));
 }
 
-function enrichRecord(record) {
+function enrichRecord(record, options = {}) {
+  const range = options.ignoreTimeRange ? TIME_RANGE_OPTIONS[1] : selectedTimeRange();
+  const sales = scaleMoney(recordSales(record), range.factor);
+  const lastMonthSales = scaleMoney(recordLastMonthSales(record), range.previousFactor);
+  const specialCount = Math.max(0, Math.round(recordSpecialCount(record) * range.specialFactor));
+  const lastMonthSpecialCount = Math.max(0, Math.round(recordLastMonthSpecialCount(record) * range.specialFactor));
   return {
     ...record,
-    sales: recordSales(record),
-    lastMonthSales: recordLastMonthSales(record),
-    specialCount: recordSpecialCount(record),
-    lastMonthSpecialCount: recordLastMonthSpecialCount(record),
+    sales,
+    lastMonthSales,
+    specialCount,
+    lastMonthSpecialCount,
   };
 }
 
-function enrichedRecords(data = filteredRecords()) {
-  return data.map(enrichRecord);
+function enrichedRecords(data = filteredRecords(), options = {}) {
+  return data.map((record) => enrichRecord(record, options));
 }
 
 function sumBy(data, selector) {
@@ -403,7 +429,7 @@ function sumBy(data, selector) {
 }
 
 function defaultSalesMetrics() {
-  const data = enrichedRecords();
+  const data = enrichedRecords(state.records, { ignoreTimeRange: true });
   const currentMonthSales = sumBy(data, (record) => record.sales);
   const previousMonthSales = sumBy(data, (record) => record.lastMonthSales);
   return {
@@ -438,6 +464,86 @@ function loadSalesMetrics() {
 function getSalesMetrics() {
   if (!state.salesMetrics) state.salesMetrics = loadSalesMetrics();
   return state.salesMetrics;
+}
+
+function timeRangeTarget(option, metrics = getSalesMetrics()) {
+  return scaleMoney(metrics.annualTarget / 12, option.targetFactor);
+}
+
+function timeRangeSales(option, metrics = getSalesMetrics()) {
+  if (option.id === "year") return metrics.annualCompletedSales;
+  return scaleMoney(metrics.currentMonthSales, option.factor);
+}
+
+function timeRangePreviousSales(option, metrics = getSalesMetrics()) {
+  if (option.id === "year") return scaleMoney(metrics.annualCompletedSales, 0.86);
+  return scaleMoney(metrics.previousMonthSales, option.previousFactor);
+}
+
+function timeAdjustedSalesMetrics(metrics = getSalesMetrics()) {
+  const range = selectedTimeRange();
+  return {
+    ...metrics,
+    range,
+    currentRangeSales: timeRangeSales(range, metrics),
+    previousRangeSales: timeRangePreviousSales(range, metrics),
+    rangeTarget: timeRangeTarget(range, metrics),
+  };
+}
+
+function renderTimeRangePopover() {
+  if (!els.timeRangeControlBtn || !els.timeRangePopover) return;
+  const metrics = getSalesMetrics();
+  const range = selectedTimeRange();
+  const rows = TIME_RANGE_OPTIONS.map((option) => {
+    const sales = timeRangeSales(option, metrics);
+    const target = timeRangeTarget(option, metrics);
+    const previousSales = timeRangePreviousSales(option, metrics);
+    return {
+      ...option,
+      sales,
+      target,
+      previousSales,
+      completion: target ? (sales / target) * 100 : 0,
+      mom: previousSales ? (sales - previousSales) / previousSales : 0,
+    };
+  });
+  const activeRow = rows.find((row) => row.id === range.id) || rows[1];
+
+  if (els.timeRangeControlLabel) {
+    els.timeRangeControlLabel.textContent = `Compare: ${range.label}`;
+  }
+  els.timeRangeControlBtn.setAttribute("aria-expanded", String(state.timeRangePopoverOpen));
+  els.timeRangeControlBtn.classList.toggle("active", state.timeRangePopoverOpen);
+  els.timeRangePopover.hidden = !state.timeRangePopoverOpen;
+  if (!state.timeRangePopoverOpen) return;
+
+  els.timeRangePopover.innerHTML = `
+    <div class="time-range-popover-head">
+      <div>
+        <span class="panel-kicker">Time Filter</span>
+        <h3>选择时间维度</h3>
+      </div>
+      <strong>${compactCurrency(activeRow.sales)}</strong>
+    </div>
+    <div class="time-range-active">
+      <span>${escapeHtml(activeRow.label)}销售额</span>
+      <strong>${Math.round(activeRow.completion)}%</strong>
+      <em>${signedPercent(activeRow.mom * 100)} vs 对比周期</em>
+    </div>
+    <div class="time-range-list">
+      ${rows.map((row) => `
+        <button class="time-range-option ${row.id === range.id ? "active" : ""}" type="button" data-time-range="${row.id}" aria-pressed="${row.id === range.id}">
+          <span>
+            <strong>${escapeHtml(row.label)}</strong>
+            <em>${escapeHtml(row.desc)}</em>
+          </span>
+          <b>${compactCurrency(row.sales)}</b>
+          <i><span style="--time-progress:${clamp(row.completion, 0, 100)}%"></span></i>
+        </button>
+      `).join("")}
+    </div>
+  `;
 }
 
 function currentQuarterInfo(metrics = getSalesMetrics()) {
@@ -675,24 +781,26 @@ function renderKpis() {
 }
 
 function managementKpiCards() {
-  const metrics = getSalesMetrics();
-  const monthlySales = metrics.currentMonthSales;
-  const lastMonthSales = metrics.previousMonthSales;
+  const metrics = timeAdjustedSalesMetrics();
+  const monthlySales = metrics.currentRangeSales;
+  const lastMonthSales = metrics.previousRangeSales;
   const annualTarget = metrics.annualTarget;
   const yearlySales = metrics.annualCompletedSales;
   const progress = yearlySales / annualTarget;
   const mom = lastMonthSales ? (monthlySales - lastMonthSales) / lastMonthSales : 0;
   const monthLabel = formatMetricMonth(metrics.month);
+  const rangeLabel = metrics.range.label;
   return [
-    { label: "当月销售额", value: compactCurrency(monthlySales), sub: monthLabel, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#2563eb", soft: "#eaf2ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: `${rangeLabel}销售额`, value: compactCurrency(monthlySales), sub: `${monthLabel} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#2563eb", soft: "#eaf2ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
     { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#8b5cf6", soft: "#f3edff", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
     { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#22c55e", soft: "#eaf8f1", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
-    { label: "环比上月", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 上月`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f59e0b" : "#ef4444", soft: mom >= 0 ? "#fff7e6" : "#feecec", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
+    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f59e0b" : "#ef4444", soft: mom >= 0 ? "#fff7e6" : "#feecec", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
   ];
 }
 
 function personalKpiCards() {
   const person = selectedPerson();
+  const rangeLabel = selectedTimeRange().label;
   const rows = personSalesRows(enrichedRecords(filteredRecords({ ignorePerson: true })));
   const row = rows.find((item) => item.person === person) || rows[0];
   const rank = rows.findIndex((item) => item.person === row.person) + 1;
@@ -702,12 +810,12 @@ function personalKpiCards() {
   const specialGap = nextSpecialLeader ? nextSpecialLeader.specialCount - row.specialCount : 0;
   const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
   return [
-    { label: "当月销售额", value: compactCurrency(row.sales), sub: `${row.person} 当月`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#2563eb", soft: "#eaf2ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: "当月销售额排名", value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#f59e0b", soft: "#fff7e6", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
+    { label: `${rangeLabel}销售额`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#2563eb", soft: "#eaf2ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: `${rangeLabel}销售额排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#f59e0b", soft: "#fff7e6", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
     { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#8b5cf6", soft: "#f3edff", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
     { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#14b8a6", soft: "#e8fbf8", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
     { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#ec4899", soft: "#fdf2f8", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
-    { label: "环比上月", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 上月`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#22c55e" : "#ef4444", soft: mom >= 0 ? "#eaf8f1" : "#feecec", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
+    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 对比周期`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#22c55e" : "#ef4444", soft: mom >= 0 ? "#eaf8f1" : "#feecec", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
   ];
 }
 
@@ -860,7 +968,7 @@ function renderManagementTeamDetail(data) {
   const topTeam = rows.slice().sort((a, b) => b.sales - a.sales)[0] || rows[0];
   const selected = rows.find((row) => row.label === state.managementTeam) || topTeam;
   state.managementTeam = selected?.label || "";
-  if (els.managementTeamPeriod) els.managementTeamPeriod.textContent = formatMetricMonth(getSalesMetrics().month);
+  if (els.managementTeamPeriod) els.managementTeamPeriod.textContent = `${formatMetricMonth(getSalesMetrics().month)} · ${selectedTimeRange().label}`;
 
   if (!selected) {
     els.managementTeamDetail.innerHTML = `<div class="empty-state">暂无团队数据</div>`;
@@ -901,7 +1009,7 @@ function renderManagementTeamDetail(data) {
         <div class="team-focus-metrics">
           <div><span>保底目标</span><strong>${selected.target ? compactCurrency(selected.target) : "¥0"}</strong></div>
           <div><span>冲刺目标</span><strong>${selected.sprintTarget ? compactCurrency(selected.sprintTarget) : "¥0"}</strong></div>
-          <div><span>环比上月</span><strong class="${selected.mom < 0 ? "danger" : "success"}">${signedPercent(selected.mom * 100)}</strong></div>
+          <div><span>环比上期</span><strong class="${selected.mom < 0 ? "danger" : "success"}">${signedPercent(selected.mom * 100)}</strong></div>
           <div><span>团队商务</span><strong>${selected.personCount} 人</strong></div>
           <div><span>合作转化</span><strong>${percent(selected.conversion)}</strong></div>
           <div><span>卡点数量</span><strong class="${selected.bottleneckCount ? "danger" : ""}">${selected.bottleneckCount}</strong></div>
@@ -1515,7 +1623,7 @@ function renderSalesExplorer() {
   state.salesViewMode = mode;
   if (!PRODUCTS.includes(state.salesViewProduct)) state.salesViewProduct = PRODUCTS[0];
 
-  els.salesViewMonth.textContent = formatMetricMonth(metrics.month);
+  els.salesViewMonth.textContent = `${formatMetricMonth(metrics.month)} · ${selectedTimeRange().label}`;
   document.querySelectorAll("[data-sales-view-mode]").forEach((button) => {
     button.classList.toggle("active", button.dataset.salesViewMode === mode);
   });
@@ -1659,6 +1767,7 @@ function renderDirectoryRow(record) {
 function renderAll() {
   renderKpis();
   renderQuarterPopover();
+  renderTimeRangePopover();
   renderManagementDashboard();
   renderPersonalDashboard();
   renderLegend();
@@ -2006,14 +2115,44 @@ function bindEvents() {
       renderQuarterPopover();
     }
 
+    const timeRangeControl = event.target.closest("#timeRangeControl");
+    if (!timeRangeControl && state.timeRangePopoverOpen) {
+      state.timeRangePopoverOpen = false;
+      renderTimeRangePopover();
+    }
+
     const quarterButton = event.target.closest("#quarterControlBtn");
     if (quarterButton) {
       state.quarterPopoverOpen = !state.quarterPopoverOpen;
+      state.timeRangePopoverOpen = false;
+      renderQuarterPopover();
+      renderTimeRangePopover();
+      return;
+    }
+
+    const timeRangeButton = event.target.closest("#timeRangeControlBtn");
+    if (timeRangeButton) {
+      state.timeRangePopoverOpen = !state.timeRangePopoverOpen;
+      state.quarterPopoverOpen = false;
+      renderTimeRangePopover();
       renderQuarterPopover();
       return;
     }
 
+    const timeRangeOption = event.target.closest("[data-time-range]");
+    if (timeRangeOption) {
+      state.timeRange = timeRangeOption.dataset.timeRange;
+      state.timeRangePopoverOpen = false;
+      renderAll();
+      showToast(`已切换为${selectedTimeRange().label}维度`);
+      return;
+    }
+
     if (event.target.closest("#quarterPopover")) {
+      return;
+    }
+
+    if (event.target.closest("#timeRangePopover")) {
       return;
     }
 
@@ -2096,10 +2235,13 @@ function bindEvents() {
   els.drawerBackdrop.addEventListener("click", closeDrawer);
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && state.quarterPopoverOpen) {
+    if (event.key === "Escape" && (state.quarterPopoverOpen || state.timeRangePopoverOpen)) {
+      const focusTarget = state.timeRangePopoverOpen ? els.timeRangeControlBtn : els.quarterControlBtn;
       state.quarterPopoverOpen = false;
+      state.timeRangePopoverOpen = false;
       renderQuarterPopover();
-      els.quarterControlBtn?.focus();
+      renderTimeRangePopover();
+      focusTarget?.focus();
     }
   });
 
