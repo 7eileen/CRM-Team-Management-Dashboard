@@ -20,11 +20,44 @@ const PIPELINE_STAGES = [
 ];
 
 const PRODUCTS = ["定妆喷雾", "气垫pro", "防晒素颜霜", "防晒喷雾"];
-const GROUPS = ["A", "B", "C"];
 const FORMATS = ["专场", "混播", "单品直播间", "短视频挂车", "IP小号"];
 const TYPES = ["美垂", "生活分享", "三农", "时尚穿搭", "美食", "母婴", "剧情搞笑", "其他"];
 const TIERS = ["S", "A", "B", "C"];
-const PERSONS = ["张三", "李四", "王五", "赵六"];
+const MANAGER = "六六";
+const BUSINESS_PEOPLE = [
+  { name: "戴娜", group: "A3组" },
+  { name: "周鸿美", group: "A3组" },
+  { name: "窦婉婷", group: "B1组" },
+  { name: "池维杞", group: "B1组" },
+  { name: "姚慧英", group: "B1组" },
+  { name: "刘则宇黄娇", group: "达播合作" },
+  { name: "马雯", group: "专场B组" },
+  { name: "郑若楠", group: "专场B组" },
+  { name: "谭燕琳", group: "专场B组" },
+  { name: "郭洁玲", group: "专场B组" },
+  { name: "徐怀玉", group: "B2组" },
+  { name: "王娅兰", group: "B2组" },
+  { name: "俞梦薇", group: "B2组" },
+  { name: "邓斯婕", group: "B2组" },
+  { name: "黄建新", group: "数据中台组" },
+  { name: "叶倩文", group: "数据中台组" },
+  { name: "黄欣瑜", group: "A1组" },
+  { name: "张如茜", group: "A1组" },
+  { name: "郎嘉欣", group: "A1组" },
+  { name: "欧阳婉怡", group: "A1组" },
+  { name: "杨洁", group: "专场A组" },
+  { name: "辛思怡", group: "专场A组" },
+  { name: "曹艳媚", group: "专场A组" },
+  { name: "陈思奇", group: "专场A组" },
+  { name: "许嘉敏", group: "A2组" },
+  { name: "王蕾媛", group: "A2组" },
+];
+const PERSONS = BUSINESS_PEOPLE.map((person) => person.name);
+const GROUPS = Array.from(new Set(BUSINESS_PEOPLE.map((person) => person.group)));
+const BUSINESS_GROUP_BY_PERSON = BUSINESS_PEOPLE.reduce((acc, person) => {
+  acc[person.name] = person.group;
+  return acc;
+}, {});
 
 const chartPalette = ["#2563eb", "#8b5cf6", "#ec4899", "#f59e0b", "#14b8a6", "#3b82f6", "#ef4444", "#84cc16"];
 
@@ -81,26 +114,26 @@ const formatSalesFactor = {
 };
 
 const initialRecords = [
-  { id: 1, name: "小美酱", tier: "S", type: "美垂", product: "定妆喷雾", group: "A", format: "专场", stage: "已签约", person: "张三", bottleneck: "" },
-  { id: 2, name: "乡村阿花", tier: "A", type: "三农", product: "防晒素颜霜", group: "B", format: "短视频挂车", stage: "试播中", person: "李四", bottleneck: "排期冲突，等达人档期" },
-  { id: 3, name: "生活达人Lily", tier: "A", type: "生活分享", product: "气垫pro", group: "A", format: "混播", stage: "沟通中", person: "张三", bottleneck: "达人对佣金比例有异议" },
-  { id: 4, name: "潮流小K", tier: "B", type: "时尚穿搭", product: "定妆喷雾", group: "C", format: "单品直播间", stage: "已寄样", person: "王五", bottleneck: "" },
-  { id: 5, name: "美食控阿强", tier: "C", type: "美食", product: "防晒喷雾", group: "B", format: "IP小号", stage: "待触达", person: "李四", bottleneck: "" },
-  { id: 6, name: "辣妈CC", tier: "S", type: "母婴", product: "气垫pro", group: "A", format: "专场", stage: "洽谈排期", person: "张三", bottleneck: "报价超出预算30%" },
-  { id: 7, name: "化妆师老罗", tier: "A", type: "美垂", product: "定妆喷雾", group: "C", format: "混播", stage: "已触达", person: "王五", bottleneck: "" },
-  { id: 8, name: "田野阿宝", tier: "B", type: "三农", product: "防晒喷雾", group: "B", format: "短视频挂车", stage: "沟通中", person: "李四", bottleneck: "" },
-  { id: 9, name: "Vicky爱分享", tier: "A", type: "生活分享", product: "防晒素颜霜", group: "A", format: "专场", stage: "已寄样", person: "赵六", bottleneck: "样品物流延迟" },
-  { id: 10, name: "段子手大刘", tier: "B", type: "剧情搞笑", product: "防晒喷雾", group: "C", format: "短视频挂车", stage: "待触达", person: "王五", bottleneck: "" },
-  { id: 11, name: "美妆课代表", tier: "S", type: "美垂", product: "气垫pro", group: "A", format: "单品直播间", stage: "已签约", person: "张三", bottleneck: "" },
-  { id: 12, name: "小城日记", tier: "C", type: "生活分享", product: "定妆喷雾", group: "B", format: "IP小号", stage: "已触达", person: "李四", bottleneck: "" },
-  { id: 13, name: "穿搭达人Nina", tier: "A", type: "时尚穿搭", product: "防晒素颜霜", group: "C", format: "混播", stage: "试播中", person: "王五", bottleneck: "试播数据不达标，需二次评估" },
-  { id: 14, name: "农家胖哥", tier: "B", type: "三农", product: "防晒喷雾", group: "B", format: "单品直播间", stage: "洽谈排期", person: "李四", bottleneck: "" },
-  { id: 15, name: "小白的美妆日记", tier: "B", type: "美垂", product: "定妆喷雾", group: "A", format: "短视频挂车", stage: "沟通中", person: "赵六", bottleneck: "" },
-  { id: 16, name: "厨神阿欢", tier: "C", type: "美食", product: "防晒素颜霜", group: "C", format: "IP小号", stage: "已流失", person: "王五", bottleneck: "达人明确拒绝合作" },
-  { id: 17, name: "国际庄小马", tier: "B", type: "剧情搞笑", product: "气垫pro", group: "B", format: "短视频挂车", stage: "待触达", person: "李四", bottleneck: "" },
-  { id: 18, name: "辣妹CC酱", tier: "A", type: "美垂", product: "防晒喷雾", group: "A", format: "混播", stage: "已寄样", person: "赵六", bottleneck: "" },
-  { id: 19, name: "宝妈的精致生活", tier: "C", type: "母婴", product: "气垫pro", group: "C", format: "专场", stage: "沟通中", person: "王五", bottleneck: "需等618大促结束后再谈" },
-  { id: 20, name: "三叔的院子", tier: "A", type: "三农", product: "防晒素颜霜", group: "B", format: "短视频挂车", stage: "已签约", person: "李四", bottleneck: "" },
+  { id: 1, name: "小美酱", tier: "S", type: "美垂", product: "定妆喷雾", group: "A3组", format: "专场", stage: "已签约", person: "戴娜", bottleneck: "" },
+  { id: 2, name: "乡村阿花", tier: "A", type: "三农", product: "防晒素颜霜", group: "A3组", format: "短视频挂车", stage: "试播中", person: "周鸿美", bottleneck: "排期冲突，等达人档期" },
+  { id: 3, name: "生活达人Lily", tier: "A", type: "生活分享", product: "气垫pro", group: "B1组", format: "混播", stage: "沟通中", person: "窦婉婷", bottleneck: "达人对佣金比例有异议" },
+  { id: 4, name: "潮流小K", tier: "B", type: "时尚穿搭", product: "定妆喷雾", group: "B1组", format: "单品直播间", stage: "已寄样", person: "池维杞", bottleneck: "" },
+  { id: 5, name: "美食控阿强", tier: "C", type: "美食", product: "防晒喷雾", group: "B1组", format: "IP小号", stage: "待触达", person: "姚慧英", bottleneck: "" },
+  { id: 6, name: "辣妈CC", tier: "S", type: "母婴", product: "气垫pro", group: "达播合作", format: "专场", stage: "洽谈排期", person: "刘则宇黄娇", bottleneck: "报价超出预算30%" },
+  { id: 7, name: "化妆师老罗", tier: "A", type: "美垂", product: "定妆喷雾", group: "专场B组", format: "混播", stage: "已触达", person: "马雯", bottleneck: "" },
+  { id: 8, name: "田野阿宝", tier: "B", type: "三农", product: "防晒喷雾", group: "专场B组", format: "短视频挂车", stage: "沟通中", person: "郑若楠", bottleneck: "" },
+  { id: 9, name: "Vicky爱分享", tier: "A", type: "生活分享", product: "防晒素颜霜", group: "专场B组", format: "专场", stage: "已寄样", person: "谭燕琳", bottleneck: "样品物流延迟" },
+  { id: 10, name: "段子手大刘", tier: "B", type: "剧情搞笑", product: "防晒喷雾", group: "专场B组", format: "短视频挂车", stage: "待触达", person: "郭洁玲", bottleneck: "" },
+  { id: 11, name: "美妆课代表", tier: "S", type: "美垂", product: "气垫pro", group: "B2组", format: "单品直播间", stage: "已签约", person: "徐怀玉", bottleneck: "" },
+  { id: 12, name: "小城日记", tier: "C", type: "生活分享", product: "定妆喷雾", group: "B2组", format: "IP小号", stage: "已触达", person: "王娅兰", bottleneck: "" },
+  { id: 13, name: "穿搭达人Nina", tier: "A", type: "时尚穿搭", product: "防晒素颜霜", group: "B2组", format: "混播", stage: "试播中", person: "俞梦薇", bottleneck: "试播数据不达标，需二次评估" },
+  { id: 14, name: "农家胖哥", tier: "B", type: "三农", product: "防晒喷雾", group: "B2组", format: "单品直播间", stage: "洽谈排期", person: "邓斯婕", bottleneck: "" },
+  { id: 15, name: "小白的美妆日记", tier: "B", type: "美垂", product: "定妆喷雾", group: "数据中台组", format: "短视频挂车", stage: "沟通中", person: "黄建新", bottleneck: "" },
+  { id: 16, name: "厨神阿欢", tier: "C", type: "美食", product: "防晒素颜霜", group: "数据中台组", format: "IP小号", stage: "已流失", person: "叶倩文", bottleneck: "达人明确拒绝合作" },
+  { id: 17, name: "国际庄小马", tier: "B", type: "剧情搞笑", product: "气垫pro", group: "A1组", format: "短视频挂车", stage: "待触达", person: "黄欣瑜", bottleneck: "" },
+  { id: 18, name: "辣妹CC酱", tier: "A", type: "美垂", product: "防晒喷雾", group: "A1组", format: "混播", stage: "已寄样", person: "张如茜", bottleneck: "" },
+  { id: 19, name: "宝妈的精致生活", tier: "C", type: "母婴", product: "气垫pro", group: "A1组", format: "专场", stage: "沟通中", person: "郎嘉欣", bottleneck: "需等618大促结束后再谈" },
+  { id: 20, name: "三叔的院子", tier: "A", type: "三农", product: "防晒素颜霜", group: "A1组", format: "短视频挂车", stage: "已签约", person: "欧阳婉怡", bottleneck: "" },
 ];
 
 const state = {
@@ -505,7 +538,7 @@ function renderManagementDashboard() {
   const data = enrichedRecords();
   const productRows = groupSales(data, "product", PRODUCTS).map((row, index) => ({ ...row, icon: "package", color: chartPalette[index] }));
   const typeRows = groupSales(data, "type", TYPES).map((row, index) => ({ ...row, icon: typeIcon(row.label), color: chartPalette[index] }));
-  const teamRows = groupSales(data, "group", GROUPS).map((row, index) => ({ label: `${row.label}组`, value: row.value, icon: "users", color: chartPalette[index + 2] }));
+  const teamRows = groupSales(data, "group", GROUPS).map((row, index) => ({ label: row.label, value: row.value, icon: "users", color: chartPalette[(index + 2) % chartPalette.length] }));
   const tierRows = groupSales(data, "tier", TIERS).map((row) => ({ ...row, label: `${row.label}级`, icon: "star", color: tierMeta[row.label]?.color }));
   const stageRows = groupSales(data, "stage", STAGES.map((stage) => stage.label)).map((row) => ({ ...row, icon: stageMeta(row.label).icon, color: stageMeta(row.label).color }));
 
@@ -536,7 +569,7 @@ function renderManagementPersonRank(data) {
           <em>${row.talentCount} 位达人 · ${row.specialCount} 场专场</em>
         </span>
         <span class="rank-meter">
-          <i style="--rank-width:${(row.sales / max) * 100}%; --rank-color:${chartPalette[index]}"></i>
+          <i style="--rank-width:${(row.sales / max) * 100}%; --rank-color:${chartPalette[index % chartPalette.length]}"></i>
         </span>
         <b>${compactCurrency(row.sales)}</b>
         <em class="rank-growth ${mom < 0 ? "negative" : ""}">${signedPercent(mom * 100)}</em>
@@ -555,7 +588,7 @@ function renderPersonalDashboard() {
   const gap = previous ? previous.sales - row.sales : 0;
 
   if (els.personalTitle) els.personalTitle.textContent = `${row.person} CRM 个人看板`;
-  if (els.personalScopeBadge) els.personalScopeBadge.textContent = state.filters.person ? "当前商务" : "默认张三";
+  if (els.personalScopeBadge) els.personalScopeBadge.textContent = state.filters.person ? "当前商务" : `默认${PERSONS[0]}`;
   if (els.personalSummary) {
     els.personalSummary.innerHTML = `
       <div class="summary-tile">
@@ -783,7 +816,7 @@ function recordNameCell(record) {
       <span class="record-name-icon" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">${icon(typeIcon(record.type))}</span>
       <div>
         <strong>${escapeHtml(record.name)}</strong>
-        <span>${escapeHtml(record.group)}组 · ${escapeHtml(record.format)}</span>
+        <span>${escapeHtml(record.group)} · ${escapeHtml(record.format)}</span>
       </div>
     </div>
   `;
@@ -835,7 +868,7 @@ function renderTalentCard(record) {
       </div>
       ${record.bottleneck ? `<div class="bottleneck-chip">${icon("alert")}<span>${escapeHtml(record.bottleneck)}</span></div>` : ""}
       <div class="talent-card-foot">
-        <span class="muted">${escapeHtml(record.group)}组 · ${escapeHtml(record.person)}</span>
+        <span class="muted">${escapeHtml(record.group)} · ${escapeHtml(record.person)}</span>
         <span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span>
       </div>
     </button>
@@ -947,7 +980,7 @@ function renderGroupChart() {
     return `
       <div class="stack-group">
         <div class="stack-head">
-          <span>${group}组</span>
+          <span>${group}</span>
           <span class="muted">${groupRecords.length} 人</span>
         </div>
         <div class="stack-bar">
@@ -991,7 +1024,7 @@ function renderDirectoryRow(record) {
       <td><span class="tier-pill" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">${record.tier}级</span></td>
       <td>${escapeHtml(record.type)}</td>
       <td>${escapeHtml(record.product)}</td>
-      <td>${escapeHtml(record.group)}组</td>
+      <td>${escapeHtml(record.group)}</td>
       <td>${escapeHtml(record.format)}</td>
       <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${record.stage}</span></td>
       <td>${escapeHtml(record.person)}</td>
@@ -1072,7 +1105,7 @@ function openRecordDrawer(recordId) {
           <div class="detail-line"><span>等级</span><strong style="color:${tier.color}">${record.tier}级</strong></div>
           <div class="detail-line"><span>类型</span><strong>${escapeHtml(record.type)}</strong></div>
           <div class="detail-line"><span>产品</span><strong>${escapeHtml(record.product)}</strong></div>
-          <div class="detail-line"><span>组别</span><strong>${escapeHtml(record.group)}组</strong></div>
+          <div class="detail-line"><span>组别</span><strong>${escapeHtml(record.group)}</strong></div>
           <div class="detail-line"><span>玩法</span><strong>${escapeHtml(record.format)}</strong></div>
           <div class="detail-line"><span>负责商务</span><strong>${escapeHtml(record.person)}</strong></div>
           <div class="detail-line"><span>状态</span><strong style="color:${stage.color}">${record.stage}</strong></div>
@@ -1094,7 +1127,7 @@ function openRecordDrawer(recordId) {
 function openEditDrawer(recordId) {
   const record = recordId
     ? state.records.find((item) => item.id === Number(recordId))
-    : { id: "", name: "", tier: "A", type: "美垂", product: "定妆喷雾", group: "A", format: "专场", stage: "待触达", person: "张三", bottleneck: "" };
+    : { id: "", name: "", tier: "A", type: "美垂", product: "定妆喷雾", group: BUSINESS_PEOPLE[0].group, format: "专场", stage: "待触达", person: BUSINESS_PEOPLE[0].name, bottleneck: "" };
   if (!record) return;
 
   openDrawer({
@@ -1138,16 +1171,17 @@ function selectField(name, label, options, value) {
 function saveRecord(form) {
   const data = new FormData(form);
   const id = data.get("id") ? Number(data.get("id")) : null;
+  const person = String(data.get("person"));
   const nextRecord = {
     id: id || state.nextId++,
     name: String(data.get("name") || "未命名").trim(),
     tier: String(data.get("tier")),
     type: String(data.get("type")),
     product: String(data.get("product")),
-    group: String(data.get("group")),
+    group: BUSINESS_GROUP_BY_PERSON[person] || String(data.get("group")),
     format: String(data.get("format")),
     stage: String(data.get("stage")),
-    person: String(data.get("person")),
+    person,
     bottleneck: String(data.get("bottleneck") || "").trim(),
   };
 
@@ -1296,6 +1330,15 @@ function bindEvents() {
     if (event.target.id === "recordForm") {
       event.preventDefault();
       saveRecord(event.target);
+    }
+  });
+
+  els.drawerBody.addEventListener("change", (event) => {
+    if (event.target.name === "person") {
+      const groupSelect = event.target.form?.elements.group;
+      if (groupSelect && BUSINESS_GROUP_BY_PERSON[event.target.value]) {
+        groupSelect.value = BUSINESS_GROUP_BY_PERSON[event.target.value];
+      }
     }
   });
 
