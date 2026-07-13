@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>达人管理 CRM 看板</title>
+  <title>达人跟进 CRM 看板</title>
   <link rel="icon" href="data:," />
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -24,6 +24,12 @@
       <rect x="14" y="3" width="7" height="10" rx="2"></rect>
       <path d="M14 17h7"></path>
       <path d="M14 21h5"></path>
+    </symbol>
+    <symbol id="icon-grid" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="2"></rect>
+      <rect x="14" y="3" width="7" height="7" rx="2"></rect>
+      <rect x="3" y="14" width="7" height="7" rx="2"></rect>
+      <rect x="14" y="14" width="7" height="7" rx="2"></rect>
     </symbol>
     <symbol id="icon-users" viewBox="0 0 24 24">
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
@@ -143,6 +149,16 @@
       <circle cx="9" cy="7" r="4"></circle>
       <path d="m16 11 2 2 4-4"></path>
     </symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"></circle>
+      <path d="M12 7v5l3 2"></path>
+    </symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24">
+      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"></path>
+      <path d="M14 3v6h6"></path>
+      <path d="M8 13h8"></path>
+      <path d="M8 17h5"></path>
+    </symbol>
   </svg>
 
   <div class="app-shell">
@@ -156,22 +172,29 @@
       </div>
 
       <nav class="side-nav">
-        <button class="nav-item active" type="button" data-view="pipeline" aria-current="page">
+        <button class="nav-item active" type="button" data-view="dashboard" aria-current="page">
+          <svg><use href="#icon-grid"></use></svg>
+          数据总览
+        </button>
+        <button class="nav-item" type="button" data-view="pipeline">
           <svg><use href="#icon-board"></use></svg>
           跟进流水线
-        </button>
-        <button class="nav-item" type="button" data-view="insight">
-          <svg><use href="#icon-funnel"></use></svg>
-          数据分析
         </button>
         <button class="nav-item" type="button" data-view="directory">
           <svg><use href="#icon-table"></use></svg>
           达人列表
         </button>
+        <button class="nav-item" type="button" data-view="insight">
+          <svg><use href="#icon-funnel"></use></svg>
+          分析报表
+        </button>
       </nav>
 
       <section class="quick-filters" aria-label="快速筛选">
-        <div class="sidebar-section-title">Quick Filters</div>
+        <div class="sidebar-section-title">
+          <svg><use href="#icon-filter"></use></svg>
+          Quick Filters
+        </div>
         <label>
           <span>产品</span>
           <select id="filterProduct"></select>
@@ -218,8 +241,8 @@
     <main class="workspace">
       <header class="topbar">
         <div class="page-heading">
-          <h1>达人管理</h1>
-          <p>Tracking influencer pipeline, conversion and collaboration risks.</p>
+          <h1>达人跟进 CRM 看板</h1>
+          <p>Monitor influencer pipeline, product collaboration, blockers and conversion.</p>
         </div>
 
         <div class="toolbar" aria-label="筛选与操作">
@@ -249,7 +272,106 @@
       <section class="content">
         <div class="kpi-grid" id="kpiGrid"></div>
 
-        <section class="page-view active" data-page="pipeline" id="pipelinePage">
+        <section class="page-view active" data-page="dashboard" id="dashboardPage">
+          <div class="dashboard-grid">
+            <article class="panel panel-type">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">Category</span>
+                  <h2>达人类型分布</h2>
+                </div>
+                <span class="panel-badge">筛选后</span>
+              </div>
+              <div class="donut-layout">
+                <div class="donut-chart" id="typeDonut"></div>
+                <div class="legend-list" id="typeLegend"></div>
+              </div>
+            </article>
+
+            <article class="panel panel-rank">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">Top Talents</span>
+                  <h2>重点达人推进榜</h2>
+                </div>
+                <span class="panel-badge">Top 5</span>
+              </div>
+              <div class="ranking-list" id="topTalentBars"></div>
+            </article>
+
+            <article class="panel panel-stage">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">Status</span>
+                  <h2>流水线状态概览</h2>
+                </div>
+              </div>
+              <div class="stage-summary" id="stageOverview"></div>
+            </article>
+
+            <article class="panel panel-table">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">Performance</span>
+                  <h2>达人跟进明细</h2>
+                </div>
+                <span class="table-count" id="dashboardTableCount">0 条记录</span>
+              </div>
+              <div class="table-wrap">
+                <table class="record-table dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>达人</th>
+                      <th>等级</th>
+                      <th>类型</th>
+                      <th>产品</th>
+                      <th>状态</th>
+                      <th>商务</th>
+                      <th>卡点</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboardTableBody"></tbody>
+                </table>
+              </div>
+            </article>
+
+            <aside class="dashboard-rail">
+              <article class="panel">
+                <div class="panel-head compact">
+                  <div>
+                    <span class="panel-kicker">Trend</span>
+                    <h2>阶段分布趋势</h2>
+                  </div>
+                  <span class="panel-badge">Stage</span>
+                </div>
+                <div class="stage-trend" id="stageTrendChart"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head compact">
+                  <div>
+                    <span class="panel-kicker">Contribution</span>
+                    <h2>玩法贡献</h2>
+                  </div>
+                </div>
+                <div class="contribution-list" id="formatContribution"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head compact">
+                  <div>
+                    <span class="panel-kicker">Blocked</span>
+                    <h2>卡点 / 阻塞项</h2>
+                  </div>
+                </div>
+                <div class="bottleneck-list" id="bottleneckList"></div>
+              </article>
+            </aside>
+          </div>
+        </section>
+
+        <section class="page-view" data-page="pipeline" id="pipelinePage">
           <div class="page-layout">
             <article class="panel pipeline-panel">
               <div class="panel-head">
@@ -266,23 +388,54 @@
               <article class="panel">
                 <div class="panel-head compact">
                   <div>
-                    <span class="panel-kicker">Blocked</span>
-                    <h2>卡点 / 阻塞项</h2>
-                  </div>
-                </div>
-                <div class="bottleneck-list" id="bottleneckList"></div>
-              </article>
-
-              <article class="panel">
-                <div class="panel-head compact">
-                  <div>
                     <span class="panel-kicker">Owners</span>
                     <h2>商务跟进量</h2>
                   </div>
                 </div>
                 <div class="owner-list" id="ownerList"></div>
               </article>
+
+              <article class="panel">
+                <div class="panel-head compact">
+                  <div>
+                    <span class="panel-kicker">Format</span>
+                    <h2>玩法结构</h2>
+                  </div>
+                </div>
+                <div class="format-grid" id="formatGrid"></div>
+              </article>
             </aside>
+          </div>
+        </section>
+
+        <section class="page-view" data-page="directory" id="directoryPage">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="panel-kicker">Directory</span>
+                <h2>达人列表</h2>
+              </div>
+              <span class="table-count" id="tableCount">0 条记录</span>
+            </div>
+            <div class="table-wrap">
+              <table class="record-table">
+                <thead>
+                  <tr>
+                    <th>达人</th>
+                    <th>等级</th>
+                    <th>类型</th>
+                    <th>产品</th>
+                    <th>组别</th>
+                    <th>玩法</th>
+                    <th>状态</th>
+                    <th>商务</th>
+                    <th>卡点</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="recordTableBody"></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -318,47 +471,6 @@
               </div>
               <div class="stack-chart" id="groupChart"></div>
             </article>
-
-            <article class="panel">
-              <div class="panel-head">
-                <div>
-                  <span class="panel-kicker">Mix</span>
-                  <h2>玩法结构</h2>
-                </div>
-              </div>
-              <div class="format-grid" id="formatGrid"></div>
-            </article>
-          </div>
-        </section>
-
-        <section class="page-view" data-page="directory" id="directoryPage">
-          <div class="panel">
-            <div class="panel-head">
-              <div>
-                <span class="panel-kicker">Directory</span>
-                <h2>达人列表</h2>
-              </div>
-              <span class="table-count" id="tableCount">0 条记录</span>
-            </div>
-            <div class="table-wrap">
-              <table class="record-table">
-                <thead>
-                  <tr>
-                    <th>达人</th>
-                    <th>等级</th>
-                    <th>类型</th>
-                    <th>产品</th>
-                    <th>组别</th>
-                    <th>玩法</th>
-                    <th>状态</th>
-                    <th>商务</th>
-                    <th>卡点</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody id="recordTableBody"></tbody>
-              </table>
-            </div>
           </div>
         </section>
       </section>
