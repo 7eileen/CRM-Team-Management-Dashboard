@@ -947,7 +947,6 @@ function renderKpis() {
           <strong>${card.value}</strong>
           <div class="metric-trend ${hasTrend && card.trendValue < 0 ? "down" : ""} ${hasTrend ? "" : "no-label"}">
             ${hasTrend ? `${icon(card.trendValue < 0 ? "arrow-right" : "arrow-up")} ${card.trend}` : ""}
-            <span class="vs">${card.sub}</span>
           </div>
         </div>
         ${sparkline(card.path)}
