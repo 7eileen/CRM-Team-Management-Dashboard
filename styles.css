@@ -3102,6 +3102,7 @@ svg {
 }
 
 .form-field.full,
+.metric-team-editor.full,
 .primary-button.full,
 .drawer-actions.full {
   grid-column: 1 / -1;
@@ -3172,6 +3173,8 @@ svg {
 }
 
 .metric-team-editor {
+  width: 100%;
+  min-width: 0;
   display: grid;
   gap: 12px;
   border: 1px solid #e5ecf8;
@@ -3220,6 +3223,7 @@ svg {
 }
 
 .metric-team-card {
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -3229,6 +3233,11 @@ svg {
   background:
     radial-gradient(circle at 98% 0%, color-mix(in srgb, var(--accent, var(--color-primary)) 9%, transparent), transparent 36%),
     linear-gradient(180deg, color-mix(in srgb, var(--accent-soft, #eef3ff) 66%, #ffffff) 0%, #ffffff 100%);
+}
+
+.metric-team-card .form-field,
+.metric-team-card input {
+  min-width: 0;
 }
 
 .metric-team-card h5 {
