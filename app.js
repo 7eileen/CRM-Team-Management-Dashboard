@@ -213,6 +213,9 @@ const state = {
   quarterPopoverOpen: false,
   timeRange: "30d",
   timeRangePopoverOpen: false,
+  calendarMonth: "",
+  customDateStart: "",
+  customDateEnd: "",
   nextId: 21,
 };
 
@@ -391,7 +394,65 @@ function signedPercent(value) {
   return `${sign}${value.toFixed(1)}%`;
 }
 
+function isoDate(year, month, day) {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function parseIsoDate(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
+}
+
+function toIsoDate(date) {
+  return isoDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}
+
+function shiftCalendarMonth(monthKey, offset) {
+  const match = String(monthKey || "").match(/^(\d{4})-(\d{2})$/);
+  const date = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1 + offset, 1)
+    : new Date(new Date().getFullYear(), new Date().getMonth() + offset, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function presetDateRange(option, metrics = getSalesMetrics()) {
+  const match = String(metrics.month || "").match(/^(\d{4})-(\d{2})$/);
+  const year = match ? Number(match[1]) : new Date().getFullYear();
+  const monthIndex = match ? Number(match[2]) - 1 : new Date().getMonth();
+  const end = new Date(year, monthIndex + 1, 0);
+  let start = new Date(end);
+
+  if (option.id === "month") start = new Date(year, monthIndex, 1);
+  else if (option.id === "quarter") start = new Date(year, Math.floor(monthIndex / 3) * 3, 1);
+  else if (option.id === "year") start = new Date(year, 0, 1);
+  else {
+    const days = { "7d": 7, "30d": 30, "90d": 90 }[option.id] || 30;
+    start.setDate(end.getDate() - days + 1);
+  }
+
+  return { start: toIsoDate(start), end: toIsoDate(end) };
+}
+
+function customTimeRange() {
+  const start = parseIsoDate(state.customDateStart);
+  const end = parseIsoDate(state.customDateEnd);
+  if (!start || !end) return null;
+  const days = Math.max(1, Math.round((end - start) / 86400000) + 1);
+  const factor = days / 30;
+  const label = `${String(start.getMonth() + 1).padStart(2, "0")}/${String(start.getDate()).padStart(2, "0")}-${String(end.getMonth() + 1).padStart(2, "0")}/${String(end.getDate()).padStart(2, "0")}`;
+  return {
+    id: "custom",
+    label,
+    desc: `自定义 ${days} 天`,
+    factor,
+    previousFactor: factor,
+    targetFactor: factor,
+    specialFactor: Math.max(0.1, factor),
+  };
+}
+
 function selectedTimeRange() {
+  if (state.timeRange === "custom") return customTimeRange() || TIME_RANGE_OPTIONS[1];
   return TIME_RANGE_OPTIONS.find((option) => option.id === state.timeRange) || TIME_RANGE_OPTIONS[1];
 }
 
@@ -588,52 +649,88 @@ function renderTimeRangePopover() {
   if (!els.timeRangeControlBtn || !els.timeRangePopover) return;
   const metrics = getSalesMetrics();
   const range = selectedTimeRange();
-  const rows = TIME_RANGE_OPTIONS.map((option) => {
-    const sales = timeRangeSales(option, metrics);
-    const target = timeRangeTarget(option, metrics);
-    const previousSales = timeRangePreviousSales(option, metrics);
-    return {
-      ...option,
-      sales,
-      target,
-      previousSales,
-      completion: target ? (sales / target) * 100 : 0,
-      mom: previousSales ? (sales - previousSales) / previousSales : 0,
-    };
-  });
-  const activeRow = rows.find((row) => row.id === range.id) || rows[1];
 
   if (els.timeRangeControlLabel) {
-    els.timeRangeControlLabel.textContent = `Compare: ${range.label}`;
+    els.timeRangeControlLabel.textContent = `时间：${range.label}`;
   }
   els.timeRangeControlBtn.setAttribute("aria-expanded", String(state.timeRangePopoverOpen));
   els.timeRangeControlBtn.classList.toggle("active", state.timeRangePopoverOpen);
   els.timeRangePopover.hidden = !state.timeRangePopoverOpen;
   if (!state.timeRangePopoverOpen) return;
 
+  if (state.timeRange !== "custom") {
+    const preset = presetDateRange(range, metrics);
+    state.customDateStart = preset.start;
+    state.customDateEnd = preset.end;
+  }
+  if (!state.calendarMonth) state.calendarMonth = String(metrics.month || currentMonthKey());
+
+  const monthMatch = state.calendarMonth.match(/^(\d{4})-(\d{2})$/);
+  const year = monthMatch ? Number(monthMatch[1]) : new Date().getFullYear();
+  const month = monthMatch ? Number(monthMatch[2]) : new Date().getMonth() + 1;
+  const firstWeekday = new Date(year, month - 1, 1).getDay();
+  const gridStart = new Date(year, month - 1, 1 - firstWeekday);
+  const calendarDays = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(gridStart);
+    date.setDate(gridStart.getDate() + index);
+    const value = toIsoDate(date);
+    const isStart = value === state.customDateStart;
+    const isEnd = value === state.customDateEnd;
+    const inRange = state.customDateStart && state.customDateEnd && value > state.customDateStart && value < state.customDateEnd;
+    return {
+      value,
+      day: date.getDate(),
+      outside: date.getMonth() !== month - 1,
+      isStart,
+      isEnd,
+      inRange,
+    };
+  });
+  const rangeCaption = state.customDateEnd
+    ? `${state.customDateStart.replaceAll("-", "/")} - ${state.customDateEnd.replaceAll("-", "/")}`
+    : `${state.customDateStart.replaceAll("-", "/")} - 请选择结束日期`;
+
   els.timeRangePopover.innerHTML = `
     <div class="time-range-popover-head">
       <div>
         <span class="panel-kicker">Time Filter</span>
-        <h3>选择时间维度</h3>
+        <h3>选择日期范围</h3>
       </div>
-      <strong>${compactCurrency(activeRow.sales)}</strong>
+      <span class="calendar-range-caption">${escapeHtml(rangeCaption)}</span>
     </div>
-    <div class="time-range-active">
-      <span>${escapeHtml(activeRow.label)}销售额</span>
-      <strong>${Math.round(activeRow.completion)}%</strong>
-      <em>${signedPercent(activeRow.mom * 100)} vs 对比周期</em>
+
+    <div class="calendar-toolbar">
+      <div class="calendar-nav">
+        <button type="button" data-calendar-shift="-12" aria-label="上一年">«</button>
+        <button type="button" data-calendar-shift="-1" aria-label="上个月">‹</button>
+      </div>
+      <strong>${year} 年 ${month} 月</strong>
+      <div class="calendar-nav">
+        <button type="button" data-calendar-shift="1" aria-label="下个月">›</button>
+        <button type="button" data-calendar-shift="12" aria-label="下一年">»</button>
+      </div>
     </div>
-    <div class="time-range-list">
-      ${rows.map((row) => `
-        <button class="time-range-option ${row.id === range.id ? "active" : ""}" type="button" data-time-range="${row.id}" aria-pressed="${row.id === range.id}">
-          <span>
-            <strong>${escapeHtml(row.label)}</strong>
-            <em>${escapeHtml(row.desc)}</em>
-          </span>
-          <b>${compactCurrency(row.sales)}</b>
-          <i><span style="--time-progress:${clamp(row.completion, 0, 100)}%"></span></i>
+
+    <div class="calendar-weekdays" aria-hidden="true">
+      ${["日", "一", "二", "三", "四", "五", "六"].map((day) => `<span>${day}</span>`).join("")}
+    </div>
+    <div class="calendar-grid" role="grid" aria-label="${year}年${month}月">
+      ${calendarDays.map((day) => `
+        <button
+          type="button"
+          class="calendar-day ${day.outside ? "outside" : ""} ${day.inRange ? "in-range" : ""} ${day.isStart ? "range-start" : ""} ${day.isEnd ? "range-end" : ""}"
+          data-calendar-date="${day.value}"
+          aria-label="${day.value}"
+          aria-pressed="${day.isStart || day.isEnd}"
+        >
+          <span>${day.day}</span>
         </button>
+      `).join("")}
+    </div>
+
+    <div class="time-range-shortcuts" aria-label="快捷时间范围">
+      ${TIME_RANGE_OPTIONS.map((option) => `
+        <button class="${option.id === range.id ? "active" : ""}" type="button" data-time-range="${option.id}">${escapeHtml(option.label)}</button>
       `).join("")}
     </div>
   `;
@@ -2156,9 +2253,42 @@ function bindEvents() {
     const timeRangeOption = event.target.closest("[data-time-range]");
     if (timeRangeOption) {
       state.timeRange = timeRangeOption.dataset.timeRange;
+      state.customDateStart = "";
+      state.customDateEnd = "";
+      state.calendarMonth = String(getSalesMetrics().month || currentMonthKey());
       state.timeRangePopoverOpen = false;
       renderAll();
       showToast(`已切换为${selectedTimeRange().label}维度`);
+      return;
+    }
+
+    const calendarShift = event.target.closest("[data-calendar-shift]");
+    if (calendarShift) {
+      state.calendarMonth = shiftCalendarMonth(state.calendarMonth, Number(calendarShift.dataset.calendarShift));
+      renderTimeRangePopover();
+      return;
+    }
+
+    const calendarDate = event.target.closest("[data-calendar-date]");
+    if (calendarDate) {
+      const pickedDate = calendarDate.dataset.calendarDate;
+      if (!state.customDateStart || state.customDateEnd) {
+        state.customDateStart = pickedDate;
+        state.customDateEnd = "";
+        state.timeRange = "custom";
+        renderTimeRangePopover();
+        return;
+      }
+
+      if (pickedDate < state.customDateStart) {
+        state.customDateEnd = state.customDateStart;
+        state.customDateStart = pickedDate;
+      } else {
+        state.customDateEnd = pickedDate;
+      }
+      state.timeRange = "custom";
+      renderAll();
+      showToast(`已筛选 ${selectedTimeRange().label}`);
       return;
     }
 
