@@ -469,26 +469,66 @@ function sumBy(data, selector) {
   return data.reduce((sum, item) => sum + selector(item), 0);
 }
 
+function defaultTeamSalesMetrics(data, annualTarget, annualCompletedSales) {
+  const totalCurrent = sumBy(data, (record) => record.sales);
+  const safeAnnualTarget = Math.max(0, moneyInputValue(annualTarget, 6800000));
+  const safeAnnualCompleted = moneyInputValue(annualCompletedSales, Math.round((totalCurrent * 6.4) / 100) * 100);
+  return SALES_TEAM_META.reduce((acc, team) => {
+    const records = data.filter((record) => teamLabelForGroup(record.group) === team.label);
+    const currentMonthSales = sumBy(records, (record) => record.sales);
+    const previousMonthSales = sumBy(records, (record) => record.lastMonthSales);
+    const share = totalCurrent ? currentMonthSales / totalCurrent : 1 / SALES_TEAM_META.length;
+    acc[team.label] = {
+      currentMonthSales,
+      previousMonthSales,
+      annualCompletedSales: Math.round((safeAnnualCompleted * share) / 100) * 100,
+      annualTarget: Math.round((safeAnnualTarget * share) / 100) * 100,
+    };
+    return acc;
+  }, {});
+}
+
+function normalizeTeamSalesMetrics(metrics = {}, defaults = {}) {
+  const source = metrics && typeof metrics === "object" ? metrics : {};
+  return SALES_TEAM_META.reduce((acc, team) => {
+    const saved = source[team.label] || {};
+    const fallback = defaults[team.label] || {};
+    acc[team.label] = {
+      currentMonthSales: moneyInputValue(saved.currentMonthSales, fallback.currentMonthSales || 0),
+      previousMonthSales: moneyInputValue(saved.previousMonthSales, fallback.previousMonthSales || 0),
+      annualCompletedSales: moneyInputValue(saved.annualCompletedSales, fallback.annualCompletedSales || 0),
+      annualTarget: moneyInputValue(saved.annualTarget, fallback.annualTarget || 0),
+    };
+    return acc;
+  }, {});
+}
+
 function defaultSalesMetrics() {
   const data = enrichedRecords(state.records, { ignoreTimeRange: true });
   const currentMonthSales = sumBy(data, (record) => record.sales);
   const previousMonthSales = sumBy(data, (record) => record.lastMonthSales);
+  const annualTarget = 6800000;
+  const annualCompletedSales = Math.round((currentMonthSales * 6.4) / 100) * 100;
   return {
     month: currentMonthKey(),
     currentMonthSales,
     previousMonthSales,
-    annualTarget: 6800000,
-    annualCompletedSales: Math.round((currentMonthSales * 6.4) / 100) * 100,
+    annualTarget,
+    annualCompletedSales,
+    teamSales: defaultTeamSalesMetrics(data, annualTarget, annualCompletedSales),
   };
 }
 
 function normalizeSalesMetrics(metrics = {}, defaults = defaultSalesMetrics()) {
+  const annualTarget = Math.max(1, moneyInputValue(metrics.annualTarget, defaults.annualTarget));
+  const annualCompletedSales = moneyInputValue(metrics.annualCompletedSales, defaults.annualCompletedSales);
   return {
     month: String(metrics.month || defaults.month),
     currentMonthSales: moneyInputValue(metrics.currentMonthSales, defaults.currentMonthSales),
     previousMonthSales: moneyInputValue(metrics.previousMonthSales, defaults.previousMonthSales),
-    annualTarget: Math.max(1, moneyInputValue(metrics.annualTarget, defaults.annualTarget)),
-    annualCompletedSales: moneyInputValue(metrics.annualCompletedSales, defaults.annualCompletedSales),
+    annualTarget,
+    annualCompletedSales,
+    teamSales: normalizeTeamSalesMetrics(metrics.teamSales, defaults.teamSales),
   };
 }
 
@@ -519,6 +559,27 @@ function timeRangeSales(option, metrics = getSalesMetrics()) {
 function timeRangePreviousSales(option, metrics = getSalesMetrics()) {
   if (option.id === "year") return scaleMoney(metrics.annualCompletedSales, 0.86);
   return scaleMoney(metrics.previousMonthSales, option.previousFactor);
+}
+
+function teamSalesMetric(label, metrics = getSalesMetrics()) {
+  return metrics.teamSales?.[label] || normalizeTeamSalesMetrics({}, defaultSalesMetrics().teamSales)[label] || {};
+}
+
+function timeRangeTeamSales(label, option = selectedTimeRange(), metrics = getSalesMetrics()) {
+  const team = teamSalesMetric(label, metrics);
+  if (option.id === "year") return team.annualCompletedSales || 0;
+  return scaleMoney(team.currentMonthSales || 0, option.factor);
+}
+
+function timeRangeTeamPreviousSales(label, option = selectedTimeRange(), metrics = getSalesMetrics()) {
+  const team = teamSalesMetric(label, metrics);
+  if (option.id === "year") return scaleMoney(team.annualCompletedSales || 0, 0.86);
+  return scaleMoney(team.previousMonthSales || 0, option.previousFactor);
+}
+
+function timeRangeTeamTarget(label, option = selectedTimeRange(), metrics = getSalesMetrics()) {
+  const team = teamSalesMetric(label, metrics);
+  return scaleMoney((team.annualTarget || 0) / 12, option.targetFactor);
 }
 
 function timeAdjustedSalesMetrics(metrics = getSalesMetrics()) {
@@ -835,10 +896,10 @@ function managementKpiCards() {
   const monthLabel = formatMetricMonth(metrics.month);
   const rangeLabel = metrics.range.label;
   return [
-    { label: `${rangeLabel}销售额`, value: compactCurrency(monthlySales), sub: `${monthLabel} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#4f63ff", soft: "#eef3ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "当月销售额", value: compactCurrency(monthlySales), sub: `${monthLabel} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#4f63ff", soft: "#eef3ff", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
     { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#7b5cff", soft: "#f3efff", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
     { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#22c7a7", soft: "#e9fbf7", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
-    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#22c7a7" : "#ef4444", soft: mom >= 0 ? "#e9fbf7" : "#feecec", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
+    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f5a524" : "#ef4444", soft: mom >= 0 ? "#fff7e6" : "#feecec", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
   ];
 }
 
@@ -859,7 +920,7 @@ function personalKpiCards() {
     { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#6d5dfc", soft: "#f1efff", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
     { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#22c7a7", soft: "#e9fbf7", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
     { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#4f8cff", soft: "#eef6ff", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
-    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 对比周期`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#22c7a7" : "#ef4444", soft: mom >= 0 ? "#e9fbf7" : "#feecec", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
+    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 对比周期`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f5a524" : "#ef4444", soft: mom >= 0 ? "#fff7e6" : "#feecec", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
   ];
 }
 
@@ -922,12 +983,14 @@ function renderSalesDonut(container, rows, centerLabel) {
 }
 
 function teamSalesDetailRows(data) {
+  const metrics = getSalesMetrics();
+  const range = selectedTimeRange();
   const rows = SALES_TEAM_META.map((team, teamIndex) => {
     const records = data.filter((record) => teamLabelForGroup(record.group) === team.label);
-    const sales = sumBy(records, (record) => record.sales);
-    const lastMonthSales = sumBy(records, (record) => record.lastMonthSales);
+    const sales = timeRangeTeamSales(team.label, range, metrics);
+    const lastMonthSales = timeRangeTeamPreviousSales(team.label, range, metrics);
     const targetMultiplier = [1.1, 1.18, 1.14][teamIndex % 3];
-    const target = computedSalesTarget(sales, targetMultiplier);
+    const target = timeRangeTeamTarget(team.label, range, metrics) || computedSalesTarget(sales, targetMultiplier);
     const sprintTarget = computedSalesTarget(sales, targetMultiplier + 0.16);
     const signedCount = records.filter((record) => ["已合作", "深度合作"].includes(displayStageLabelForRecord(record))).length;
     const bottleneckCount = records.filter((record) => record.bottleneck).length;
@@ -1011,11 +1074,15 @@ function renderManagementProductTeamDetail(data) {
   const product = productOptions.includes(state.managementTeamProduct) ? state.managementTeamProduct : "全部";
   state.managementTeamProduct = product;
   const productRecords = product === "全部" ? data : data.filter((record) => record.product === product);
+  const metrics = getSalesMetrics();
+  const range = selectedTimeRange();
   const rows = SALES_TEAM_META.map((team, index) => {
     const records = productRecords.filter((record) => teamLabelForGroup(record.group) === team.label);
-    const sales = sumBy(records, (record) => record.sales);
-    const lastMonthSales = sumBy(records, (record) => record.lastMonthSales);
-    const target = computedSalesTarget(sales, 1.14 + (index % 4) * 0.04);
+    const sales = product === "全部" ? timeRangeTeamSales(team.label, range, metrics) : sumBy(records, (record) => record.sales);
+    const lastMonthSales = product === "全部" ? timeRangeTeamPreviousSales(team.label, range, metrics) : sumBy(records, (record) => record.lastMonthSales);
+    const target = product === "全部"
+      ? timeRangeTeamTarget(team.label, range, metrics)
+      : computedSalesTarget(sales, 1.14 + (index % 4) * 0.04);
     const sprintTarget = computedSalesTarget(sales, 1.28 + (index % 3) * 0.05);
     const groupCount = new Set(records.map((record) => record.group)).size;
     const fallbackOwner = BUSINESS_PEOPLE.find((person) => teamLabelForGroup(person.group) === team.label)?.name || "未分配";
@@ -1036,8 +1103,6 @@ function renderManagementProductTeamDetail(data) {
       soft: team.soft,
     };
   });
-  const totalSales = sumBy(rows, (row) => row.sales);
-  const totalTarget = sumBy(rows, (row) => row.target);
   const maxSales = Math.max(...rows.map((row) => row.sales), 1);
   const teamRows = rows.map((row) => ({
     label: row.label,
@@ -1069,21 +1134,6 @@ function renderManagementProductTeamDetail(data) {
         `).join("")}
       </div>
 
-      <section class="team-product-summary">
-        <div>
-          <span class="panel-kicker">Product Team View</span>
-          <h3>${escapeHtml(product === "全部" ? "全部品类" : product)} · 各组别完成情况</h3>
-          <em>${rows.length} 个组别 · ${productRecords.length} 位达人</em>
-        </div>
-        <strong>${compactCurrency(totalSales)}</strong>
-        <div class="team-product-summary-progress">
-          <span>总完成率 ${Math.round(completionPercent(totalSales, totalTarget))}%</span>
-          <div class="sales-progress-track">
-            <i style="--progress:${completionPercent(totalSales, totalTarget)}%; --progress-color:#6d5dfc; --progress-end:#5edfc0"></i>
-          </div>
-        </div>
-      </section>
-
       <div class="team-product-team-strip">
         ${teamRows.map((team) => `
           <span style="--accent:${team.color}; --accent-soft:${team.soft}">
@@ -1100,7 +1150,7 @@ function renderManagementProductTeamDetail(data) {
                 <h3>${escapeHtml(row.label)}</h3>
                 <span>负责人：${escapeHtml(row.owner)}</span>
               </div>
-              <span class="tag">${row.groupCount || 0} 分组</span>
+              <span class="tag">${row.records.length} 位达人</span>
             </div>
             <div class="team-metric-grid">
               <div><span>保底目标</span><strong>${row.target ? compactCurrency(row.target) : "--"}</strong></div>
@@ -1235,7 +1285,12 @@ function renderManagementDashboard() {
   const data = enrichedRecords();
   const productRows = groupSales(data, "product", PRODUCTS).map((row, index) => ({ ...row, icon: "package", color: chartPalette[index] }));
   const typeRows = groupSales(data, "type", TYPES).map((row, index) => ({ ...row, icon: typeIcon(row.label), color: chartPalette[index] }));
-  const teamRows = groupSales(data, "group", GROUPS).map((row, index) => ({ label: row.label, value: row.value, icon: "users", color: chartPalette[(index + 2) % chartPalette.length] }));
+  const teamRows = groupSales(data, "group", GROUPS).map((row, index) => ({
+    label: row.label,
+    value: row.value,
+    icon: "users",
+    color: chartPalette[(index + 2) % chartPalette.length],
+  }));
   const tierRows = groupSales(data, "tier", TIERS).map((row) => ({ ...row, label: `${row.label}级`, icon: "star", color: tierChartMeta[row.label]?.color || tierMeta[row.label]?.color }));
   const stageRows = displayStageRows(data, (record) => record.sales);
 
@@ -1743,24 +1798,25 @@ function renderProductSalesView(data) {
 }
 
 function renderTeamSalesView(data) {
+  const metrics = getSalesMetrics();
+  const range = selectedTimeRange();
   const monthlyRows = SALES_TEAM_META.map((team) => {
     const records = data.filter((record) => teamLabelForGroup(record.group) === team.label);
-    const sales = sumBy(records, (record) => record.sales);
+    const teamMetric = teamSalesMetric(team.label, metrics);
+    const sales = timeRangeTeamSales(team.label, range, metrics);
+    const target = timeRangeTeamTarget(team.label, range, metrics);
     return {
       ...team,
       records,
       sales,
-      target: computedSalesTarget(sales, 1.15),
+      target,
       sprintTarget: computedSalesTarget(sales, 1.3),
+      annualActual: teamMetric.annualCompletedSales || 0,
+      annualTarget: teamMetric.annualTarget || 0,
     };
   });
   const totalMonthlySales = sumBy(monthlyRows, (row) => row.sales);
-  const metrics = getSalesMetrics();
-  const annualRows = monthlyRows.map((row) => {
-    const annualActual = Math.round((row.sales * 6.4) / 100) * 100;
-    const annualTarget = totalMonthlySales ? Math.round((metrics.annualTarget * row.sales) / totalMonthlySales / 100) * 100 : 0;
-    return { ...row, annualActual, annualTarget };
-  });
+  const annualRows = monthlyRows;
   const annualActualTotal = sumBy(annualRows, (row) => row.annualActual);
   const annualTargetTotal = sumBy(annualRows, (row) => row.annualTarget);
 
@@ -2095,31 +2151,17 @@ function openEditDrawer(recordId) {
 
 function openSalesMetricsDrawer() {
   const metrics = getSalesMetrics();
-  const mom = metrics.previousMonthSales ? (metrics.currentMonthSales - metrics.previousMonthSales) / metrics.previousMonthSales : 0;
-  const progress = metrics.annualTarget ? metrics.annualCompletedSales / metrics.annualTarget : 0;
+  const teamMetricRows = SALES_TEAM_META.map((team) => ({
+    ...team,
+    metric: teamSalesMetric(team.label, metrics),
+  }));
+  const teamAnnualTargetTotal = sumBy(teamMetricRows, (row) => row.metric.annualTarget || 0);
 
   openDrawer({
     kicker: "销售指标",
     title: "月度销售额维护",
     body: `
       <div class="detail-stack">
-        <div class="detail-block metric-editor-summary">
-          <h4>当前指标预览</h4>
-          <div class="metric-preview-grid">
-            <span>
-              <em>${formatMetricMonth(metrics.month)}</em>
-              <strong>${compactCurrency(metrics.currentMonthSales)}</strong>
-            </span>
-            <span>
-              <em>环比上月</em>
-              <strong class="${mom < 0 ? "negative" : ""}">${signedPercent(mom * 100)}</strong>
-            </span>
-            <span>
-              <em>年度进度</em>
-              <strong>${percent(progress)}</strong>
-            </span>
-          </div>
-        </div>
         <form class="form-grid two-col metric-form" id="salesMetricsForm">
           <label class="form-field">
             <span>月份</span>
@@ -2141,6 +2183,30 @@ function openSalesMetricsDrawer() {
             <span>全年销售额目标（元）</span>
             <input name="annualTarget" type="number" min="1" step="1" value="${metrics.annualTarget}" required />
           </label>
+          <section class="metric-team-editor full">
+            <div class="metric-section-head">
+              <div>
+                <h4>分组销售额指标</h4>
+                <p>A/B/C 组销售额会同步到分团队销售额、团队完成情况和年度视图。</p>
+              </div>
+              <span>目标合计 ${compactCurrency(teamAnnualTargetTotal)}</span>
+            </div>
+            <div class="metric-team-grid">
+              ${teamMetricRows.map((row) => `
+                <section class="metric-team-card" style="--accent:${row.color}; --accent-soft:${row.soft}">
+                  <h5><i></i>${escapeHtml(row.label)}</h5>
+                  <label class="form-field">
+                    <span>本月销售额目标（元）</span>
+                    <input name="team_${escapeHtml(row.label)}_currentMonthSales" type="number" min="0" step="1" value="${row.metric.currentMonthSales || 0}" required />
+                  </label>
+                  <label class="form-field">
+                    <span>全年目标（元）</span>
+                    <input name="team_${escapeHtml(row.label)}_annualTarget" type="number" min="0" step="1" value="${row.metric.annualTarget || 0}" required />
+                  </label>
+                </section>
+              `).join("")}
+            </div>
+          </section>
           <div class="drawer-actions full">
             <button class="small-button" type="button" data-reset-sales-metrics>恢复系统测算</button>
             <button class="primary-button" type="submit">${icon("edit")}保存指标</button>
@@ -2197,12 +2263,24 @@ function saveRecord(form) {
 function saveSalesMetrics(form) {
   const data = new FormData(form);
   const defaults = defaultSalesMetrics();
+  const teamSales = SALES_TEAM_META.reduce((acc, team) => {
+    const prefix = `team_${team.label}_`;
+    const existing = teamSalesMetric(team.label);
+    acc[team.label] = {
+      currentMonthSales: data.get(`${prefix}currentMonthSales`),
+      previousMonthSales: existing.previousMonthSales,
+      annualCompletedSales: existing.annualCompletedSales,
+      annualTarget: data.get(`${prefix}annualTarget`),
+    };
+    return acc;
+  }, {});
   const nextMetrics = normalizeSalesMetrics({
     month: data.get("month"),
     currentMonthSales: data.get("currentMonthSales"),
     previousMonthSales: data.get("previousMonthSales"),
     annualTarget: data.get("annualTarget"),
     annualCompletedSales: data.get("annualCompletedSales"),
+    teamSales,
   }, defaults);
 
   state.salesMetrics = nextMetrics;
