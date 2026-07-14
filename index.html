@@ -182,7 +182,7 @@
         </button>
         <button class="nav-item" type="button" data-view="pipeline">
           <svg><use href="#icon-board"></use></svg>
-          跟进流水线
+          跟进看板
         </button>
         <button class="nav-item" type="button" data-view="directory">
           <svg><use href="#icon-table"></use></svg>
@@ -193,45 +193,6 @@
           分析报表
         </button>
       </nav>
-
-      <section class="quick-filters" aria-label="快速筛选">
-        <div class="sidebar-section-title">
-          <svg><use href="#icon-filter"></use></svg>
-          Quick Filters
-        </div>
-        <label>
-          <span>合作品类</span>
-          <select id="filterProduct"></select>
-        </label>
-        <label>
-          <span>组别</span>
-          <select id="filterGroup"></select>
-        </label>
-        <label>
-          <span>玩法</span>
-          <select id="filterFormat"></select>
-        </label>
-        <label>
-          <span>类型</span>
-          <select id="filterType"></select>
-        </label>
-        <label>
-          <span>等级</span>
-          <select id="filterTier"></select>
-        </label>
-        <label>
-          <span>状态</span>
-          <select id="filterStage"></select>
-        </label>
-        <label>
-          <span>商务</span>
-          <select id="filterPerson"></select>
-        </label>
-        <button class="sidebar-clear" id="resetFiltersBtn" type="button">
-          <svg><use href="#icon-rotate"></use></svg>
-          清空筛选
-        </button>
-      </section>
 
       <div class="sidebar-footer">
         <div class="footer-dot"></div>
@@ -259,14 +220,12 @@
               <span id="quarterControlLabel">2026 Q3</span>
               <svg class="chevron"><use href="#icon-chevron"></use></svg>
             </button>
-            <div class="quarter-popover" id="quarterPopover" hidden></div>
           </div>
           <div class="period-popover-wrap" id="timeRangeControl">
             <button class="top-control" id="timeRangeControlBtn" type="button" aria-expanded="false" aria-controls="timeRangePopover">
               <span id="timeRangeControlLabel">Compare: 近30天</span>
               <svg class="chevron"><use href="#icon-chevron"></use></svg>
             </button>
-            <div class="time-range-popover" id="timeRangePopover" hidden></div>
           </div>
           <button class="icon-button" id="exportBtn" type="button" aria-label="导出 CSV" title="导出 CSV">
             <svg><use href="#icon-download"></use></svg>
@@ -277,6 +236,10 @@
           </button>
         </div>
       </header>
+      <div class="toolbar-popover-zone" aria-live="polite">
+        <div class="quarter-popover" id="quarterPopover" hidden></div>
+        <div class="time-range-popover" id="timeRangePopover" hidden></div>
+      </div>
 
       <section class="content">
         <div class="kpi-grid" id="kpiGrid"></div>
@@ -321,7 +284,13 @@
                   <span class="panel-kicker">Team Detail</span>
                   <h2>团队完成情况</h2>
                 </div>
-                <span class="panel-badge" id="managementTeamPeriod">当月</span>
+                <div class="team-detail-head-actions" aria-label="团队完成情况查看维度">
+                  <div class="team-detail-switch">
+                    <button type="button" data-management-team-view="team">按团队</button>
+                    <button type="button" data-management-team-view="product">按品类</button>
+                  </div>
+                  <span class="panel-badge" id="managementTeamPeriod">当月</span>
+                </div>
               </div>
               <div class="team-detail-board" id="managementTeamDetail"></div>
             </article>
@@ -332,7 +301,12 @@
                   <span class="panel-kicker">Ranking</span>
                   <h2>个人销售额排行榜</h2>
                 </div>
-                <span class="table-count" id="dashboardTableCount">当月排行</span>
+                <div class="panel-actions">
+                  <button class="sort-toggle desc" type="button" data-rank-sort="managementPerson" data-sort-label="个人销售额排行榜" aria-label="个人销售额排行榜倒序排列" title="倒序排列">
+                    <svg aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
+                  </button>
+                  <span class="table-count" id="dashboardTableCount">当月排行</span>
+                </div>
               </div>
               <div class="person-rank-list" id="managementPersonRank"></div>
             </article>
@@ -365,6 +339,9 @@
                     <span class="panel-kicker">Talent Rank</span>
                     <h2>达人销售额 Top</h2>
                   </div>
+                  <button class="sort-toggle desc" type="button" data-rank-sort="managementTalent" data-sort-label="达人销售额 Top" aria-label="达人销售额 Top 倒序排列" title="倒序排列">
+                    <svg aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
+                  </button>
                 </div>
                 <div class="talent-sales-list" id="managementTalentRank"></div>
               </article>
@@ -399,7 +376,7 @@
                 <div class="panel-head">
                   <div>
                     <span class="panel-kicker">Status</span>
-                    <h2>个人分达人状态</h2>
+                    <h2>达人状态</h2>
                   </div>
                 </div>
                 <div class="sales-bars" id="personalStageSales"></div>
@@ -408,9 +385,12 @@
               <article class="panel">
                 <div class="panel-head">
                   <div>
-                    <span class="panel-kicker">Talent Orders</span>
-                    <h2>达人订单</h2>
+                    <span class="panel-kicker">Talent List</span>
+                    <h2>合作达人列表</h2>
                   </div>
+                  <button class="sort-toggle desc" type="button" data-rank-sort="personalOrders" data-sort-label="合作达人列表" aria-label="合作达人列表倒序排列" title="倒序排列">
+                    <svg aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
+                  </button>
                 </div>
                 <div class="talent-sales-list" id="personalTalentRank"></div>
               </article>
@@ -419,6 +399,45 @@
         </section>
 
         <section class="page-view" data-page="pipeline" id="pipelinePage">
+          <section class="quick-filters pipeline-filters" aria-label="流水线快速筛选">
+            <div class="sidebar-section-title">
+              <svg><use href="#icon-filter"></use></svg>
+              Quick Filters
+            </div>
+            <label>
+              <span>合作品类</span>
+              <select id="filterProduct"></select>
+            </label>
+            <label>
+              <span>组别</span>
+              <select id="filterGroup"></select>
+            </label>
+            <label>
+              <span>玩法</span>
+              <select id="filterFormat"></select>
+            </label>
+            <label>
+              <span>类型</span>
+              <select id="filterType"></select>
+            </label>
+            <label>
+              <span>等级</span>
+              <select id="filterTier"></select>
+            </label>
+            <label>
+              <span>状态</span>
+              <select id="filterStage"></select>
+            </label>
+            <label>
+              <span>商务</span>
+              <select id="filterPerson"></select>
+            </label>
+            <button class="sidebar-clear" id="resetFiltersBtn" type="button">
+              <svg><use href="#icon-rotate"></use></svg>
+              清空筛选
+            </button>
+          </section>
+
           <div class="page-layout">
             <article class="panel pipeline-panel">
               <div class="panel-head">
