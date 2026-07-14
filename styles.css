@@ -1087,16 +1087,18 @@ svg {
 
 .team-detail-layout {
   display: grid;
-  grid-template-columns: minmax(210px, 250px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    "choices focus"
-    "choices columns";
+    "choices"
+    "focus"
+    "columns";
   gap: 14px;
 }
 
 .team-choice-list {
   grid-area: choices;
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-content: start;
   gap: 10px;
 }
@@ -1228,7 +1230,7 @@ svg {
 
 .team-focus-metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(98px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-top: 14px;
 }
