@@ -189,7 +189,6 @@ const initialRecords = [
 
 const state = {
   view: "dashboard",
-  query: "",
   filters: {
     product: "",
     group: "",
@@ -221,7 +220,6 @@ const state = {
 
 const els = {
   lastUpdate: document.getElementById("lastUpdate"),
-  searchInput: document.getElementById("searchInput"),
   resetFiltersBtn: document.getElementById("resetFiltersBtn"),
   exportBtn: document.getElementById("exportBtn"),
   addRecordBtn: document.getElementById("addRecordBtn"),
@@ -872,21 +870,6 @@ function renderFilterOptions() {
   els.filterPerson.innerHTML = optionHtml("全部商务", PERSONS);
 }
 
-function recordSearchText(record) {
-  return [
-    record.name,
-    record.tier,
-    record.type,
-    record.product,
-    record.group,
-    record.format,
-    record.stage,
-    displayStageLabelForRecord(record),
-    record.person,
-    record.bottleneck,
-  ].join(" ").toLowerCase();
-}
-
 function filteredRecords(options = {}) {
   const shouldApplyFilters = options.applyFilters ?? state.view === "pipeline";
   return state.records.filter((record) => {
@@ -902,7 +885,7 @@ function filteredRecords(options = {}) {
       (!filters.stage || displayStageLabelForRecord(record) === filters.stage) &&
       (options.ignorePerson || !filters.person || record.person === filters.person);
 
-    return matchesFilters && (!state.query || recordSearchText(record).includes(state.query));
+    return matchesFilters;
   });
 }
 
@@ -2151,9 +2134,7 @@ function moveRecord(recordId, targetStage) {
 }
 
 function resetFilters() {
-  state.query = "";
   state.filters = { product: "", group: "", format: "", type: "", tier: "", stage: "", person: "" };
-  els.searchInput.value = "";
   Object.values(filterMap()).forEach((select) => {
     select.value = "";
   });
@@ -2366,11 +2347,6 @@ function bindEvents() {
     if (resetSalesButton) {
       resetSalesMetrics();
     }
-  });
-
-  els.searchInput.addEventListener("input", (event) => {
-    state.query = normalize(event.target.value);
-    renderAll();
   });
 
   Object.entries(filterMap()).forEach(([key, select]) => {
