@@ -1327,6 +1327,7 @@ svg {
 }
 
 .team-choice b i,
+.team-choice b i,
 .team-line-meter i,
 .team-progress-track i {
   width: var(--line-width, 0%);
@@ -4711,4 +4712,223 @@ body::before {
     white-space: normal;
     overflow-wrap: anywhere;
   }
+}
+
+/* Warm amber theme */
+:root {
+  --color-primary: #f59e0b;
+  --color-primary-strong: #d97706;
+  --color-warning: #fbbf24;
+  --color-violet: #f59e0b;
+  --color-bg: #fffaf5;
+  --color-border: #eee3d4;
+}
+
+html,
+body {
+  background: #fffaf5;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-color: rgba(245, 158, 11, 0.28);
+}
+
+.app-shell {
+  background: linear-gradient(180deg, #fffdf9 0%, #fff8ed 100%);
+}
+
+.sidebar {
+  border-right-color: #f0e5d6;
+  background: linear-gradient(180deg, #ffffff 0%, #fff8ed 100%);
+}
+
+.brand-icon {
+  background: linear-gradient(135deg, #f97316, #fbbf24);
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(245, 158, 11, 0.24);
+}
+
+.nav-item:hover,
+.sidebar-clear:hover {
+  background: #fff3df;
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, #f97316, #fbbf24);
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(245, 158, 11, 0.28);
+}
+
+.sidebar-section-title svg,
+.panel-badge,
+.table-count {
+  color: #d97706;
+}
+
+.quick-filters select,
+.sidebar-clear,
+#pipelinePage .pipeline-filters select,
+#pipelinePage .pipeline-filters .sidebar-clear {
+  border-color: #f0e4d3;
+  background: #fffaf2;
+}
+
+.workspace {
+  background:
+    radial-gradient(circle at 88% 6%, rgba(251, 191, 36, 0.16), transparent 23%),
+    linear-gradient(180deg, #fffdf9 0%, #fff8ef 100%);
+}
+
+.topbar {
+  border-bottom-color: rgba(240, 229, 214, 0.92);
+}
+
+.primary-button {
+  border-color: transparent;
+  background: linear-gradient(135deg, #f97316, #fbbf24);
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(245, 158, 11, 0.26);
+}
+
+.primary-button:hover {
+  background: linear-gradient(135deg, #ea580c, #f59e0b);
+}
+
+.kpi-card:first-child,
+.kpi-card:hover,
+.kpi-card:focus-within {
+  border-color: transparent;
+  background:
+    radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.3), transparent 24%),
+    linear-gradient(135deg, #f97316 0%, #f59e0b 58%, #fbbf24 100%);
+  color: #ffffff;
+  box-shadow: 0 12px 26px rgba(245, 158, 11, 0.22);
+}
+
+.kpi-grid:hover .kpi-card:first-child:not(:hover) {
+  border-color: rgba(238, 227, 212, 0.96);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.panel-badge,
+.table-count {
+  background: #fff4da;
+}
+
+.team-detail-switch button:hover,
+.team-detail-switch button.active,
+.team-product-tabs button:hover,
+.team-product-tabs button.active,
+.time-range-shortcuts button:hover,
+.time-range-shortcuts button.active {
+  background: linear-gradient(135deg, #f97316, #fbbf24);
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+}
+
+.calendar-nav button:hover {
+  background: #fff3df;
+  color: #d97706;
+}
+
+.calendar-day:hover span {
+  background: #fff0d5;
+  color: #d97706;
+}
+
+.calendar-day.in-range,
+.calendar-day.range-start,
+.calendar-day.range-end {
+  background: #fff4db;
+}
+
+.calendar-day.range-start span,
+.calendar-day.range-end span {
+  background: linear-gradient(135deg, #f97316, #fbbf24);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(245, 158, 11, 0.24);
+}
+
+.quarter-card:hover,
+.quarter-card:focus-within {
+  background:
+    radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.3), transparent 24%),
+    linear-gradient(135deg, #f97316 0%, #f59e0b 58%, #fbbf24 100%);
+  box-shadow: 0 18px 36px rgba(245, 158, 11, 0.26);
+}
+
+.quarter-card.active {
+  background: linear-gradient(180deg, #fffaf2, #ffffff);
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.12);
+}
+
+.quarter-progress i {
+  background: linear-gradient(
+    90deg,
+    var(--quarter-color, #f59e0b),
+    color-mix(in srgb, var(--quarter-color, #f59e0b) 60%, #ffffff)
+  );
+}
+
+.sort-toggle,
+.team-section-head strong,
+.team-line-title svg,
+.contribution-row svg {
+  color: #d97706;
+}
+
+.sort-toggle:hover {
+  border-color: #f8c86a;
+  background: #fff4df;
+  box-shadow: 0 10px 22px rgba(245, 158, 11, 0.16);
+}
+
+.sales-bar-track,
+.rank-meter,
+.contribution-track,
+.progress-track,
+.chart-bar,
+.stack-bar,
+.team-line-meter,
+.team-progress-track {
+  background: #f3eee6;
+}
+
+.sales-bar-track i,
+.contribution-track i,
+.chart-fill {
+  background: linear-gradient(
+    90deg,
+    var(--bar-color, #f59e0b),
+    color-mix(in srgb, var(--bar-color, #f59e0b) 62%, #ffffff)
+  );
+}
+
+.rank-meter i {
+  background: linear-gradient(
+    90deg,
+    var(--rank-color, #f59e0b),
+    color-mix(in srgb, var(--rank-color, #f59e0b) 62%, #ffffff)
+  );
+}
+
+.progress-fill,
+.sales-progress-track i {
+  background: linear-gradient(
+    90deg,
+    var(--progress-color, #f59e0b),
+    color-mix(in srgb, var(--progress-color, #f59e0b) 62%, #ffffff)
+  );
+}
+
+.team-line-meter i,
+.team-progress-track i {
+  background: linear-gradient(
+    90deg,
+    var(--line-color, var(--team-color, #f59e0b)),
+    color-mix(in srgb, var(--line-color, var(--team-color, #f59e0b)) 62%, #ffffff)
+  );
 }
