@@ -188,10 +188,6 @@
           <svg><use href="#icon-table"></use></svg>
           达人列表
         </button>
-        <button class="nav-item" type="button" data-view="insight">
-          <svg><use href="#icon-funnel"></use></svg>
-          分析报表
-        </button>
       </nav>
 
       <div class="sidebar-footer">
@@ -505,58 +501,6 @@
           </div>
         </section>
 
-        <section class="page-view" data-page="insight" id="insightPage">
-          <article class="panel sales-explorer">
-            <div class="sales-explorer-toolbar">
-              <div class="dimension-switch" aria-label="销售查看维度">
-                <span>查看维度:</span>
-                <button type="button" data-sales-view-mode="product">按品类查看</button>
-                <button type="button" data-sales-view-mode="team">按团队查看</button>
-              </div>
-              <div class="period-control" aria-label="当前月份">
-                <span>选择月份:</span>
-                <span class="period-chev">‹</span>
-                <strong id="salesViewMonth">2026年07月</strong>
-                <span class="period-chev">›</span>
-              </div>
-            </div>
-            <div class="sales-product-tabs" id="salesProductTabs"></div>
-            <div class="sales-view-body" id="salesViewBody"></div>
-          </article>
-
-          <div class="report-strip" id="insightSummary"></div>
-          <div class="insight-grid">
-            <article class="panel panel-wide">
-              <div class="panel-head">
-                <div>
-                  <span class="panel-kicker">Funnel</span>
-                  <h2>流水线漏斗</h2>
-                </div>
-              </div>
-              <div class="funnel-chart" id="funnelChart"></div>
-            </article>
-
-            <article class="panel">
-              <div class="panel-head">
-                <div>
-                  <span class="panel-kicker">Type</span>
-                  <h2>达人类型分布</h2>
-                </div>
-              </div>
-              <div class="bar-chart" id="typeChart"></div>
-            </article>
-
-            <article class="panel">
-              <div class="panel-head">
-                <div>
-                  <span class="panel-kicker">Group</span>
-                  <h2>各组活跃达人</h2>
-                </div>
-              </div>
-              <div class="stack-chart" id="groupChart"></div>
-            </article>
-          </div>
-        </section>
       </section>
     </main>
   </div>

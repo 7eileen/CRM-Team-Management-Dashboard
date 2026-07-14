@@ -201,8 +201,6 @@ const state = {
   },
   records: initialRecords.map((record) => ({ ...record })),
   salesMetrics: null,
-  salesViewMode: "product",
-  salesViewProduct: PRODUCTS[0],
   managementTeamView: "team",
   managementTeamProduct: "全部",
   managementTeam: "",
@@ -255,13 +253,6 @@ const els = {
   tierLegend: document.getElementById("tierLegend"),
   kanbanColumns: document.getElementById("kanbanColumns"),
   ownerList: document.getElementById("ownerList"),
-  insightSummary: document.getElementById("insightSummary"),
-  salesViewMonth: document.getElementById("salesViewMonth"),
-  salesProductTabs: document.getElementById("salesProductTabs"),
-  salesViewBody: document.getElementById("salesViewBody"),
-  funnelChart: document.getElementById("funnelChart"),
-  typeChart: document.getElementById("typeChart"),
-  groupChart: document.getElementById("groupChart"),
   formatGrid: document.getElementById("formatGrid"),
   tableCount: document.getElementById("tableCount"),
   recordTableBody: document.getElementById("recordTableBody"),
@@ -1706,10 +1697,6 @@ function teamLabelForGroup(group) {
   return "C组";
 }
 
-function salesViewRecords() {
-  return enrichedRecords(filteredRecords({ ignoreProduct: true, ignoreGroup: true }));
-}
-
 function computedSalesTarget(value, multiplier) {
   return value ? Math.max(10000, Math.round((value * multiplier) / 1000) * 1000) : 0;
 }
@@ -1728,257 +1715,6 @@ function primaryOwner(records, group) {
     sales: sumBy(records.filter((record) => record.person === person), (record) => record.sales),
   })).filter((row) => row.sales > 0);
   return ownerRows.sort((a, b) => b.sales - a.sales)[0]?.person || records[0].person;
-}
-
-function renderProgressLine(value, target, color) {
-  const progress = completionPercent(value, target);
-  return `
-    <div class="sales-progress-line">
-      <span>完成进度</span>
-      <div class="sales-progress-track">
-        <i style="--progress:${progress}%; --progress-color:${color}"></i>
-      </div>
-      <em>${compactCurrency(value)} / ${target ? compactCurrency(target) : "--"} (${Math.round(progress)}%)</em>
-    </div>
-  `;
-}
-
-function renderProductSalesView(data) {
-  const product = PRODUCTS.includes(state.salesViewProduct) ? state.salesViewProduct : PRODUCTS[0];
-  state.salesViewProduct = product;
-  const rows = GROUPS.map((group, index) => {
-    const records = data.filter((record) => record.product === product && record.group === group);
-    const sales = sumBy(records, (record) => record.sales);
-    const target = computedSalesTarget(sales, 1.18);
-    return {
-      group,
-      records,
-      sales,
-      target,
-      sprintTarget: computedSalesTarget(sales, 1.32),
-      feeTarget: sales ? `${(7.6 + (index % 4) * 0.7).toFixed(1)}%` : "--",
-      owner: primaryOwner(records, group),
-      color: chartPalette[index % chartPalette.length],
-    };
-  }).filter((row) => row.sales > 0);
-
-  if (!rows.length) {
-    return `<div class="empty-state">当前筛选下暂无「${escapeHtml(product)}」销售记录</div>`;
-  }
-
-  return `
-    <div class="sales-section-head">
-      <div>
-        <span class="panel-kicker">Category Sales</span>
-        <h3>${escapeHtml(product)} · 各组销售情况</h3>
-      </div>
-      <strong>${compactCurrency(sumBy(rows, (row) => row.sales))}</strong>
-    </div>
-    <div class="sales-group-list">
-      ${rows.map((row) => `
-        <article class="sales-group-card" style="--accent:${row.color}; --accent-soft:#eef3ff">
-          <div class="sales-card-head">
-            <div>
-              <h3>${escapeHtml(row.group)}</h3>
-              <span>负责人：${escapeHtml(row.owner)}</span>
-            </div>
-            <span class="tag">${row.records.length} 位达人</span>
-          </div>
-          <div class="sales-metric-row">
-            <div><span>保底目标</span><strong>${row.target ? compactCurrency(row.target) : "--"}</strong></div>
-            <div><span>本月实销</span><strong class="hot">${compactCurrency(row.sales)}</strong></div>
-            <div><span>冲刺目标</span><strong>${row.sprintTarget ? compactCurrency(row.sprintTarget) : "--"}</strong></div>
-            <div><span>费比目标</span><strong>${row.feeTarget}</strong></div>
-          </div>
-          ${renderProgressLine(row.sales, row.target, row.color)}
-        </article>
-      `).join("")}
-    </div>
-  `;
-}
-
-function renderTeamSalesView(data) {
-  const metrics = getSalesMetrics();
-  const range = selectedTimeRange();
-  const monthlyRows = SALES_TEAM_META.map((team) => {
-    const records = data.filter((record) => teamLabelForGroup(record.group) === team.label);
-    const teamMetric = teamSalesMetric(team.label, metrics);
-    const sales = timeRangeTeamSales(team.label, range, metrics);
-    const target = timeRangeTeamTarget(team.label, range, metrics);
-    return {
-      ...team,
-      records,
-      sales,
-      target,
-      sprintTarget: computedSalesTarget(sales, 1.3),
-      annualActual: teamMetric.annualCompletedSales || 0,
-      annualTarget: teamMetric.annualTarget || 0,
-    };
-  });
-  const totalMonthlySales = sumBy(monthlyRows, (row) => row.sales);
-  const annualRows = monthlyRows;
-  const annualActualTotal = sumBy(annualRows, (row) => row.annualActual);
-  const annualTargetTotal = sumBy(annualRows, (row) => row.annualTarget);
-
-  return `
-    <div class="sales-section-head">
-      <div>
-        <span class="panel-kicker">Team Sales</span>
-        <h3>按团队查看</h3>
-      </div>
-      <strong>${compactCurrency(totalMonthlySales)}</strong>
-    </div>
-    <div class="team-sales-list">
-      ${monthlyRows.map((row) => `
-        <article class="team-sales-card" style="--accent:${row.color}; --accent-soft:${row.soft}">
-          <div class="team-card-head">
-            <h3>${row.label}</h3>
-            <span class="tag">${row.records.length} 位达人</span>
-          </div>
-          <div class="team-metric-grid">
-            <div><span>保底目标</span><strong>${row.target ? compactCurrency(row.target) : "¥0"}</strong></div>
-            <div><span>冲刺目标</span><strong>${row.sprintTarget ? compactCurrency(row.sprintTarget) : "¥0"}</strong></div>
-            <div><span>本月实际</span><strong class="green">${compactCurrency(row.sales)}</strong></div>
-            <div><span>完成率</span><strong class="blue">${Math.round(completionPercent(row.sales, row.target))}%</strong></div>
-          </div>
-          ${renderProgressLine(row.sales, row.target, row.color)}
-        </article>
-      `).join("")}
-    </div>
-    <article class="annual-sales-card">
-      <div class="annual-head">
-        <div>
-          <span class="panel-kicker">Annual View</span>
-          <h3>年度视图</h3>
-        </div>
-        <strong>${formatMetricMonth(metrics.month).slice(0, 4)}年</strong>
-      </div>
-      <div class="annual-summary">
-        <div><span>全年总目标</span><strong>${compactCurrency(annualTargetTotal)}</strong></div>
-        <div><span>全年实际完成</span><strong class="green">${compactCurrency(annualActualTotal)}</strong></div>
-        <div><span>整体完成率</span><strong class="blue">${Math.round(completionPercent(annualActualTotal, annualTargetTotal))}%</strong></div>
-      </div>
-      <div class="annual-progress-list">
-        ${annualRows.map((row) => `
-          <div class="annual-row" style="--accent:${row.color}">
-            <span>${row.label}</span>
-            <div class="sales-progress-track">
-              <i style="--progress:${completionPercent(row.annualActual, row.annualTarget)}%; --progress-color:${row.color}"></i>
-            </div>
-            <em>${Math.round(completionPercent(row.annualActual, row.annualTarget))}%（${compactCurrency(row.annualActual)} / ${row.annualTarget ? compactCurrency(row.annualTarget) : "--"}）</em>
-          </div>
-        `).join("")}
-      </div>
-    </article>
-  `;
-}
-
-function renderSalesExplorer() {
-  if (!els.salesViewBody) return;
-  const metrics = getSalesMetrics();
-  const mode = state.salesViewMode === "team" ? "team" : "product";
-  state.salesViewMode = mode;
-  if (!PRODUCTS.includes(state.salesViewProduct)) state.salesViewProduct = PRODUCTS[0];
-
-  els.salesViewMonth.textContent = `${formatMetricMonth(metrics.month)} · ${selectedTimeRange().label}`;
-  document.querySelectorAll("[data-sales-view-mode]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.salesViewMode === mode);
-  });
-
-  els.salesProductTabs.hidden = mode !== "product";
-  els.salesProductTabs.innerHTML = mode === "product"
-    ? PRODUCTS.map((product) => `
-        <button type="button" class="${state.salesViewProduct === product ? "active" : ""}" data-sales-product="${escapeHtml(product)}">
-          ${escapeHtml(product)}
-        </button>
-      `).join("")
-    : "";
-
-  const data = salesViewRecords();
-  els.salesViewBody.innerHTML = mode === "product"
-    ? renderProductSalesView(data)
-    : renderTeamSalesView(data);
-}
-
-function renderInsightSummary() {
-  const data = filteredRecords();
-  const stats = statsFor(data);
-  const cards = [
-    { title: "合作转化", desc: `${percent(stats.conversion)} 已合作/深度合作`, icon: "chart", color: "#4f63ff", soft: "#eef3ff" },
-    { title: "样品推进", desc: `${data.filter((r) => displayStageLabelForRecord(r) === "已寄样").length} 位达人已寄样`, icon: "truck", color: "#7b5cff", soft: "#f3efff" },
-    { title: "排期推进", desc: `${data.filter((r) => displayStageLabelForRecord(r) === "待排期").length} 位达人待排期`, icon: "play", color: "#4f8cff", soft: "#eef6ff" },
-    { title: "卡点处理", desc: `${stats.bottlenecks} 项阻塞待跟进`, icon: "alert", color: "#ef4444", soft: "#feecec" },
-    { title: "重点达人", desc: `${stats.sTier} 位 S 级达人`, icon: "star", color: "#22c7a7", soft: "#e9fbf7" },
-  ];
-
-  els.insightSummary.innerHTML = cards.map((card) => `
-    <article class="report-card" style="--report-color:${card.color}; --report-soft:${card.soft}">
-      <div class="report-icon">${icon(card.icon)}</div>
-      <div>
-        <strong>${card.title}</strong>
-        <span>${card.desc}</span>
-      </div>
-    </article>
-  `).join("");
-}
-
-function renderFunnelChart() {
-  const data = filteredRecords();
-  const rows = displayStageRows(data);
-  const max = Math.max(...rows.map((row) => row.value), 1);
-  els.funnelChart.innerHTML = rows.map((stage) => {
-    const count = stage.value;
-    const width = count ? Math.max((count / max) * 100, 12) : 0;
-    return `
-      <div class="funnel-row">
-        <span class="chart-label">${stage.label}</span>
-        <div class="chart-bar">
-          <div class="chart-fill" style="--bar-width:${width}%; --bar-color:${stage.color}">${count}</div>
-        </div>
-        <span class="muted">${count} 人</span>
-      </div>
-    `;
-  }).join("");
-}
-
-function renderTypeChart() {
-  const data = filteredRecords();
-  const max = Math.max(...TYPES.map((type) => data.filter((record) => record.type === type).length), 1);
-  els.typeChart.innerHTML = TYPES.map((type, index) => {
-    const count = data.filter((record) => record.type === type).length;
-    const width = count ? Math.max((count / max) * 100, 10) : 0;
-    return `
-      <div class="bar-row">
-        <span class="chart-label">${type}</span>
-        <div class="chart-bar">
-          <div class="chart-fill" style="--bar-width:${width}%; --bar-color:${chartPalette[index]}">${count}</div>
-        </div>
-        <span class="muted">${count} 人</span>
-      </div>
-    `;
-  }).join("");
-}
-
-function renderGroupChart() {
-  const data = filteredRecords();
-  els.groupChart.innerHTML = GROUPS.map((group) => {
-    const groupRecords = data.filter((record) => record.group === group);
-    const total = groupRecords.length || 1;
-    return `
-      <div class="stack-group">
-        <div class="stack-head">
-          <span>${group}</span>
-          <span class="muted">${groupRecords.length} 人</span>
-        </div>
-        <div class="stack-bar">
-          ${PIPELINE_STAGES.map((stage) => {
-            const count = groupRecords.filter((record) => displayStageLabelForRecord(record) === stage.label).length;
-            return count ? `<span class="stack-segment" title="${stage.label} ${count}" style="--segment-width:${(count / total) * 100}%; --segment-color:${stage.color}"></span>` : "";
-          }).join("")}
-        </div>
-      </div>
-    `;
-  }).join("");
 }
 
 function renderFormatGrid() {
@@ -2030,11 +1766,6 @@ function renderAll() {
   renderLegend();
   renderKanban();
   renderOwners();
-  renderSalesExplorer();
-  renderInsightSummary();
-  renderFunnelChart();
-  renderTypeChart();
-  renderGroupChart();
   renderFormatGrid();
   renderDirectory();
   renderSortToggles();
@@ -2450,20 +2181,6 @@ function bindEvents() {
       state.personalPerson = personFilter.dataset.personFilter;
       setView("personal");
       showToast(`已切换到 ${state.personalPerson} 的个人看板`);
-      return;
-    }
-
-    const salesViewMode = event.target.closest("[data-sales-view-mode]");
-    if (salesViewMode) {
-      state.salesViewMode = salesViewMode.dataset.salesViewMode;
-      renderSalesExplorer();
-      return;
-    }
-
-    const salesProduct = event.target.closest("[data-sales-product]");
-    if (salesProduct) {
-      state.salesViewProduct = salesProduct.dataset.salesProduct;
-      renderSalesExplorer();
       return;
     }
 

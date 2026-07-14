@@ -4347,7 +4347,7 @@ body::before {
   }
 
   .side-nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .nav-item {
@@ -4477,5 +4477,69 @@ body::before {
 
   #pipelinePage .pipeline-filters label {
     flex-basis: 136px;
+  }
+}
+
+/* Keep dashboard cards fluid when the workspace or browser is narrow. */
+.dashboard-grid > *,
+.dashboard-rail > *,
+.panel,
+.team-detail-board,
+.team-detail-layout > *,
+.team-product-view,
+.team-product-group-list,
+.team-product-card > *,
+.team-product-card .team-card-head > *,
+.team-product-card .team-metric-grid > *,
+.team-product-progress > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.team-product-tabs {
+  scrollbar-width: thin;
+  overscroll-behavior-inline: contain;
+}
+
+@container team-detail (max-width: 900px) {
+  .team-product-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .team-product-card .team-metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .team-product-card .team-metric-grid strong {
+    font-size: 16px;
+  }
+}
+
+@container team-detail (max-width: 620px) {
+  .team-detail-board {
+    padding: 12px;
+  }
+
+  .team-detail-head-actions,
+  .team-product-card .team-card-head {
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: flex-start;
+  }
+
+  .team-product-card {
+    padding: 12px;
+  }
+
+  .team-product-card .team-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .team-product-progress {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .team-product-progress em {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
