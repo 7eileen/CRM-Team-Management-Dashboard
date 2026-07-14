@@ -960,6 +960,7 @@ function managementKpiCards() {
   const monthlySales = metrics.currentRangeSales;
   const lastMonthSales = metrics.previousRangeSales;
   const annualTarget = metrics.annualTarget;
+  const monthlyTarget = annualTarget / 12;
   const yearlySales = metrics.annualCompletedSales;
   const progress = yearlySales / annualTarget;
   const mom = lastMonthSales ? (monthlySales - lastMonthSales) / lastMonthSales : 0;
@@ -967,7 +968,8 @@ function managementKpiCards() {
   const rangeLabel = metrics.range.label;
   return [
     { label: "当月销售额", value: compactCurrency(monthlySales), sub: `${monthLabel} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#f59e0b", soft: "#fff7e6", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#fbbf24", soft: "#fff8dc", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
+    { label: "当月目标销售额", value: compactCurrency(monthlyTarget), sub: `${monthLabel}目标`, trend: "月度目标", trendValue: 1, icon: "calendar", color: "#fbbf24", soft: "#fff8dc", path: "M2 31 C12 24 21 27 30 18 C39 9 47 20 55 12 C62 6 67 9 70 5" },
+    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#f97316", soft: "#fff1e6", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
     { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#22c7a7", soft: "#e9fbf7", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
     { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f5a524" : "#ef4444", soft: mom >= 0 ? "#fff7e6" : "#feecec", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
   ];
