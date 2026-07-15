@@ -87,6 +87,12 @@ const TIME_RANGE_OPTIONS = [
   { id: "quarter", label: "本季度", desc: "当前季度累计", factor: 3.05, previousFactor: 2.86, targetFactor: 3, specialFactor: 2.9 },
   { id: "year", label: "全年", desc: "年度累计视角", factor: 6.4, previousFactor: 5.9, targetFactor: 12, specialFactor: 6 },
 ];
+const MANAGEMENT_TREND_RANGES = [
+  { id: "today", label: "今日", factor: 0.038, labels: ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "24:00"] },
+  { id: "yesterday", label: "昨日", factor: 0.036, labels: ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "24:00"] },
+  { id: "7d", label: "近7天", factor: 0.27, pointCount: 7 },
+  { id: "30d", label: "近30天", factor: 1, pointCount: 10 },
+];
 
 const tierMeta = {
   S: { color: "#ff7a3d", soft: "#fff4ed", score: 35 },
@@ -203,6 +209,8 @@ const state = {
   managementTeamView: "team",
   managementTeamProduct: "全部",
   managementTeam: "",
+  managementTrendProduct: "全部",
+  managementTrendRange: "30d",
   personalPerson: PERSONS[0],
   personalScheduleDate: "",
   rankSort: {
@@ -243,6 +251,10 @@ const els = {
   managementTeamSales: document.getElementById("managementTeamSales"),
   managementTeamDetail: document.getElementById("managementTeamDetail"),
   managementTeamPeriod: document.getElementById("managementTeamPeriod"),
+  managementTrendProduct: document.getElementById("managementTrendProduct"),
+  managementTrendRange: document.getElementById("managementTrendRange"),
+  managementTrendSummary: document.getElementById("managementTrendSummary"),
+  managementTrendChart: document.getElementById("managementTrendChart"),
   managementPersonRank: document.getElementById("managementPersonRank"),
   managementTierSales: document.getElementById("managementTierSales"),
   managementStageSales: document.getElementById("managementStageSales"),
@@ -1379,11 +1391,167 @@ function renderManagementDashboard() {
   renderSalesDonut(els.managementTierSales, tierRows, "SABC Sales");
   renderSalesBars(els.managementStageSales, stageRows, { showPercent: true });
   renderManagementTeamDetail(data);
+  renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
   renderManagementPersonRank(data);
   renderTalentSalesRank(els.managementTalentRank, sortedRankRows(data, "managementTalent", (record) => record.sales), "sales");
   if (els.dashboardTableCount) {
     els.dashboardTableCount.textContent = `${PERSONS.length} 位商务`;
   }
+}
+
+function managementTrendConfig() {
+  return MANAGEMENT_TREND_RANGES.find((range) => range.id === state.managementTrendRange) || MANAGEMENT_TREND_RANGES[3];
+}
+
+function managementTrendLabels(range) {
+  if (range.labels) return range.labels;
+  const match = String(getSalesMetrics().month || currentMonthKey()).match(/^(\d{4})-(\d{2})$/);
+  const year = match ? Number(match[1]) : new Date().getFullYear();
+  const month = match ? Number(match[2]) : new Date().getMonth() + 1;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const now = new Date();
+  const endDay = now.getFullYear() === year && now.getMonth() + 1 === month ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
+  const pointCount = range.pointCount || 7;
+  if (range.id === "7d") {
+    const endDate = new Date(year, month - 1, endDay);
+    return Array.from({ length: pointCount }, (_, index) => {
+      const date = new Date(endDate);
+      date.setDate(endDate.getDate() - pointCount + index + 1);
+      return `${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
+    });
+  }
+  return Array.from({ length: pointCount }, (_, index) => {
+    const day = 1 + Math.round(((daysInMonth - 1) * index) / Math.max(1, pointCount - 1));
+    return `${String(month).padStart(2, "0")}/${String(day).padStart(2, "0")}`;
+  });
+}
+
+function managementTrendSeries(total, pointCount, productIndex, rangeIndex) {
+  const weights = Array.from({ length: pointCount }, (_, index) => {
+    const rise = 0.72 + index * 0.065;
+    const wave = Math.sin((index + 1) * 1.18 + productIndex * 0.42) * 0.16;
+    const pulse = ((index + productIndex + rangeIndex) % 4 === 2 ? 0.13 : 0);
+    return Math.max(0.36, rise + wave + pulse);
+  });
+  const weightTotal = weights.reduce((sum, value) => sum + value, 0) || 1;
+  return weights.map((weight) => Math.round((total * weight) / weightTotal / 100) * 100);
+}
+
+function managementTrendPath(points) {
+  if (!points.length) return "";
+  return points.slice(1).reduce((path, point, index) => {
+    const previous = points[index];
+    const middleX = (previous.x + point.x) / 2;
+    return `${path} C ${middleX.toFixed(1)} ${previous.y.toFixed(1)}, ${middleX.toFixed(1)} ${point.y.toFixed(1)}, ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+  }, `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`);
+}
+
+function renderManagementCategoryTrend(data) {
+  if (!els.managementTrendProduct || !els.managementTrendRange || !els.managementTrendSummary || !els.managementTrendChart) return;
+
+  const selectedProduct = state.managementTrendProduct || "全部";
+  const range = managementTrendConfig();
+  const rangeLabels = managementTrendLabels(range);
+  const rangeIndex = Math.max(0, MANAGEMENT_TREND_RANGES.findIndex((item) => item.id === range.id));
+  const productIndex = Math.max(0, PRODUCTS.indexOf(selectedProduct));
+  const selectedRows = selectedProduct === "全部" ? data : data.filter((record) => record.product === selectedProduct);
+  const baseSales = sumBy(selectedRows, (record) => record.sales);
+  const rangeSales = Math.max(0, Math.round((baseSales * range.factor) / 100) * 100);
+  const series = managementTrendSeries(rangeSales, rangeLabels.length, productIndex, rangeIndex);
+  const orderCount = Math.max(0, Math.round(rangeSales / (3900 + productIndex * 120)));
+  const talentCount = new Set(selectedRows.map((record) => record.name)).size;
+  const averageTalentSales = talentCount ? rangeSales / talentCount : 0;
+  const changes = [9.8, 6.4, 12.5, 5.6].map((value, index) => value + ((productIndex + rangeIndex + index) % 4) * 0.7);
+
+  els.managementTrendProduct.innerHTML = ["全部", ...PRODUCTS].map((product) => `
+    <option value="${escapeHtml(product)}" ${product === selectedProduct ? "selected" : ""}>${product === "全部" ? "全部品类" : escapeHtml(product)}</option>
+  `).join("");
+
+  els.managementTrendRange.innerHTML = MANAGEMENT_TREND_RANGES.map((item) => `
+    <button class="${item.id === range.id ? "active" : ""}" type="button" data-management-trend-range="${item.id}" aria-pressed="${item.id === range.id}">${item.label}</button>
+  `).join("");
+
+  const summaryRows = [
+    { label: "品类销售额", value: compactCurrency(rangeSales), change: changes[0] },
+    { label: "成交订单", value: `${orderCount.toLocaleString("zh-CN")} 单`, change: changes[1] },
+    { label: "合作达人", value: `${talentCount} 人`, change: changes[2] },
+    { label: "达人均产出", value: compactCurrency(averageTalentSales), change: changes[3] },
+  ];
+  els.managementTrendSummary.innerHTML = summaryRows.map((row) => `
+    <div class="category-trend-metric">
+      <span>${row.label}</span>
+      <strong>${row.value}</strong>
+      <em>较上一周期 <b>+${row.change.toFixed(1)}%</b></em>
+    </div>
+  `).join("");
+
+  const width = 960;
+  const height = 280;
+  const left = 66;
+  const right = 22;
+  const top = 24;
+  const bottom = 44;
+  const chartWidth = width - left - right;
+  const chartHeight = height - top - bottom;
+  const maxValue = Math.max(...series, 1000);
+  const axisMax = Math.ceil((maxValue * 1.18) / 1000) * 1000;
+  const points = series.map((value, index) => ({
+    value,
+    label: rangeLabels[index],
+    x: left + (chartWidth * index) / Math.max(1, series.length - 1),
+    y: top + chartHeight - (value / axisMax) * chartHeight,
+  }));
+  const linePath = managementTrendPath(points);
+  const areaPath = `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${(top + chartHeight).toFixed(1)} L ${points[0].x.toFixed(1)} ${(top + chartHeight).toFixed(1)} Z`;
+  const gridRows = Array.from({ length: 5 }, (_, index) => {
+    const ratio = index / 4;
+    return {
+      y: top + chartHeight * ratio,
+      value: axisMax * (1 - ratio),
+    };
+  });
+  const chartTitle = selectedProduct === "全部" ? "全部品类" : selectedProduct;
+
+  els.managementTrendChart.innerHTML = `
+    <div class="category-chart-caption">
+      <span><i></i>${escapeHtml(chartTitle)}销售额</span>
+      <em>${range.label} · 单位：元</em>
+    </div>
+    <div class="category-chart-scroll">
+      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(chartTitle)}${range.label}销售趋势折线图" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="categoryTrendArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ff8a4c" stop-opacity="0.26"></stop>
+            <stop offset="100%" stop-color="#ff8a4c" stop-opacity="0.02"></stop>
+          </linearGradient>
+        </defs>
+        ${gridRows.map((row) => `
+          <g class="category-chart-gridline">
+            <line x1="${left}" y1="${row.y.toFixed(1)}" x2="${width - right}" y2="${row.y.toFixed(1)}"></line>
+            <text x="${left - 12}" y="${(row.y + 4).toFixed(1)}" text-anchor="end">${compactCurrency(row.value).replace("¥", "")}</text>
+          </g>
+        `).join("")}
+        <path class="category-chart-area" d="${areaPath}"></path>
+        <path class="category-chart-line" d="${linePath}"></path>
+        ${points.map((point) => {
+          const tooltipX = clamp(point.x - 48, 8, width - 126);
+          const tooltipY = Math.max(8, point.y - 66);
+          return `
+            <g class="category-chart-point" tabindex="0" aria-label="${escapeHtml(point.label)} ${currency(point.value)}">
+              <line class="category-chart-guide" x1="${point.x.toFixed(1)}" y1="${point.y.toFixed(1)}" x2="${point.x.toFixed(1)}" y2="${(top + chartHeight).toFixed(1)}"></line>
+              <circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="5"></circle>
+              <g class="category-chart-tooltip" transform="translate(${tooltipX.toFixed(1)} ${tooltipY.toFixed(1)})">
+                <rect width="118" height="50" rx="7"></rect>
+                <text x="10" y="19">${escapeHtml(point.label)}</text>
+                <text class="value" x="10" y="39">${currency(point.value)}</text>
+              </g>
+            </g>
+          `;
+        }).join("")}
+        ${points.map((point) => `<text class="category-chart-axis-label" x="${point.x.toFixed(1)}" y="${height - 13}" text-anchor="middle">${escapeHtml(point.label)}</text>`).join("")}
+      </svg>
+    </div>
+  `;
 }
 
 function renderManagementPersonRank(data) {
@@ -2523,6 +2691,13 @@ function bindEvents() {
       return;
     }
 
+    const managementTrendRange = event.target.closest("[data-management-trend-range]");
+    if (managementTrendRange) {
+      state.managementTrendRange = managementTrendRange.dataset.managementTrendRange;
+      renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
+      return;
+    }
+
     const rankSort = event.target.closest("[data-rank-sort]");
     if (rankSort) {
       const key = rankSort.dataset.rankSort;
@@ -2577,6 +2752,11 @@ function bindEvents() {
       renderTimeRangePopover();
       focusTarget?.focus();
     }
+  });
+
+  els.managementTrendProduct?.addEventListener("change", (event) => {
+    state.managementTrendProduct = event.target.value;
+    renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
   });
 
   els.drawerBody.addEventListener("submit", (event) => {
