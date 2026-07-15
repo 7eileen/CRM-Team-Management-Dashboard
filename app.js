@@ -191,6 +191,23 @@ const initialRecords = [
   { id: 18, name: "辣妹CC酱", tier: "A", type: "美垂", product: "防晒喷雾", group: "A1组", format: "美垂日播", stage: "已寄样", person: "张如茜", bottleneck: "" },
   { id: 19, name: "宝妈的精致生活", tier: "C", type: "母婴", product: "气垫", group: "A1组", format: "专场", stage: "沟通中", person: "郎嘉欣", bottleneck: "需等618大促结束后再谈" },
   { id: 20, name: "三叔的院子", tier: "A", type: "三农", product: "防晒素颜霜", group: "A1组", format: "短视频挂车", stage: "已签约", person: "欧阳婉怡", bottleneck: "" },
+  { id: 21, name: "橙子美妆研究所", tier: "A", type: "美垂", product: "定妆", group: "A3组", format: "混播", stage: "待触达", person: "戴娜", bottleneck: "" },
+  { id: 22, name: "可可护肤日记", tier: "B", type: "生活分享", product: "防晒水", group: "A3组", format: "短视频挂车", stage: "已触达", person: "戴娜", bottleneck: "" },
+  { id: 23, name: "小满的衣橱", tier: "B", type: "时尚穿搭", product: "气垫", group: "A3组", format: "切片号", stage: "待触达", person: "戴娜", bottleneck: "" },
+  { id: 24, name: "元气桃桃", tier: "A", type: "美垂", product: "粉底", group: "A3组", format: "混播", stage: "沟通中", person: "戴娜", bottleneck: "佣金比例待确认" },
+  { id: 25, name: "玖玖生活志", tier: "B", type: "生活分享", product: "防晒定妆喷雾", group: "A3组", format: "单品直播间", stage: "沟通中", person: "戴娜", bottleneck: "" },
+  { id: 26, name: "安安母婴记", tier: "A", type: "母婴", product: "防晒素颜霜", group: "A3组", format: "短视频挂车", stage: "沟通中", person: "戴娜", bottleneck: "" },
+  { id: 27, name: "小鹿美妆室", tier: "A", type: "美垂", product: "四色修容盘", group: "A3组", format: "混播", stage: "已寄样", person: "戴娜", bottleneck: "" },
+  { id: 28, name: "夏日柚子茶", tier: "B", type: "生活分享", product: "防晒喷雾", group: "A3组", format: "短视频挂车", stage: "已寄样", person: "戴娜", bottleneck: "" },
+  { id: 29, name: "甜橙试妆间", tier: "S", type: "美垂", product: "定型", group: "A3组", format: "单品直播间", stage: "已寄样", person: "戴娜", bottleneck: "样品签收待确认" },
+  { id: 30, name: "晚风穿搭志", tier: "A", type: "时尚穿搭", product: "气垫", group: "A3组", format: "混播", stage: "洽谈排期", person: "戴娜", bottleneck: "" },
+  { id: 31, name: "乔乔变美记", tier: "S", type: "美垂", product: "双头修容", group: "A3组", format: "专场", stage: "试播中", person: "戴娜", bottleneck: "等待达人确认档期" },
+  { id: 32, name: "好物挖掘姬", tier: "B", type: "生活分享", product: "防晒水", group: "A3组", format: "切片号", stage: "洽谈排期", person: "戴娜", bottleneck: "" },
+  { id: 33, name: "棉花糖日记", tier: "A", type: "生活分享", product: "定妆", group: "A3组", format: "混播", stage: "已签约", person: "戴娜", bottleneck: "" },
+  { id: 34, name: "青柠护肤说", tier: "B", type: "美垂", product: "防晒素颜霜", group: "A3组", format: "短视频挂车", stage: "已签约", person: "戴娜", bottleneck: "" },
+  { id: 35, name: "一颗小番茄", tier: "A", type: "美食", product: "防晒喷雾", group: "A3组", format: "单品直播间", stage: "已签约", person: "戴娜", bottleneck: "" },
+  { id: 36, name: "美妆情报局", tier: "S", type: "美垂", product: "粉底", group: "A3组", format: "专场", stage: "已签约", person: "戴娜", bottleneck: "" },
+  { id: 37, name: "晴天好物社", tier: "A", type: "生活分享", product: "四色修容盘", group: "A3组", format: "专场", stage: "已签约", person: "戴娜", bottleneck: "" },
 ];
 
 const state = {
