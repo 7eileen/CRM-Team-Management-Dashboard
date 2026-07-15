@@ -2096,8 +2096,12 @@ svg {
 
 .personal-group-ranking {
   display: grid;
-  gap: 10px;
-  padding: 12px 14px 14px;
+  height: calc(100% - 58px);
+  min-height: 0;
+  grid-template-rows: minmax(196px, 1fr) minmax(0, 0.92fr);
+  gap: 14px;
+  padding: 14px 16px 16px;
+  overflow: hidden;
   background: linear-gradient(180deg, #fffdf9 0, #ffffff 230px);
 }
 
@@ -2106,26 +2110,29 @@ svg {
 }
 
 .personal-compact-row .group-ranking-podium {
-  min-height: 184px;
-  gap: 8px;
-  padding: 44px 6px 0;
+  height: 100%;
+  min-height: 0;
+  gap: 14px;
+  padding: 42px 10px 0;
 }
 
 .personal-compact-row .group-podium-card {
-  height: 120px;
-  padding: 44px 8px 12px;
+  height: 124px;
+  gap: 4px;
+  padding: 54px 12px 14px;
+  border-radius: 14px 14px 8px 8px;
 }
 
 .personal-compact-row .group-podium-card.rank-1 {
-  height: 152px;
+  height: 148px;
 }
 
 .personal-compact-row .group-podium-card.rank-2 {
-  height: 130px;
+  height: 132px;
 }
 
 .personal-compact-row .group-podium-card.rank-3 {
-  height: 124px;
+  height: 128px;
 }
 
 .personal-compact-row .group-rank-avatar {
@@ -2143,34 +2150,55 @@ svg {
 }
 
 .personal-compact-row .group-rank-medal {
-  top: 17px;
+  top: 24px;
   width: 34px;
   height: 26px;
 }
 
 .personal-compact-row .rank-1 .group-rank-medal {
-  top: 20px;
+  top: 27px;
   width: 38px;
   height: 29px;
 }
 
 .personal-compact-row .group-podium-card strong {
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .personal-compact-row .group-podium-card b {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .personal-compact-row .group-ranking-list {
-  max-height: 116px;
+  min-height: 0;
+  max-height: none;
+  gap: 0;
+  padding: 4px 8px 6px;
+  border-color: transparent;
+  background: #fbfcfe;
+  scrollbar-gutter: stable;
 }
 
 .personal-compact-row .group-ranking-row {
-  min-height: 48px;
-  grid-template-columns: 28px 32px minmax(0, 1fr) 48px minmax(76px, max-content);
-  gap: 7px;
-  padding: 6px 8px;
+  min-height: 56px;
+  grid-template-columns: 30px 34px minmax(0, 1fr) 58px minmax(84px, max-content);
+  gap: 10px;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid #edf1f6;
+  border-radius: 0;
+  background: transparent;
+}
+
+.personal-compact-row .group-ranking-row:last-child {
+  border-bottom: 0;
+}
+
+.personal-compact-row .group-ranking-row:hover,
+.personal-compact-row .group-ranking-row.current {
+  border-color: #edf1f6;
+  border-radius: 8px;
+  background: #fff8f3;
 }
 
 .personal-compact-row .group-row-avatar {
