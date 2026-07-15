@@ -1514,7 +1514,7 @@ function renderManagementDashboard() {
 
 function renderManagementTalentRank(data) {
   if (!els.managementTalentRank) return;
-  const metric = { label: "销售额", value: (record) => record.sales, display: compactCurrency };
+  const metric = { label: "GSV", value: (record) => record.sales, display: compactCurrency };
   const rows = sortedRankRows(data, "managementTalent", metric.value);
   const descendingRows = [...data].sort((a, b) => metric.value(b) - metric.value(a) || a.id - b.id);
   const rankById = new Map(descendingRows.map((record, index) => [record.id, index + 1]));

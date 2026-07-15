@@ -6185,45 +6185,6 @@ textarea:focus-visible {
   opacity: 1;
 }
 
-.management-talent-rank-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
-  margin: 10px 12px 2px;
-  padding: 3px;
-  border: 1px solid #f1f3f7;
-  border-radius: 8px;
-  background: #f8fafc;
-}
-
-.management-talent-rank-tabs button {
-  min-width: 0;
-  min-height: 30px;
-  overflow: hidden;
-  border: 0;
-  border-radius: 6px;
-  padding: 0 6px;
-  background: transparent;
-  color: #8491a4;
-  font: inherit;
-  font-size: 10px;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.management-talent-rank-tabs button:hover {
-  color: #e85f25;
-  background: #fff5ee;
-}
-
-.management-talent-rank-tabs button.active {
-  color: #e85f25;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(94, 113, 141, 0.08);
-}
-
 .talent-ranking-compact {
   max-height: 540px;
   gap: 5px;
@@ -6797,22 +6758,6 @@ textarea:focus-visible {
 
 .leaderboard-metric strong i.down {
   color: var(--color-danger);
-}
-
-.management-talent-rank-tabs {
-  grid-template-columns: minmax(0, 1fr);
-  margin-bottom: 0;
-}
-
-.management-talent-rank-tabs span {
-  min-height: 30px;
-  display: grid;
-  place-items: center;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #e85f25;
-  font-size: 10px;
-  font-weight: 850;
 }
 
 @media (max-width: 1180px) {
