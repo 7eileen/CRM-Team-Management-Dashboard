@@ -1388,23 +1388,41 @@ function renderManagementDashboard() {
 
 function renderManagementPersonRank(data) {
   if (!els.managementPersonRank) return;
-  const rows = sortedRankRows(personSalesRows(data), "managementPerson", (row) => row.sales);
-  const max = Math.max(...rows.map((row) => row.sales), 1);
+  const personRows = personSalesRows(data);
+  const rankByPerson = new Map([...personRows]
+    .sort((a, b) => b.sales - a.sales)
+    .map((row, index) => [row.person, index + 1]));
+  const rows = sortedRankRows(personRows, "managementPerson", (row) => row.sales);
   els.managementPersonRank.innerHTML = rows.map((row, index) => {
     const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
+    const rank = rankByPerson.get(row.person) || index + 1;
+    const rankClass = rank <= 3 ? `top-${rank}` : "";
     return `
-      <button class="person-rank-row" type="button" data-person-filter="${escapeHtml(row.person)}">
-        <span class="rank-number">${index + 1}</span>
-        <span class="rank-avatar person-avatar">${icon("user-check")}</span>
-        <span class="rank-info">
-          <strong>${escapeHtml(row.person)}</strong>
-          <em>${row.talentCount} 位达人 · ${row.specialCount} 场专场</em>
+      <button class="person-rank-row leaderboard-row ${rankClass}" type="button" data-person-filter="${escapeHtml(row.person)}">
+        <span class="leaderboard-rank">${rank}</span>
+        <span class="leaderboard-profile">
+          <span class="leaderboard-avatar">${escapeHtml(row.person.slice(0, 1))}</span>
+          <span>
+            <strong>${escapeHtml(row.person)}</strong>
+            <em>${escapeHtml(BUSINESS_GROUP_BY_PERSON[row.person] || "未分组")}</em>
+          </span>
         </span>
-        <span class="rank-meter">
-          <i style="--rank-width:${(row.sales / max) * 100}%; --rank-color:${chartPalette[index % chartPalette.length]}"></i>
+        <span class="leaderboard-metric primary">
+          <em>当月销售额及环比</em>
+          <strong>${compactCurrency(row.sales)} <i class="${mom < 0 ? "down" : ""}">${signedPercent(mom * 100)}</i></strong>
         </span>
-        <b>${compactCurrency(row.sales)}</b>
-        <em class="rank-growth ${mom < 0 ? "negative" : ""}">${signedPercent(mom * 100)}</em>
+        <span class="leaderboard-metric">
+          <em>上月销售额</em>
+          <strong>${compactCurrency(row.lastMonthSales)}</strong>
+        </span>
+        <span class="leaderboard-metric">
+          <em>专场数量</em>
+          <strong>${row.specialCount} 场</strong>
+        </span>
+        <span class="leaderboard-metric">
+          <em>合作达人数</em>
+          <strong>${row.talentCount} 人</strong>
+        </span>
       </button>
     `;
   }).join("");

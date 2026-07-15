@@ -5516,6 +5516,145 @@ textarea:focus-visible {
   background: #dbe7f3;
 }
 
+.management-leaderboard {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px 14px;
+  overflow: auto;
+}
+
+.management-leaderboard .leaderboard-row {
+  min-width: 820px;
+  min-height: 76px;
+  grid-template-columns: 46px minmax(170px, 1.15fr) repeat(4, minmax(112px, 0.82fr));
+  gap: 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #ffffff;
+}
+
+.management-leaderboard .leaderboard-row.top-1 {
+  border-color: #ffe9d8;
+  background: #fff9f4;
+}
+
+.management-leaderboard .leaderboard-row.top-2 {
+  border-color: #e7eff8;
+  background: #f8fbff;
+}
+
+.management-leaderboard .leaderboard-row.top-3 {
+  border-color: #ffede3;
+  background: #fffaf7;
+}
+
+.management-leaderboard .leaderboard-row:hover {
+  border-color: #ffd5bd;
+  background: #fff7f2;
+  transform: none;
+}
+
+.leaderboard-rank {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f0f5fb;
+  color: #718197;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.top-1 .leaderboard-rank {
+  background: #ffc75a;
+  color: #704600;
+  box-shadow: 0 6px 14px rgba(255, 199, 90, 0.24);
+}
+
+.top-2 .leaderboard-rank {
+  background: #dce7f3;
+  color: #5f7188;
+}
+
+.top-3 .leaderboard-rank {
+  background: #ffd4b8;
+  color: #a34a1c;
+}
+
+.leaderboard-profile {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.leaderboard-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #fff0e6;
+  color: #e85f25;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.leaderboard-profile > span:last-child,
+.leaderboard-metric {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.leaderboard-profile strong,
+.leaderboard-profile em,
+.leaderboard-metric strong,
+.leaderboard-metric em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-profile strong {
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+.leaderboard-profile em,
+.leaderboard-metric em {
+  color: #8292a8;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.leaderboard-metric strong {
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-metric.primary strong {
+  color: #e85f25;
+}
+
+.leaderboard-metric i {
+  margin-left: 4px;
+  color: #e85f25;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.leaderboard-metric i.down {
+  color: #7c91ad;
+}
+
 @media (max-width: 760px) {
   .personal-schedule {
     padding: 14px;
