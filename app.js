@@ -1683,9 +1683,10 @@ function renderPersonalGroupRank(person) {
         const movement = groupRankMovement(rank, previousRankByPerson.get(row.person) || rank);
         return `
           <button class="group-podium-card rank-${rank} ${row.person === person ? "current" : ""}" type="button" data-person-filter="${escapeHtml(row.person)}">
-            <span class="group-rank-avatar">${escapeHtml(row.person.slice(0, 1))}</span>
-            <span class="group-rank-medal">${rank}</span>
+            <span class="group-rank-avatar"><span>${escapeHtml(row.person.slice(0, 1))}</span></span>
+            <span class="group-rank-medal" aria-label="第 ${rank} 名"><i aria-hidden="true"></i></span>
             <strong>${escapeHtml(row.person)}</strong>
+            <span class="group-rank-metric-label">当月销售额</span>
             <b>${compactCurrency(row.sales)}</b>
             <em class="group-rank-change ${movement.className}">${movement.label}</em>
           </button>
@@ -1702,7 +1703,7 @@ function renderPersonalGroupRank(person) {
             <span class="group-row-avatar">${escapeHtml(row.person.slice(0, 1))}</span>
             <span class="rank-info"><strong>${escapeHtml(row.person)}</strong><em>${row.talentCount} 位达人 · ${row.specialCount} 场专场</em></span>
             <span class="group-rank-change ${movement.className}">${movement.label}</span>
-            <b>${compactCurrency(row.sales)}</b>
+            <span class="group-row-value"><em>当月销售额</em><b>${compactCurrency(row.sales)}</b></span>
           </button>
         `;
       }).join("") || `<div class="group-ranking-empty">本组其余名次暂无数据</div>`}
