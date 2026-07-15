@@ -311,14 +311,20 @@
               <div class="panel-head">
                 <div>
                   <span class="panel-kicker">Ranking</span>
-                  <h2>个人销售额排行榜</h2>
+                  <h2>销售排行榜</h2>
                 </div>
                 <div class="panel-actions">
-                  <button class="sort-toggle desc" type="button" data-rank-sort="managementPerson" data-sort-label="个人销售额排行榜" aria-label="个人销售额排行榜倒序排列" title="倒序排列">
+                  <button class="sort-toggle desc" type="button" data-rank-sort="managementPerson" data-sort-label="销售排行榜" aria-label="销售排行榜倒序排列" title="倒序排列">
                     <svg aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
                   </button>
                   <span class="table-count" id="dashboardTableCount">当月排行</span>
                 </div>
+              </div>
+              <div class="management-person-rank-tabs" id="managementPersonRankTabs" role="tablist" aria-label="销售排行榜维度">
+                <button class="active" type="button" role="tab" aria-selected="true" data-management-person-metric="gmv">GMV</button>
+                <button type="button" role="tab" aria-selected="false" data-management-person-metric="product">品类</button>
+                <button type="button" role="tab" aria-selected="false" data-management-person-metric="channel">渠道</button>
+                <button type="button" role="tab" aria-selected="false" data-management-person-metric="format">玩法</button>
               </div>
               <div class="person-rank-list management-leaderboard" id="managementPersonRank"></div>
             </article>

@@ -228,6 +228,7 @@ const state = {
   managementTeam: "",
   managementTrendProduct: "全部",
   managementTrendRange: "30d",
+  managementPersonMetric: "gmv",
   managementTalentMetric: "sales",
   personalPerson: PERSONS[0],
   personalScheduleDate: "",
@@ -274,6 +275,7 @@ const els = {
   managementTrendSummary: document.getElementById("managementTrendSummary"),
   managementTrendChart: document.getElementById("managementTrendChart"),
   managementPersonRank: document.getElementById("managementPersonRank"),
+  managementPersonRankTabs: document.getElementById("managementPersonRankTabs"),
   managementTierSales: document.getElementById("managementTierSales"),
   managementStageSales: document.getElementById("managementStageSales"),
   managementTalentRank: document.getElementById("managementTalentRank"),
@@ -1413,9 +1415,6 @@ function renderManagementDashboard() {
   renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
   renderManagementPersonRank(data);
   renderManagementTalentRank(data);
-  if (els.dashboardTableCount) {
-    els.dashboardTableCount.textContent = `${PERSONS.length} 位商务`;
-  }
 }
 
 function managementTalentMetricMeta() {
@@ -1621,51 +1620,136 @@ function renderManagementCategoryTrend(data) {
   `;
 }
 
+const MANAGEMENT_RANK_CHANNELS = ["抖音", "快手", "小红书", "视频号"];
+
+function managementRecordChannel(record) {
+  const channelIndex = (Number(record.id) + String(record.name || "").length) % MANAGEMENT_RANK_CHANNELS.length;
+  return MANAGEMENT_RANK_CHANNELS[channelIndex];
+}
+
+function aggregateManagementRankRows(data, keyGetter, metaLabel) {
+  const rows = new Map();
+  data.forEach((record) => {
+    const label = keyGetter(record) || "其他";
+    const row = rows.get(label) || {
+      key: label,
+      label,
+      value: 0,
+      previousValue: 0,
+      talentNames: new Set(),
+    };
+    row.value += record.sales;
+    row.previousValue += record.lastMonthSales;
+    row.talentNames.add(record.name);
+    rows.set(label, row);
+  });
+  return [...rows.values()].map((row) => ({
+    ...row,
+    meta: `${row.talentNames.size} 位达人 · ${metaLabel}`,
+  }));
+}
+
+function managementPersonRankMetric(data) {
+  const metrics = {
+    gmv: {
+      label: "GMV",
+      title: "商务 GMV 榜",
+      totalLabel: "当月 GMV",
+      countLabel: "位商务",
+      rows: () => personSalesRows(data).map((row) => ({
+        key: row.person,
+        label: row.person,
+        person: row.person,
+        value: row.sales,
+        previousValue: row.lastMonthSales,
+        meta: `${BUSINESS_GROUP_BY_PERSON[row.person] || "未分组"} · ${row.talentCount} 位达人`,
+      })),
+    },
+    product: {
+      label: "品类",
+      title: "品类销售贡献榜",
+      totalLabel: "品类销售合计",
+      countLabel: "个品类",
+      rows: () => aggregateManagementRankRows(data, (record) => record.product, "品类贡献"),
+    },
+    channel: {
+      label: "渠道",
+      title: "渠道 GMV 贡献榜",
+      totalLabel: "渠道 GMV 合计",
+      countLabel: "个渠道",
+      rows: () => aggregateManagementRankRows(data, managementRecordChannel, "渠道贡献"),
+    },
+    format: {
+      label: "玩法",
+      title: "玩法销售贡献榜",
+      totalLabel: "玩法销售合计",
+      countLabel: "种玩法",
+      rows: () => aggregateManagementRankRows(data, (record) => record.format, "玩法贡献"),
+    },
+  };
+  return metrics[state.managementPersonMetric] || metrics.gmv;
+}
+
 function renderManagementPersonRank(data) {
   if (!els.managementPersonRank) return;
-  const personRows = personSalesRows(data);
-  const rankedRows = [...personRows].sort((a, b) => b.sales - a.sales || a.person.localeCompare(b.person, "zh-CN"));
-  const previousRows = [...personRows].sort((a, b) => b.lastMonthSales - a.lastMonthSales || a.person.localeCompare(b.person, "zh-CN"));
-  const rankByPerson = new Map(rankedRows.map((row, index) => [row.person, index + 1]));
-  const previousRankByPerson = new Map(previousRows.map((row, index) => [row.person, index + 1]));
-  const orderedRows = sortedRankRows(personRows, "managementPerson", (row) => row.sales);
+  const metric = managementPersonRankMetric(data);
+  const metricRows = metric.rows();
+  const rankedRows = [...metricRows].sort((a, b) => b.value - a.value || a.label.localeCompare(b.label, "zh-CN"));
+  const previousRows = [...metricRows].sort((a, b) => b.previousValue - a.previousValue || a.label.localeCompare(b.label, "zh-CN"));
+  const rankByKey = new Map(rankedRows.map((row, index) => [row.key, index + 1]));
+  const previousRankByKey = new Map(previousRows.map((row, index) => [row.key, index + 1]));
+  const orderedRows = sortedRankRows(metricRows, "managementPerson", (row) => row.value);
   const podiumRows = [rankedRows[1], rankedRows[0], rankedRows[2]].filter(Boolean);
-  const remainingRows = orderedRows.filter((row) => (rankByPerson.get(row.person) || 0) > 3);
-  const totalSales = sumBy(personRows, (row) => row.sales);
+  const remainingRows = orderedRows.filter((row) => (rankByKey.get(row.key) || 0) > 3);
+  const totalValue = sumBy(metricRows, (row) => row.value);
+
+  els.managementPersonRankTabs?.querySelectorAll("[data-management-person-metric]").forEach((button) => {
+    const active = button.dataset.managementPersonMetric === state.managementPersonMetric;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+  if (els.dashboardTableCount) {
+    els.dashboardTableCount.textContent = `${metricRows.length} ${metric.countLabel}`;
+  }
 
   els.managementPersonRank.innerHTML = `
     <div class="management-rank-intro group-ranking-intro">
-      <div><span>全员实时销售榜</span><strong>${personRows.length} 位商务</strong></div>
-      <p><span>当月销售总额</span><b>${compactCurrency(totalSales)}</b></p>
+      <div><span>${metric.title}</span><strong>${metricRows.length} ${metric.countLabel}</strong></div>
+      <p><span>${metric.totalLabel}</span><b>${compactCurrency(totalValue)}</b></p>
     </div>
     <div class="management-rank-podium group-ranking-podium" style="--team-color:#ff7a3d; --team-soft:#fff4ed">
       ${podiumRows.map((row) => {
-        const rank = rankByPerson.get(row.person) || 1;
-        const movement = groupRankMovement(rank, previousRankByPerson.get(row.person) || rank);
+        const rank = rankByKey.get(row.key) || 1;
+        const movement = groupRankMovement(rank, previousRankByKey.get(row.key) || rank);
+        const element = row.person ? "button" : "article";
+        const interaction = row.person ? `type="button" data-person-filter="${escapeHtml(row.person)}"` : "";
         return `
-          <button class="group-podium-card rank-${rank}" type="button" data-person-filter="${escapeHtml(row.person)}">
-            <span class="group-rank-avatar"><span>${escapeHtml(row.person.slice(0, 1))}</span></span>
+          <${element} class="group-podium-card rank-${rank} ${row.person ? "" : "static"}" ${interaction}>
+            <span class="group-rank-avatar"><span>${escapeHtml(row.label.slice(0, 1))}</span></span>
             <span class="group-rank-medal" aria-label="第 ${rank} 名"><i aria-hidden="true"></i></span>
-            <strong>${escapeHtml(row.person)}</strong>
-            <span class="group-rank-metric-label">当月销售额</span>
-            <b>${compactCurrency(row.sales)}</b>
+            <strong>${escapeHtml(row.label)}</strong>
+            <span class="group-rank-metric-label">${metric.label}</span>
+            <b>${compactCurrency(row.value)}</b>
             <em class="group-rank-change ${movement.className}">${movement.label}</em>
-          </button>
+          </${element}>
         `;
       }).join("")}
     </div>
-    <div class="management-rank-list group-ranking-list" aria-label="个人销售额第 4 至 ${personRows.length} 名">
+    <div class="management-rank-list group-ranking-list" aria-label="${metric.label}第 4 至 ${metricRows.length} 名">
       ${remainingRows.map((row) => {
-        const rank = rankByPerson.get(row.person) || 4;
-        const movement = groupRankMovement(rank, previousRankByPerson.get(row.person) || rank);
+        const rank = rankByKey.get(row.key) || 4;
+        const movement = groupRankMovement(rank, previousRankByKey.get(row.key) || rank);
+        const element = row.person ? "button" : "article";
+        const interaction = row.person ? `type="button" data-person-filter="${escapeHtml(row.person)}"` : "";
         return `
-          <button class="group-ranking-row" type="button" data-person-filter="${escapeHtml(row.person)}">
+          <${element} class="group-ranking-row ${row.person ? "" : "static"}" ${interaction}>
             <span class="rank-number">${rank}</span>
-            <span class="group-row-avatar">${escapeHtml(row.person.slice(0, 1))}</span>
-            <span class="rank-info"><strong>${escapeHtml(row.person)}</strong><em>${escapeHtml(BUSINESS_GROUP_BY_PERSON[row.person] || "未分组")} · ${row.talentCount} 位达人</em></span>
+            <span class="group-row-avatar">${escapeHtml(row.label.slice(0, 1))}</span>
+            <span class="rank-info"><strong>${escapeHtml(row.label)}</strong><em>${escapeHtml(row.meta)}</em></span>
             <span class="group-rank-change ${movement.className}">${movement.label}</span>
-            <span class="group-row-value"><em>当月销售额</em><b>${compactCurrency(row.sales)}</b></span>
-          </button>
+            <span class="group-row-value"><em>${metric.label}</em><b>${compactCurrency(row.value)}</b></span>
+          </${element}>
         `;
       }).join("")}
     </div>
@@ -2779,6 +2863,13 @@ function bindEvents() {
     if (managementTalentMetric) {
       state.managementTalentMetric = managementTalentMetric.dataset.managementTalentMetric;
       renderManagementTalentRank(enrichedRecords());
+      return;
+    }
+
+    const managementPersonMetric = event.target.closest("[data-management-person-metric]");
+    if (managementPersonMetric) {
+      state.managementPersonMetric = managementPersonMetric.dataset.managementPersonMetric;
+      renderManagementPersonRank(enrichedRecords());
       return;
     }
 
