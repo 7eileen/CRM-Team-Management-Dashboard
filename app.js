@@ -1,10 +1,10 @@
 const PIPELINE_STAGES = [
   { id: "waiting-connect", label: "待建联", sourceStages: ["待触达", "已触达", "已流失", "公海达人"], color: "#7b8794", soft: "#f5f8fb", icon: "user-check" },
-  { id: "connecting", label: "建联中", sourceStages: ["沟通中"], color: "#ff6f2f", soft: "#fff3eb", icon: "handshake" },
-  { id: "sampled", label: "已寄样", sourceStages: ["已寄样"], color: "#ff9656", soft: "#fff6f0", icon: "truck" },
-  { id: "scheduling", label: "待排期", sourceStages: ["试播中", "洽谈排期"], color: "#f6c75f", soft: "#fff9ed", icon: "calendar" },
-  { id: "partnered", label: "已合作", color: "#6d9ed8", soft: "#edf5ff", icon: "star", predicate: (record) => record.stage === "已签约" && !isDeepPartner(record) },
-  { id: "deep-partnered", label: "深度合作", color: "#4f87c6", soft: "#eaf3fc", icon: "star", predicate: isDeepPartner },
+  { id: "connecting", label: "建联中", sourceStages: ["沟通中"], color: "#ff7a3d", soft: "#fff4ed", icon: "handshake" },
+  { id: "sampled", label: "已寄样", sourceStages: ["已寄样"], color: "#ff9a63", soft: "#fff8f4", icon: "truck" },
+  { id: "scheduling", label: "待排期", sourceStages: ["试播中", "洽谈排期"], color: "#ffc75a", soft: "#fff9ed", icon: "calendar" },
+  { id: "partnered", label: "已合作", color: "#7ca6e8", soft: "#f0f6ff", icon: "star", predicate: (record) => record.stage === "已签约" && !isDeepPartner(record) },
+  { id: "deep-partnered", label: "深度合作", color: "#5f91d0", soft: "#edf5ff", icon: "star", predicate: isDeepPartner },
 ];
 const DISPLAY_STAGE_SOURCE_FALLBACK = {
   待触达: "待建联",
@@ -72,12 +72,12 @@ const BUSINESS_GROUP_BY_PERSON = BUSINESS_PEOPLE.reduce((acc, person) => {
 }, {});
 
 const SALES_TEAM_META = [
-  { label: "A组", color: "#ff6f2f", soft: "#fff3eb" },
-  { label: "B组", color: "#f6c75f", soft: "#fff9ed" },
-  { label: "C组", color: "#6d9ed8", soft: "#edf5ff" },
+  { label: "A组", color: "#ff7a3d", soft: "#fff4ed" },
+  { label: "B组", color: "#ffc75a", soft: "#fff9ed" },
+  { label: "C组", color: "#7ca6e8", soft: "#f0f6ff" },
 ];
 
-const chartPalette = ["#ff6f2f", "#ff9656", "#ffb06f", "#f6c75f", "#6d9ed8", "#94b7df", "#718096", "#a8b1bd"];
+const chartPalette = ["#ff7a3d", "#ff9a63", "#ffb987", "#ffc75a", "#7ca6e8", "#a4c5ee", "#89a5c3", "#b7c9dd"];
 const SALES_METRICS_STORAGE_KEY = "crm-sales-metrics-v1";
 const TIME_RANGE_OPTIONS = [
   { id: "7d", label: "近7天", desc: "最近一周成交节奏", factor: 0.28, previousFactor: 0.26, targetFactor: 0.23, specialFactor: 0.34 },
@@ -89,17 +89,17 @@ const TIME_RANGE_OPTIONS = [
 ];
 
 const tierMeta = {
-  S: { color: "#ff6f2f", soft: "#fff3eb", score: 35 },
-  A: { color: "#f6c75f", soft: "#fff9ed", score: 28 },
-  B: { color: "#6d9ed8", soft: "#edf5ff", score: 20 },
-  C: { color: "#94a3b8", soft: "#f5f8fb", score: 14 },
+  S: { color: "#ff7a3d", soft: "#fff4ed", score: 35 },
+  A: { color: "#ffc75a", soft: "#fff9ed", score: 28 },
+  B: { color: "#7ca6e8", soft: "#f0f6ff", score: 20 },
+  C: { color: "#9eb5ce", soft: "#f4f8fc", score: 14 },
 };
 
 const tierChartMeta = {
-  S: { color: "#ff6f2f" },
-  A: { color: "#f6c75f" },
-  B: { color: "#6d9ed8" },
-  C: { color: "#cbd5e1" },
+  S: { color: "#ff7a3d" },
+  A: { color: "#ffc75a" },
+  B: { color: "#7ca6e8" },
+  C: { color: "#c7d6e6" },
 };
 
 const typeIconMap = {
@@ -122,10 +122,10 @@ const formatIconMap = {
   美垂日播: "star",
 };
 const orderStatusMeta = [
-  { label: "已支付", color: "#ff6f2f", soft: "#fff3eb" },
-  { label: "待发货", color: "#f6c75f", soft: "#fff9ed" },
-  { label: "已发货", color: "#718096", soft: "#f5f8fb" },
-  { label: "已完成", color: "#6d9ed8", soft: "#edf5ff" },
+  { label: "已支付", color: "#ff7a3d", soft: "#fff4ed" },
+  { label: "待发货", color: "#ffc75a", soft: "#fff9ed" },
+  { label: "已发货", color: "#89a5c3", soft: "#f4f8fc" },
+  { label: "已完成", color: "#7ca6e8", soft: "#f0f6ff" },
 ];
 const orderChannels = ["专场成交", "混播成交", "短视频挂车", "切片号成交", "单品直播间", "美垂日播"];
 
@@ -204,6 +204,7 @@ const state = {
   managementTeamProduct: "全部",
   managementTeam: "",
   personalPerson: PERSONS[0],
+  personalScheduleDate: "",
   rankSort: {
     managementPerson: "desc",
     managementTalent: "desc",
@@ -250,6 +251,12 @@ const els = {
   personalTierSales: document.getElementById("personalTierSales"),
   personalStageSales: document.getElementById("personalStageSales"),
   personalTalentRank: document.getElementById("personalTalentRank"),
+  personalGroupRank: document.getElementById("personalGroupRank"),
+  personalGroupRankBadge: document.getElementById("personalGroupRankBadge"),
+  personalKanbanColumns: document.getElementById("personalKanbanColumns"),
+  personalPipelineBadge: document.getElementById("personalPipelineBadge"),
+  personalSchedule: document.getElementById("personalSchedule"),
+  personalScheduleBadge: document.getElementById("personalScheduleBadge"),
   dashboardTableCount: document.getElementById("dashboardTableCount"),
   tierLegend: document.getElementById("tierLegend"),
   kanbanColumns: document.getElementById("kanbanColumns"),
@@ -967,10 +974,10 @@ function managementKpiCards() {
   const monthLabel = formatMetricMonth(metrics.month);
   const rangeLabel = metrics.range.label;
   return [
-    { label: "当月销售额", value: compactCurrency(monthlySales), sub: `${monthLabel} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff6f2f", soft: "#fff3eb", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: "当月目标销售额", value: compactCurrency(monthlyTarget), sub: `${monthLabel}目标`, trend: "月度目标", trendValue: 1, icon: "calendar", color: "#ff9656", soft: "#fff6f0", path: "M2 31 C12 24 21 27 30 18 C39 9 47 20 55 12 C62 6 67 9 70 5" },
-    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#f6c75f", soft: "#fff9ed", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
-    { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#6d9ed8", soft: "#edf5ff", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
+    { label: "当月销售额", value: compactCurrency(monthlySales), sub: `${monthLabel} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7a3d", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "当月目标销售额", value: compactCurrency(monthlyTarget), sub: `${monthLabel}目标`, trend: "月度目标", trendValue: 1, icon: "calendar", color: "#ff9a63", soft: "#fff8f4", path: "M2 31 C12 24 21 27 30 18 C39 9 47 20 55 12 C62 6 67 9 70 5" },
+    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#ffc75a", soft: "#fff9ed", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
+    { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#7ca6e8", soft: "#f0f6ff", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
     { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#e9b15a" : "#d95656", soft: mom >= 0 ? "#fff7e8" : "#fceeee", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
   ];
 }
@@ -987,11 +994,11 @@ function personalKpiCards() {
   const specialGap = nextSpecialLeader ? nextSpecialLeader.specialCount - row.specialCount : 0;
   const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
   return [
-    { label: `${rangeLabel}销售额`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff6f2f", soft: "#fff3eb", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: `${rangeLabel}销售额排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#f6c75f", soft: "#fff9ed", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
-    { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#ff9656", soft: "#fff6f0", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
-    { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#6d9ed8", soft: "#edf5ff", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
-    { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#718096", soft: "#f5f8fb", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
+    { label: `${rangeLabel}销售额`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7a3d", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: `${rangeLabel}销售额排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#ffc75a", soft: "#fff9ed", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
+    { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#ff9a63", soft: "#fff8f4", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
+    { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#7ca6e8", soft: "#f0f6ff", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
+    { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#89a5c3", soft: "#f4f8fc", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
     { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 对比周期`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#e9b15a" : "#d95656", soft: mom >= 0 ? "#fff7e8" : "#fceeee", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
   ];
 }
@@ -1403,6 +1410,172 @@ function renderManagementPersonRank(data) {
   }).join("");
 }
 
+function groupRankMovement(currentRank, previousRank) {
+  const change = previousRank - currentRank;
+  if (change > 0) return { label: `↑ ${change}`, className: "up" };
+  if (change < 0) return { label: `↓ ${Math.abs(change)}`, className: "down" };
+  return { label: "持平", className: "flat" };
+}
+
+function renderPersonalGroupRank(person) {
+  if (!els.personalGroupRank) return;
+  const personGroup = BUSINESS_GROUP_BY_PERSON[person] || "";
+  const teamLabel = teamLabelForGroup(personGroup);
+  const teamMeta = SALES_TEAM_META.find((team) => team.label === teamLabel) || SALES_TEAM_META[0];
+  const rows = personSalesRows(enrichedRecords())
+    .filter((row) => teamLabelForGroup(BUSINESS_GROUP_BY_PERSON[row.person] || "") === teamLabel)
+    .sort((a, b) => b.sales - a.sales || a.person.localeCompare(b.person, "zh-CN"));
+  const previousRows = [...rows].sort((a, b) => b.lastMonthSales - a.lastMonthSales || a.person.localeCompare(b.person, "zh-CN"));
+  const previousRankByPerson = new Map(previousRows.map((row, index) => [row.person, index + 1]));
+  const currentRank = Math.max(1, rows.findIndex((row) => row.person === person) + 1);
+  const podiumRows = [rows[1], rows[0], rows[2]].filter(Boolean);
+
+  if (els.personalGroupRankBadge) {
+    els.personalGroupRankBadge.textContent = `${teamLabel} · 我的排名 第 ${currentRank}`;
+  }
+
+  els.personalGroupRank.innerHTML = `
+    <div class="group-ranking-intro">
+      <div>
+        <span>${escapeHtml(teamLabel)}实时销售榜</span>
+        <strong>${rows.length} 位商务</strong>
+      </div>
+      <p><b>${escapeHtml(person)}</b><span>当前组内第 ${currentRank}</span></p>
+    </div>
+    <div class="group-ranking-podium" style="--team-color:${teamMeta.color}; --team-soft:${teamMeta.soft}">
+      ${podiumRows.map((row) => {
+        const rank = rows.indexOf(row) + 1;
+        const movement = groupRankMovement(rank, previousRankByPerson.get(row.person) || rank);
+        return `
+          <button class="group-podium-card rank-${rank} ${row.person === person ? "current" : ""}" type="button" data-person-filter="${escapeHtml(row.person)}">
+            <span class="group-rank-avatar">${escapeHtml(row.person.slice(0, 1))}</span>
+            <span class="group-rank-medal">${rank}</span>
+            <strong>${escapeHtml(row.person)}</strong>
+            <b>${compactCurrency(row.sales)}</b>
+            <em class="group-rank-change ${movement.className}">${movement.label}</em>
+          </button>
+        `;
+      }).join("")}
+    </div>
+    <div class="group-ranking-list" aria-label="${escapeHtml(teamLabel)}组内排行榜">
+      ${rows.slice(3).map((row, index) => {
+        const rank = index + 4;
+        const movement = groupRankMovement(rank, previousRankByPerson.get(row.person) || rank);
+        return `
+          <button class="group-ranking-row ${row.person === person ? "current" : ""}" type="button" data-person-filter="${escapeHtml(row.person)}">
+            <span class="rank-number">${rank}</span>
+            <span class="group-row-avatar">${escapeHtml(row.person.slice(0, 1))}</span>
+            <span class="rank-info"><strong>${escapeHtml(row.person)}</strong><em>${row.talentCount} 位达人 · ${row.specialCount} 场专场</em></span>
+            <span class="group-rank-change ${movement.className}">${movement.label}</span>
+            <b>${compactCurrency(row.sales)}</b>
+          </button>
+        `;
+      }).join("") || `<div class="group-ranking-empty">本组其余名次暂无数据</div>`}
+    </div>
+  `;
+}
+
+function renderPersonalPipeline(person, data) {
+  if (!els.personalKanbanColumns) return;
+  els.personalKanbanColumns.innerHTML = kanbanColumnsMarkup(data, false);
+  if (els.personalPipelineBadge) {
+    els.personalPipelineBadge.textContent = `${person} · ${data.length} 位达人`;
+  }
+}
+
+function localDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function personalScheduleEntries(data, person) {
+  const monthKey = String(getSalesMetrics().month || currentMonthKey()).slice(0, 7);
+  const days = [2, 2, 5, 7, 7, 10, 12, 14, 14, 17, 20, 22, 25, 28];
+  const times = ["19:30", "20:00", "20:30", "21:00"];
+  const rooms = ["直播间A", "直播间B", "直播间C", "直播间D"];
+  const source = data.length ? data : enrichedRecords().filter((record) => record.person === person);
+  const fallback = source.length ? source : enrichedRecords().slice(0, 4);
+
+  return days.map((day, index) => {
+    const record = fallback[index % fallback.length];
+    const status = index < 5
+      ? { label: "已完成", color: "#7ca6e8", soft: "#f0f6ff" }
+      : index === 5
+        ? { label: "进行中", color: "#ff7a3d", soft: "#fff4ed" }
+        : { label: "待开始", color: "#89a5c3", soft: "#f4f8fc" };
+    return {
+      id: `SPECIAL-${monthKey.replace("-", "")}-${String(index + 1).padStart(2, "0")}`,
+      date: `${monthKey}-${String(day).padStart(2, "0")}`,
+      time: times[index % times.length],
+      talent: record?.name || `模拟达人 ${index + 1}`,
+      product: record?.product || PRODUCTS[index % PRODUCTS.length],
+      room: rooms[index % rooms.length],
+      amount: 480000 + ((index * 370000) % 1380000),
+      status,
+    };
+  });
+}
+
+function renderPersonalSchedule(person, data) {
+  if (!els.personalSchedule) return;
+  const entries = personalScheduleEntries(data, person);
+  const availableDates = new Set(entries.map((entry) => entry.date));
+  if (!state.personalScheduleDate || !availableDates.has(state.personalScheduleDate)) {
+    state.personalScheduleDate = entries[7]?.date || entries[0]?.date || localDateKey(new Date());
+  }
+
+  const selectedDate = new Date(`${state.personalScheduleDate}T12:00:00`);
+  const mondayOffset = (selectedDate.getDay() + 6) % 7;
+  const weekStart = new Date(selectedDate);
+  weekStart.setDate(selectedDate.getDate() - mondayOffset);
+  const weekDates = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + index);
+    return date;
+  });
+  const selectedEntries = entries.filter((entry) => entry.date === state.personalScheduleDate);
+  const monthLabel = `${selectedDate.getFullYear()}年${String(selectedDate.getMonth() + 1).padStart(2, "0")}月`;
+  const fullDateLabel = `${selectedDate.getFullYear()}年${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日`;
+  const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+
+  if (els.personalScheduleBadge) {
+    els.personalScheduleBadge.textContent = `${monthLabel} · 本月专场 ${entries.length} 个`;
+  }
+
+  els.personalSchedule.innerHTML = `
+    <div class="schedule-date-head">
+      <div><strong>${fullDateLabel}</strong><span>${weekdays[selectedDate.getDay()]}</span></div>
+      <em>${escapeHtml(person)}的专场日程</em>
+    </div>
+    <div class="schedule-week" role="tablist" aria-label="专场排期日期">
+      ${weekDates.map((date) => {
+        const dateKey = localDateKey(date);
+        const count = entries.filter((entry) => entry.date === dateKey).length;
+        return `
+          <button class="schedule-day ${dateKey === state.personalScheduleDate ? "active" : ""}" type="button" data-personal-schedule-date="${dateKey}" role="tab" aria-selected="${dateKey === state.personalScheduleDate}">
+            <span>${weekdays[date.getDay()].replace("周", "")}</span>
+            <strong>${date.getDate()}</strong>
+            ${count ? `<i>${count}场</i>` : `<i aria-hidden="true">-</i>`}
+          </button>
+        `;
+      }).join("")}
+    </div>
+    <div class="schedule-agenda">
+      ${selectedEntries.length ? selectedEntries.map((entry) => `
+        <article class="schedule-entry" style="--schedule-color:${entry.status.color}; --schedule-soft:${entry.status.soft}">
+          <time>${entry.time}</time>
+          <span class="schedule-entry-line"></span>
+          <span class="schedule-entry-copy">
+            <strong>${escapeHtml(entry.talent)} · ${escapeHtml(entry.product)}专场</strong>
+            <em>${icon("calendar")}${escapeHtml(entry.room)} · ${escapeHtml(person)}</em>
+          </span>
+          <b>${compactCurrency(entry.amount)}</b>
+          <span class="schedule-status">${entry.status.label}</span>
+        </article>
+      `).join("") : `<div class="schedule-empty">当日暂无专场安排，可选择有场次标记的日期查看</div>`}
+    </div>
+  `;
+}
+
 function renderPersonalDashboard() {
   const person = selectedPerson();
   const data = recordsForPerson(person);
@@ -1415,6 +1588,9 @@ function renderPersonalDashboard() {
   renderSalesDonut(els.personalTierSales, tierRows, "Personal Sales");
   renderSalesBars(els.personalStageSales, stageRows, { showPercent: true });
   renderPersonalTalentList(els.personalTalentRank, sortedRankRows(data, "personalOrders", (record) => record.sales), person);
+  renderPersonalGroupRank(person);
+  renderPersonalPipeline(person, data);
+  renderPersonalSchedule(person, data);
 }
 
 function renderTalentSalesRank(container, data, metric = "sales") {
@@ -1689,12 +1865,11 @@ function renderLegend() {
   `).join("");
 }
 
-function renderKanban() {
-  const data = filteredRecords();
-  els.kanbanColumns.innerHTML = PIPELINE_STAGES.map((stage) => {
+function kanbanColumnsMarkup(data, interactive = true) {
+  return PIPELINE_STAGES.map((stage) => {
     const stageRecords = pipelineStageRecords(data, stage);
     return `
-      <section class="kanban-col" data-drop-stage="${escapeHtml(stage.label)}">
+      <section class="kanban-col"${interactive ? ` data-drop-stage="${escapeHtml(stage.label)}"` : ""}>
         <div class="kanban-col-head" style="--stage-color:${stage.color}">
           <div class="kanban-title">${icon(stage.icon)}<span>${stage.label}</span></div>
           <span class="count-pill">${stageRecords.length}</span>
@@ -1705,6 +1880,11 @@ function renderKanban() {
       </section>
     `;
   }).join("");
+}
+
+function renderKanban() {
+  const data = filteredRecords();
+  els.kanbanColumns.innerHTML = kanbanColumnsMarkup(data);
 }
 
 function renderTalentCard(record) {
@@ -1764,7 +1944,7 @@ function renderOwners() {
           <span class="tag">${owned.length} 人</span>
         </div>
         <div class="progress-track">
-          <div class="progress-fill" style="--progress:${(owned.length / max) * 100}%; --progress-color:#ff9656"></div>
+          <div class="progress-fill" style="--progress:${(owned.length / max) * 100}%; --progress-color:#ff9a63"></div>
         </div>
         <span class="muted">已合作 ${signed} · 卡点 ${blocked}</span>
       </div>
@@ -2279,6 +2459,13 @@ function bindEvents() {
     }
 
     if (event.target.closest("#timeRangePopover")) {
+      return;
+    }
+
+    const personalScheduleDate = event.target.closest("[data-personal-schedule-date]");
+    if (personalScheduleDate) {
+      state.personalScheduleDate = personalScheduleDate.dataset.personalScheduleDate;
+      renderPersonalSchedule(selectedPerson(), recordsForPerson());
       return;
     }
 
