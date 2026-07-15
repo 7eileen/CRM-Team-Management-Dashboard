@@ -1623,43 +1623,52 @@ function renderManagementCategoryTrend(data) {
 function renderManagementPersonRank(data) {
   if (!els.managementPersonRank) return;
   const personRows = personSalesRows(data);
-  const rankByPerson = new Map([...personRows]
-    .sort((a, b) => b.sales - a.sales)
-    .map((row, index) => [row.person, index + 1]));
-  const rows = sortedRankRows(personRows, "managementPerson", (row) => row.sales);
-  els.managementPersonRank.innerHTML = rows.map((row, index) => {
-    const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
-    const rank = rankByPerson.get(row.person) || index + 1;
-    const rankClass = rank <= 3 ? `top-${rank}` : "";
-    return `
-      <button class="person-rank-row leaderboard-row ${rankClass}" type="button" data-person-filter="${escapeHtml(row.person)}">
-        <span class="leaderboard-rank">${rank}</span>
-        <span class="leaderboard-profile">
-          <span class="leaderboard-avatar">${escapeHtml(row.person.slice(0, 1))}</span>
-          <span>
+  const rankedRows = [...personRows].sort((a, b) => b.sales - a.sales || a.person.localeCompare(b.person, "zh-CN"));
+  const previousRows = [...personRows].sort((a, b) => b.lastMonthSales - a.lastMonthSales || a.person.localeCompare(b.person, "zh-CN"));
+  const rankByPerson = new Map(rankedRows.map((row, index) => [row.person, index + 1]));
+  const previousRankByPerson = new Map(previousRows.map((row, index) => [row.person, index + 1]));
+  const orderedRows = sortedRankRows(personRows, "managementPerson", (row) => row.sales);
+  const podiumRows = [rankedRows[1], rankedRows[0], rankedRows[2]].filter(Boolean);
+  const remainingRows = orderedRows.filter((row) => (rankByPerson.get(row.person) || 0) > 3);
+  const totalSales = sumBy(personRows, (row) => row.sales);
+
+  els.managementPersonRank.innerHTML = `
+    <div class="management-rank-intro group-ranking-intro">
+      <div><span>全员实时销售榜</span><strong>${personRows.length} 位商务</strong></div>
+      <p><span>当月销售总额</span><b>${compactCurrency(totalSales)}</b></p>
+    </div>
+    <div class="management-rank-podium group-ranking-podium" style="--team-color:#ff7a3d; --team-soft:#fff4ed">
+      ${podiumRows.map((row) => {
+        const rank = rankByPerson.get(row.person) || 1;
+        const movement = groupRankMovement(rank, previousRankByPerson.get(row.person) || rank);
+        return `
+          <button class="group-podium-card rank-${rank}" type="button" data-person-filter="${escapeHtml(row.person)}">
+            <span class="group-rank-avatar"><span>${escapeHtml(row.person.slice(0, 1))}</span></span>
+            <span class="group-rank-medal" aria-label="第 ${rank} 名"><i aria-hidden="true"></i></span>
             <strong>${escapeHtml(row.person)}</strong>
-            <em>${escapeHtml(BUSINESS_GROUP_BY_PERSON[row.person] || "未分组")}</em>
-          </span>
-        </span>
-        <span class="leaderboard-metric primary">
-          <em>当月销售额及环比</em>
-          <strong>${compactCurrency(row.sales)} <i class="${mom < 0 ? "down" : ""}">${signedPercent(mom * 100)}</i></strong>
-        </span>
-        <span class="leaderboard-metric">
-          <em>上月销售额</em>
-          <strong>${compactCurrency(row.lastMonthSales)}</strong>
-        </span>
-        <span class="leaderboard-metric">
-          <em>专场数量</em>
-          <strong>${row.specialCount} 场</strong>
-        </span>
-        <span class="leaderboard-metric">
-          <em>合作达人数</em>
-          <strong>${row.talentCount} 人</strong>
-        </span>
-      </button>
-    `;
-  }).join("");
+            <span class="group-rank-metric-label">当月销售额</span>
+            <b>${compactCurrency(row.sales)}</b>
+            <em class="group-rank-change ${movement.className}">${movement.label}</em>
+          </button>
+        `;
+      }).join("")}
+    </div>
+    <div class="management-rank-list group-ranking-list" aria-label="个人销售额第 4 至 ${personRows.length} 名">
+      ${remainingRows.map((row) => {
+        const rank = rankByPerson.get(row.person) || 4;
+        const movement = groupRankMovement(rank, previousRankByPerson.get(row.person) || rank);
+        return `
+          <button class="group-ranking-row" type="button" data-person-filter="${escapeHtml(row.person)}">
+            <span class="rank-number">${rank}</span>
+            <span class="group-row-avatar">${escapeHtml(row.person.slice(0, 1))}</span>
+            <span class="rank-info"><strong>${escapeHtml(row.person)}</strong><em>${escapeHtml(BUSINESS_GROUP_BY_PERSON[row.person] || "未分组")} · ${row.talentCount} 位达人</em></span>
+            <span class="group-rank-change ${movement.className}">${movement.label}</span>
+            <span class="group-row-value"><em>当月销售额</em><b>${compactCurrency(row.sales)}</b></span>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
 }
 
 function groupRankMovement(currentRank, previousRank) {
