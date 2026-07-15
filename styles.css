@@ -1856,8 +1856,33 @@ svg {
 }
 
 .personal-group-ranking-panel,
-.personal-schedule-panel {
+.personal-schedule-panel,
+.personal-talent-panel {
   min-width: 0;
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-list {
+  max-height: 398px;
+  overflow-y: auto;
+}
+
+.personal-schedule-last {
+  grid-column: 1 / -1;
+}
+
+.personal-schedule-last .personal-schedule {
+  grid-template-columns: minmax(620px, 1.18fr) minmax(360px, 0.82fr);
+  align-items: start;
+}
+
+.personal-schedule-last .schedule-date-head,
+.personal-schedule-last .schedule-week {
+  grid-column: 1 / -1;
+}
+
+.personal-schedule-last .schedule-agenda {
+  grid-column: 1 / -1;
+  max-height: 320px;
 }
 
 .personal-pipeline-panel {
@@ -6787,6 +6812,10 @@ textarea:focus-visible {
 
   .personal-insight-row {
     grid-template-columns: minmax(520px, 88vw) minmax(340px, 72vw);
+  }
+
+  .personal-schedule-last .personal-schedule {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

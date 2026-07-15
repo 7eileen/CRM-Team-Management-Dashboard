@@ -385,15 +385,17 @@
                   <div class="personal-group-ranking" id="personalGroupRank"></div>
                 </article>
 
-                <article class="panel personal-schedule-panel">
+                <article class="panel personal-talent-panel">
                   <div class="panel-head compact">
                     <div>
-                      <span class="panel-kicker">Special Schedule</span>
-                      <h2>专场排期安排</h2>
+                      <span class="panel-kicker">Talent List</span>
+                      <h2>合作达人列表</h2>
                     </div>
-                    <span class="panel-badge" id="personalScheduleBadge"></span>
+                    <button class="sort-toggle desc" type="button" data-rank-sort="personalOrders" data-sort-label="合作达人列表" aria-label="合作达人列表倒序排列" title="倒序排列">
+                      <svg aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
+                    </button>
                   </div>
-                  <div class="personal-schedule" id="personalSchedule"></div>
+                  <div class="talent-sales-list" id="personalTalentRank"></div>
                 </article>
               </div>
 
@@ -431,17 +433,15 @@
 
               </div>
 
-              <article class="panel">
-                <div class="panel-head">
+              <article class="panel personal-schedule-panel personal-schedule-last">
+                <div class="panel-head compact">
                   <div>
-                    <span class="panel-kicker">Talent List</span>
-                    <h2>合作达人列表</h2>
+                    <span class="panel-kicker">Special Schedule</span>
+                    <h2>专场排期安排</h2>
                   </div>
-                  <button class="sort-toggle desc" type="button" data-rank-sort="personalOrders" data-sort-label="合作达人列表" aria-label="合作达人列表倒序排列" title="倒序排列">
-                    <svg aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
-                  </button>
+                  <span class="panel-badge" id="personalScheduleBadge"></span>
                 </div>
-                <div class="talent-sales-list" id="personalTalentRank"></div>
+                <div class="personal-schedule" id="personalSchedule"></div>
               </article>
             </div>
           </div>
