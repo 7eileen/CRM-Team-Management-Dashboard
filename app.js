@@ -211,6 +211,7 @@ const state = {
   managementTeam: "",
   managementTrendProduct: "全部",
   managementTrendRange: "30d",
+  managementTalentMetric: "sales",
   personalPerson: PERSONS[0],
   personalScheduleDate: "",
   rankSort: {
@@ -259,6 +260,7 @@ const els = {
   managementTierSales: document.getElementById("managementTierSales"),
   managementStageSales: document.getElementById("managementStageSales"),
   managementTalentRank: document.getElementById("managementTalentRank"),
+  managementTalentRankTabs: document.getElementById("managementTalentRankTabs"),
   personalProductSales: document.getElementById("personalProductSales"),
   personalTierSales: document.getElementById("personalTierSales"),
   personalStageSales: document.getElementById("personalStageSales"),
@@ -1393,10 +1395,54 @@ function renderManagementDashboard() {
   renderManagementTeamDetail(data);
   renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
   renderManagementPersonRank(data);
-  renderTalentSalesRank(els.managementTalentRank, sortedRankRows(data, "managementTalent", (record) => record.sales), "sales");
+  renderManagementTalentRank(data);
   if (els.dashboardTableCount) {
     els.dashboardTableCount.textContent = `${PERSONS.length} 位商务`;
   }
+}
+
+function managementTalentMetricMeta() {
+  const metrics = {
+    sales: { label: "销售额", value: (record) => record.sales, display: compactCurrency },
+    gmv: { label: "GMV", value: recordGmv, display: compactCurrency },
+    special: { label: "专场数", value: (record) => record.specialCount, display: (value) => `${value} 场` },
+  };
+  return metrics[state.managementTalentMetric] || metrics.sales;
+}
+
+function renderManagementTalentRank(data) {
+  if (!els.managementTalentRank) return;
+  const metric = managementTalentMetricMeta();
+  const rows = sortedRankRows(data, "managementTalent", metric.value);
+  const descendingRows = [...data].sort((a, b) => metric.value(b) - metric.value(a) || a.id - b.id);
+  const rankById = new Map(descendingRows.map((record, index) => [record.id, index + 1]));
+
+  els.managementTalentRankTabs?.querySelectorAll("[data-management-talent-metric]").forEach((button) => {
+    const active = button.dataset.managementTalentMetric === state.managementTalentMetric;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+
+  els.managementTalentRank.innerHTML = rows.length ? rows.map((record) => {
+    const tier = tierMeta[record.tier];
+    const rank = rankById.get(record.id) || 1;
+    const topClass = rank <= 3 ? `top-${rank}` : "";
+    return `
+      <button class="compact-talent-rank-row ${topClass}" type="button" data-record-detail="${record.id}">
+        <span class="compact-rank-number">${rank}</span>
+        <span class="compact-rank-avatar" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">${escapeHtml(record.name.slice(0, 1))}</span>
+        <span class="compact-rank-info">
+          <strong>${escapeHtml(record.name)}</strong>
+          <em>${escapeHtml(record.type)} · ${escapeHtml(record.product)} · ${record.tier}级</em>
+        </span>
+        <span class="compact-rank-value">
+          <em>${metric.label}</em>
+          <strong>${metric.display(metric.value(record))}</strong>
+        </span>
+      </button>
+    `;
+  }).join("") : `<div class="empty-state">暂无匹配达人</div>`;
 }
 
 function managementTrendConfig() {
@@ -2695,6 +2741,13 @@ function bindEvents() {
     if (managementTrendRange) {
       state.managementTrendRange = managementTrendRange.dataset.managementTrendRange;
       renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
+      return;
+    }
+
+    const managementTalentMetric = event.target.closest("[data-management-talent-metric]");
+    if (managementTalentMetric) {
+      state.managementTalentMetric = managementTalentMetric.dataset.managementTalentMetric;
+      renderManagementTalentRank(enrichedRecords());
       return;
     }
 

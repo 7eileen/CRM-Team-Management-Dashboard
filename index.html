@@ -346,14 +346,19 @@
               <article class="panel">
                 <div class="panel-head compact">
                   <div>
-                    <span class="panel-kicker">Talent Rank</span>
-                    <h2>达人销售额 Top</h2>
+                    <span class="panel-kicker">Ranking</span>
+                    <h2>达人排行榜</h2>
                   </div>
-                  <button class="sort-toggle desc" type="button" data-rank-sort="managementTalent" data-sort-label="达人销售额 Top" aria-label="达人销售额 Top 倒序排列" title="倒序排列">
+                  <button class="sort-toggle desc" type="button" data-rank-sort="managementTalent" data-sort-label="达人排行榜" aria-label="达人排行榜倒序排列" title="倒序排列">
                     <svg aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
                   </button>
                 </div>
-                <div class="talent-sales-list" id="managementTalentRank"></div>
+                <div class="management-talent-rank-tabs" id="managementTalentRankTabs" role="tablist" aria-label="达人排行榜维度">
+                  <button type="button" role="tab" data-management-talent-metric="sales">销售额排行</button>
+                  <button type="button" role="tab" data-management-talent-metric="gmv">GMV排行</button>
+                  <button type="button" role="tab" data-management-talent-metric="special">专场排行</button>
+                </div>
+                <div class="talent-sales-list talent-ranking-compact" id="managementTalentRank"></div>
               </article>
             </aside>
           </div>
