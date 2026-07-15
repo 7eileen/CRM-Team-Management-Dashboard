@@ -5967,7 +5967,7 @@ textarea:focus-visible {
   width: 100%;
   min-height: 58px;
   display: grid;
-  grid-template-columns: 24px 38px minmax(0, 1fr) minmax(72px, max-content);
+  grid-template-columns: 36px 38px minmax(0, 1fr) minmax(72px, max-content);
   align-items: center;
   gap: 9px;
   border: 1px solid transparent;
@@ -6017,22 +6017,33 @@ textarea:focus-visible {
   font-weight: 900;
 }
 
-.top-1 .compact-rank-number,
-.top-2 .compact-rank-number,
-.top-3 .compact-rank-number {
-  color: #ffffff;
+.compact-rank-number.has-medal {
+  width: 36px;
+  height: 36px;
+  border-radius: 0;
+  overflow: visible;
 }
 
-.top-1 .compact-rank-number {
-  background: #ff9a63;
+.compact-rank-medal {
+  width: 36px;
+  height: 36px;
+  display: block;
+  background-image: url("assets/rank-medals.png");
+  background-repeat: no-repeat;
+  background-size: 100% 300%;
+  filter: drop-shadow(0 3px 4px rgb(119 73 21 / 16%));
 }
 
-.top-2 .compact-rank-number {
-  background: #9eacc0;
+.top-1 .compact-rank-medal {
+  background-position: center top;
 }
 
-.top-3 .compact-rank-number {
-  background: #ffc27a;
+.top-2 .compact-rank-medal {
+  background-position: center center;
+}
+
+.top-3 .compact-rank-medal {
+  background-position: center bottom;
 }
 
 .compact-rank-avatar {

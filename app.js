@@ -1428,9 +1428,12 @@ function renderManagementTalentRank(data) {
     const tier = tierMeta[record.tier];
     const rank = rankById.get(record.id) || 1;
     const topClass = rank <= 3 ? `top-${rank}` : "";
+    const rankMark = rank <= 3
+      ? `<span class="compact-rank-medal" aria-hidden="true"></span>`
+      : rank;
     return `
       <button class="compact-talent-rank-row ${topClass}" type="button" data-record-detail="${record.id}">
-        <span class="compact-rank-number">${rank}</span>
+        <span class="compact-rank-number ${rank <= 3 ? "has-medal" : ""}" aria-label="第 ${rank} 名">${rankMark}</span>
         <span class="compact-rank-avatar" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">${escapeHtml(record.name.slice(0, 1))}</span>
         <span class="compact-rank-info">
           <strong>${escapeHtml(record.name)}</strong>
