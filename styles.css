@@ -6476,3 +6476,326 @@ textarea:focus-visible {
     grid-template-columns: 72px minmax(0, 1fr);
   }
 }
+
+/* Final dashboard layout refinements */
+.kpi-grid.directory-kpis {
+  grid-template-columns: repeat(6, minmax(170px, 1fr));
+}
+
+.kpi-grid.directory-kpis .kpi-card,
+.kpi-grid.directory-kpis .kpi-card:first-child,
+.kpi-grid.directory-kpis .kpi-card:hover,
+.kpi-grid.directory-kpis .kpi-card:focus-within {
+  min-height: 112px;
+  border-color: transparent;
+  background: var(--metric-soft);
+  color: var(--color-text);
+  box-shadow: none;
+}
+
+.kpi-grid.directory-kpis .kpi-card .metric-icon,
+.kpi-grid.directory-kpis .kpi-card:first-child .metric-icon,
+.kpi-grid.directory-kpis .kpi-card:hover .metric-icon,
+.kpi-grid.directory-kpis .kpi-card:focus-within .metric-icon {
+  background: var(--metric-color);
+  color: #ffffff;
+}
+
+.kpi-grid.directory-kpis .kpi-card .metric-body span,
+.kpi-grid.directory-kpis .kpi-card:first-child .metric-body span,
+.kpi-grid.directory-kpis .kpi-card:hover .metric-body span,
+.kpi-grid.directory-kpis .kpi-card:focus-within .metric-body span {
+  color: #66758a;
+}
+
+.kpi-grid.directory-kpis .kpi-card .metric-body strong,
+.kpi-grid.directory-kpis .kpi-card:first-child .metric-body strong,
+.kpi-grid.directory-kpis .kpi-card:hover .metric-body strong,
+.kpi-grid.directory-kpis .kpi-card:focus-within .metric-body strong {
+  color: var(--color-text);
+  font-size: clamp(18px, 1.25vw, 24px);
+}
+
+.kpi-grid.directory-kpis .metric-trend,
+.kpi-grid.directory-kpis .sparkline {
+  display: none;
+}
+
+.personal-compact-row {
+  grid-template-columns: minmax(0, 1.7fr) minmax(340px, 0.72fr);
+}
+
+.personal-group-ranking {
+  background: linear-gradient(180deg, #fffdf9 0, #ffffff 76%);
+}
+
+.personal-group-ranking .group-podium-card {
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(86, 105, 132, 0.07);
+}
+
+.personal-group-ranking .group-podium-card.rank-1 {
+  border-color: transparent;
+  background: linear-gradient(180deg, #fffdf7, #fff5d9);
+}
+
+.personal-group-ranking .group-podium-card.rank-2 {
+  background: linear-gradient(180deg, #fbfdff, #eef4fb);
+}
+
+.personal-group-ranking .group-podium-card.rank-3 {
+  background: linear-gradient(180deg, #fffdfb, #fff1e8);
+}
+
+.personal-group-ranking .group-ranking-row {
+  border-color: transparent;
+  background: #f9fbfe;
+}
+
+.personal-insight-row {
+  grid-column: 1 / -1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(520px, 1.35fr) minmax(360px, 0.85fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.personal-insight-row > .panel {
+  min-width: 0;
+  height: 100%;
+}
+
+.personal-tier-panel .sales-donut-layout {
+  min-height: 360px;
+}
+
+.personal-product-trend {
+  padding: 14px 16px 16px;
+}
+
+.personal-product-chart-summary {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content max-content;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff8f3;
+}
+
+.personal-product-chart-summary span,
+.personal-product-chart-summary em {
+  color: #74849a;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.personal-product-chart-summary strong {
+  color: #ed672d;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.personal-product-chart {
+  min-width: 760px !important;
+  height: 300px !important;
+}
+
+.personal-product-chart-area {
+  fill: url(#personalProductArea);
+}
+
+.personal-product-axis-label {
+  font-size: 9px;
+}
+
+.management-leaderboard {
+  gap: 6px;
+  padding: 12px 14px 14px;
+  overflow: auto;
+  background: #ffffff;
+}
+
+.panel-table .management-leaderboard {
+  max-height: 620px;
+  overflow: auto;
+}
+
+.management-leaderboard .leaderboard-row {
+  min-width: 900px;
+  min-height: 78px;
+  grid-template-columns: 44px minmax(170px, 1.15fr) repeat(4, minmax(112px, 0.82fr));
+  gap: 14px;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #ffffff;
+  color: inherit;
+  text-align: left;
+}
+
+.management-leaderboard .leaderboard-row + .leaderboard-row {
+  border-top: 1px solid #f0f3f7;
+}
+
+.management-leaderboard .leaderboard-row.top-1 {
+  background: #fff9f4;
+}
+
+.management-leaderboard .leaderboard-row.top-2 {
+  background: #f8fbff;
+}
+
+.management-leaderboard .leaderboard-row.top-3 {
+  background: #fffaf7;
+}
+
+.management-leaderboard .leaderboard-row:hover {
+  background: #fff7f1;
+}
+
+.management-leaderboard .leaderboard-row.static {
+  cursor: default;
+}
+
+.leaderboard-rank {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf3fa;
+  color: #66809f;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.leaderboard-rank.has-medal {
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  background: transparent;
+}
+
+.leaderboard-profile {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.leaderboard-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #fff0e7;
+  color: #ed672d;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.leaderboard-profile > span:last-child,
+.leaderboard-metric {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.leaderboard-profile strong,
+.leaderboard-metric strong {
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-profile em,
+.leaderboard-metric em {
+  overflow: hidden;
+  color: #7f90a6;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-metric.primary strong {
+  color: #ed672d;
+}
+
+.leaderboard-metric strong i {
+  margin-left: 5px;
+  color: #0aa66f;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.leaderboard-metric strong i.down {
+  color: var(--color-danger);
+}
+
+.management-talent-rank-tabs {
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: 0;
+}
+
+.management-talent-rank-tabs span {
+  min-height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #e85f25;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+@media (max-width: 1180px) {
+  .kpi-grid.directory-kpis {
+    grid-template-columns: repeat(3, minmax(170px, 1fr));
+  }
+
+  .personal-compact-row {
+    grid-template-columns: minmax(0, 1.65fr) minmax(320px, 0.75fr);
+  }
+
+  .personal-insight-row {
+    grid-template-columns: minmax(500px, 1.35fr) minmax(340px, 0.85fr);
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #dbe7f3 transparent;
+  }
+}
+
+@media (max-width: 900px) {
+  .personal-compact-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .personal-insight-row {
+    grid-template-columns: minmax(520px, 88vw) minmax(340px, 72vw);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpi-grid.directory-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .management-leaderboard {
+    padding: 10px;
+  }
+}

@@ -229,7 +229,6 @@ const state = {
   managementTrendProduct: "全部",
   managementTrendRange: "30d",
   managementPersonMetric: "gmv",
-  managementTalentMetric: "sales",
   personalPerson: PERSONS[0],
   personalScheduleDate: "",
   rankSort: {
@@ -279,10 +278,8 @@ const els = {
   managementTierSales: document.getElementById("managementTierSales"),
   managementStageSales: document.getElementById("managementStageSales"),
   managementTalentRank: document.getElementById("managementTalentRank"),
-  managementTalentRankTabs: document.getElementById("managementTalentRankTabs"),
   personalProductSales: document.getElementById("personalProductSales"),
   personalTierSales: document.getElementById("personalTierSales"),
-  personalStageSales: document.getElementById("personalStageSales"),
   personalTalentRank: document.getElementById("personalTalentRank"),
   personalGroupRank: document.getElementById("personalGroupRank"),
   personalGroupRankBadge: document.getElementById("personalGroupRankBadge"),
@@ -974,9 +971,14 @@ function sparkline(path = "M2 34 C12 23 17 31 25 20 C33 9 38 25 47 15 C56 5 61 2
 }
 
 function renderKpis() {
-  const cards = state.view === "personal" ? personalKpiCards() : managementKpiCards();
-  els.kpiGrid.classList.toggle("management-kpis", state.view !== "personal");
+  const cards = state.view === "personal"
+    ? personalKpiCards()
+    : state.view === "directory"
+      ? directoryKpiCards()
+      : managementKpiCards();
+  els.kpiGrid.classList.toggle("management-kpis", state.view !== "personal" && state.view !== "directory");
   els.kpiGrid.classList.toggle("personal-kpis", state.view === "personal");
+  els.kpiGrid.classList.toggle("directory-kpis", state.view === "directory");
   els.kpiGrid.innerHTML = cards.map((card) => {
     const hasTrend = Boolean(card.trend);
     return `
@@ -1013,6 +1015,38 @@ function managementKpiCards() {
     { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#7ca6e8", soft: "#f0f6ff", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
     { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#e9b15a" : "#d95656", soft: mom >= 0 ? "#fff7e8" : "#fceeee", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
   ];
+}
+
+function directoryKpiCards() {
+  const palette = [
+    ["#ffad1f", "#fff9ea"],
+    ["#10c98f", "#eafaf6"],
+    ["#8758ff", "#f4f1ff"],
+    ["#3290ff", "#eef5ff"],
+  ];
+  const stats = [
+    ["达播总GMV", "59,020,689.24"],
+    ["达人自然流GMV", "9,522,620.63"],
+    ["达播跟进GMV", "44,709,540.53"],
+    ["达人总数", "1,659"],
+    ["达播GSV", "35,877,220.46"],
+    ["新增达人数", "909"],
+    ["建联成功数", "729"],
+    ["新增开单达人数", "135"],
+    ["新增开单GSV", "17,630,500.83"],
+    ["寄样达人数", "147"],
+    ["寄样件数", "2,848"],
+  ];
+  return stats.map(([label, value], index) => ({
+    label,
+    value,
+    trend: "",
+    trendValue: 0,
+    icon: "pie",
+    color: palette[index % palette.length][0],
+    soft: palette[index % palette.length][1],
+    path: "",
+  }));
 }
 
 function personalKpiCards() {
@@ -1179,6 +1213,67 @@ function renderTeamDetailLines(rows, max, options = {}) {
       </div>
     `;
   }).join("");
+}
+
+function renderPersonalProductTrend(container, rows) {
+  if (!container) return;
+  const width = 920;
+  const height = 300;
+  const left = 72;
+  const right = 28;
+  const top = 34;
+  const bottom = 60;
+  const chartWidth = width - left - right;
+  const chartHeight = height - top - bottom;
+  const maxValue = Math.max(...rows.map((row) => row.value), 1000);
+  const axisMax = Math.ceil((maxValue * 1.18) / 10000) * 10000;
+  const points = rows.map((row, index) => ({
+    label: row.label,
+    value: row.value,
+    x: left + (chartWidth * index) / Math.max(1, rows.length - 1),
+    y: top + chartHeight - (row.value / axisMax) * chartHeight,
+  }));
+  const linePath = managementTrendPath(points);
+  const areaPath = `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${(top + chartHeight).toFixed(1)} L ${points[0].x.toFixed(1)} ${(top + chartHeight).toFixed(1)} Z`;
+  const gridRows = Array.from({ length: 4 }, (_, index) => {
+    const ratio = index / 3;
+    return { y: top + chartHeight * ratio, value: axisMax * (1 - ratio) };
+  });
+  const total = sumBy(rows, (row) => row.value);
+  const activeProducts = rows.filter((row) => row.value > 0).length;
+
+  container.innerHTML = `
+    <div class="personal-product-chart-summary">
+      <span>当月分品销售趋势</span>
+      <strong>${compactCurrency(total)}</strong>
+      <em>${activeProducts} 个有效品类</em>
+    </div>
+    <div class="category-chart-scroll">
+      <svg class="personal-product-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="个人各品类销售额折线图" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="personalProductArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ff8a4c" stop-opacity="0.24"></stop>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>
+          </linearGradient>
+        </defs>
+        ${gridRows.map((row) => `
+          <g class="category-chart-gridline">
+            <line x1="${left}" y1="${row.y.toFixed(1)}" x2="${width - right}" y2="${row.y.toFixed(1)}"></line>
+            <text x="${left - 12}" y="${(row.y + 4).toFixed(1)}" text-anchor="end">${compactCurrency(row.value).replace("¥", "")}</text>
+          </g>
+        `).join("")}
+        <path class="personal-product-chart-area" d="${areaPath}"></path>
+        <path class="category-chart-line" d="${linePath}"></path>
+        ${points.map((point) => `
+          <g class="category-chart-point" tabindex="0" aria-label="${escapeHtml(point.label)} ${currency(point.value)}">
+            <circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="5"></circle>
+            <title>${escapeHtml(point.label)} ${currency(point.value)}</title>
+          </g>
+        `).join("")}
+        ${points.map((point) => `<text class="category-chart-axis-label personal-product-axis-label" x="${point.x.toFixed(1)}" y="${height - 22}" text-anchor="end" transform="rotate(-32 ${point.x.toFixed(1)} ${height - 22})">${escapeHtml(point.label)}</text>`).join("")}
+      </svg>
+    </div>
+  `;
 }
 
 function renderManagementProductTeamDetail(data) {
@@ -1417,28 +1512,12 @@ function renderManagementDashboard() {
   renderManagementTalentRank(data);
 }
 
-function managementTalentMetricMeta() {
-  const metrics = {
-    sales: { label: "销售额", value: (record) => record.sales, display: compactCurrency },
-    gmv: { label: "GMV", value: recordGmv, display: compactCurrency },
-    special: { label: "专场数", value: (record) => record.specialCount, display: (value) => `${value} 场` },
-  };
-  return metrics[state.managementTalentMetric] || metrics.sales;
-}
-
 function renderManagementTalentRank(data) {
   if (!els.managementTalentRank) return;
-  const metric = managementTalentMetricMeta();
+  const metric = { label: "销售额", value: (record) => record.sales, display: compactCurrency };
   const rows = sortedRankRows(data, "managementTalent", metric.value);
   const descendingRows = [...data].sort((a, b) => metric.value(b) - metric.value(a) || a.id - b.id);
   const rankById = new Map(descendingRows.map((record, index) => [record.id, index + 1]));
-
-  els.managementTalentRankTabs?.querySelectorAll("[data-management-talent-metric]").forEach((button) => {
-    const active = button.dataset.managementTalentMetric === state.managementTalentMetric;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-selected", String(active));
-    button.tabIndex = active ? 0 : -1;
-  });
 
   els.managementTalentRank.innerHTML = rows.length ? rows.map((record) => {
     const tier = tierMeta[record.tier];
@@ -1636,15 +1715,18 @@ function aggregateManagementRankRows(data, keyGetter, metaLabel) {
       label,
       value: 0,
       previousValue: 0,
+      specialCount: 0,
       talentNames: new Set(),
     };
     row.value += record.sales;
     row.previousValue += record.lastMonthSales;
+    row.specialCount += record.specialCount;
     row.talentNames.add(record.name);
     rows.set(label, row);
   });
   return [...rows.values()].map((row) => ({
     ...row,
+    talentCount: row.talentNames.size,
     meta: `${row.talentNames.size} 位达人 · ${metaLabel}`,
   }));
 }
@@ -1662,6 +1744,8 @@ function managementPersonRankMetric(data) {
         person: row.person,
         value: row.sales,
         previousValue: row.lastMonthSales,
+        specialCount: row.specialCount,
+        talentCount: row.talentCount,
         meta: `${BUSINESS_GROUP_BY_PERSON[row.person] || "未分组"} · ${row.talentCount} 位达人`,
       })),
     },
@@ -1695,12 +1779,8 @@ function renderManagementPersonRank(data) {
   const metric = managementPersonRankMetric(data);
   const metricRows = metric.rows();
   const rankedRows = [...metricRows].sort((a, b) => b.value - a.value || a.label.localeCompare(b.label, "zh-CN"));
-  const previousRows = [...metricRows].sort((a, b) => b.previousValue - a.previousValue || a.label.localeCompare(b.label, "zh-CN"));
   const rankByKey = new Map(rankedRows.map((row, index) => [row.key, index + 1]));
-  const previousRankByKey = new Map(previousRows.map((row, index) => [row.key, index + 1]));
   const orderedRows = sortedRankRows(metricRows, "managementPerson", (row) => row.value);
-  const podiumRows = [rankedRows[1], rankedRows[0], rankedRows[2]].filter(Boolean);
-  const remainingRows = orderedRows.filter((row) => (rankByKey.get(row.key) || 0) > 3);
   const totalValue = sumBy(metricRows, (row) => row.value);
 
   els.managementPersonRankTabs?.querySelectorAll("[data-management-person-metric]").forEach((button) => {
@@ -1713,47 +1793,33 @@ function renderManagementPersonRank(data) {
     els.dashboardTableCount.textContent = `${metricRows.length} ${metric.countLabel}`;
   }
 
-  els.managementPersonRank.innerHTML = `
-    <div class="management-rank-intro group-ranking-intro">
-      <div><span>${metric.title}</span><strong>${metricRows.length} ${metric.countLabel}</strong></div>
-      <p><span>${metric.totalLabel}</span><b>${compactCurrency(totalValue)}</b></p>
-    </div>
-    <div class="management-rank-podium group-ranking-podium" style="--team-color:#ff7a3d; --team-soft:#fff4ed">
-      ${podiumRows.map((row) => {
-        const rank = rankByKey.get(row.key) || 1;
-        const movement = groupRankMovement(rank, previousRankByKey.get(row.key) || rank);
-        const element = row.person ? "button" : "article";
-        const interaction = row.person ? `type="button" data-person-filter="${escapeHtml(row.person)}"` : "";
-        return `
-          <${element} class="group-podium-card rank-${rank} ${row.person ? "" : "static"}" ${interaction}>
-            <span class="group-rank-avatar"><span>${escapeHtml(row.label.slice(0, 1))}</span></span>
-            <span class="group-rank-medal" aria-label="第 ${rank} 名"><i aria-hidden="true"></i></span>
-            <strong>${escapeHtml(row.label)}</strong>
-            <span class="group-rank-metric-label">${metric.label}</span>
-            <b>${compactCurrency(row.value)}</b>
-            <em class="group-rank-change ${movement.className}">${movement.label}</em>
-          </${element}>
-        `;
-      }).join("")}
-    </div>
-    <div class="management-rank-list group-ranking-list" aria-label="${metric.label}第 4 至 ${metricRows.length} 名">
-      ${remainingRows.map((row) => {
-        const rank = rankByKey.get(row.key) || 4;
-        const movement = groupRankMovement(rank, previousRankByKey.get(row.key) || rank);
-        const element = row.person ? "button" : "article";
-        const interaction = row.person ? `type="button" data-person-filter="${escapeHtml(row.person)}"` : "";
-        return `
-          <${element} class="group-ranking-row ${row.person ? "" : "static"}" ${interaction}>
-            <span class="rank-number">${rank}</span>
-            <span class="group-row-avatar">${escapeHtml(row.label.slice(0, 1))}</span>
-            <span class="rank-info"><strong>${escapeHtml(row.label)}</strong><em>${escapeHtml(row.meta)}</em></span>
-            <span class="group-rank-change ${movement.className}">${movement.label}</span>
-            <span class="group-row-value"><em>${metric.label}</em><b>${compactCurrency(row.value)}</b></span>
-          </${element}>
-        `;
-      }).join("")}
-    </div>
-  `;
+  els.managementPersonRank.innerHTML = orderedRows.map((row, index) => {
+    const rank = rankByKey.get(row.key) || index + 1;
+    const mom = row.previousValue ? (row.value - row.previousValue) / row.previousValue : 0;
+    const topClass = rank <= 3 ? `top-${rank}` : "";
+    const element = row.person ? "button" : "article";
+    const interaction = row.person ? `type="button" data-person-filter="${escapeHtml(row.person)}"` : "";
+    const rankMark = rank <= 3
+      ? `<span class="compact-rank-medal" aria-hidden="true"></span>`
+      : rank;
+    const thirdLabel = row.person ? "专场数量" : "关联达人数";
+    const thirdValue = row.person ? `${row.specialCount} 场` : `${row.talentCount} 人`;
+    const fourthLabel = row.person ? "合作达人数" : "销售额占比";
+    const fourthValue = row.person ? `${row.talentCount} 人` : percent(totalValue ? row.value / totalValue : 0);
+    return `
+      <${element} class="person-rank-row leaderboard-row ${topClass} ${row.person ? "" : "static"}" ${interaction}>
+        <span class="leaderboard-rank ${rank <= 3 ? "has-medal" : ""}" aria-label="第 ${rank} 名">${rankMark}</span>
+        <span class="leaderboard-profile">
+          <span class="leaderboard-avatar">${escapeHtml(row.label.slice(0, 1))}</span>
+          <span><strong>${escapeHtml(row.label)}</strong><em>${escapeHtml(row.person ? BUSINESS_GROUP_BY_PERSON[row.person] || "未分组" : row.meta)}</em></span>
+        </span>
+        <span class="leaderboard-metric primary"><em>${metric.label}及环比</em><strong>${compactCurrency(row.value)} <i class="${mom < 0 ? "down" : ""}">${signedPercent(mom * 100)}</i></strong></span>
+        <span class="leaderboard-metric"><em>上期销售额</em><strong>${compactCurrency(row.previousValue)}</strong></span>
+        <span class="leaderboard-metric"><em>${thirdLabel}</em><strong>${thirdValue}</strong></span>
+        <span class="leaderboard-metric"><em>${fourthLabel}</em><strong>${fourthValue}</strong></span>
+      </${element}>
+    `;
+  }).join("");
 }
 
 function groupRankMovement(currentRank, previousRank) {
@@ -1781,13 +1847,6 @@ function renderPersonalGroupRank(person) {
   }
 
   els.personalGroupRank.innerHTML = `
-    <div class="group-ranking-intro">
-      <div>
-        <span>${escapeHtml(teamLabel)}实时销售榜</span>
-        <strong>${rows.length} 位商务</strong>
-      </div>
-      <p><b>${escapeHtml(person)}</b><span>当前组内第 ${currentRank}</span></p>
-    </div>
     <div class="group-ranking-podium" style="--team-color:${teamMeta.color}; --team-soft:${teamMeta.soft}">
       ${podiumRows.map((row) => {
         const rank = rows.indexOf(row) + 1;
@@ -1929,11 +1988,9 @@ function renderPersonalDashboard() {
 
   const productRows = groupSales(data, "product", PRODUCTS).map((item, index) => ({ ...item, icon: "package", color: chartPalette[index] }));
   const tierRows = groupSales(data, "tier", TIERS).map((item) => ({ ...item, label: `${item.label}级`, icon: "star", color: tierChartMeta[item.label]?.color || tierMeta[item.label]?.color }));
-  const stageRows = displayStageRows(data, (record) => record.sales);
 
-  renderSalesBars(els.personalProductSales, productRows);
+  renderPersonalProductTrend(els.personalProductSales, productRows);
   renderSalesDonut(els.personalTierSales, tierRows, "Personal Sales");
-  renderSalesBars(els.personalStageSales, stageRows, { showPercent: true });
   renderPersonalTalentList(els.personalTalentRank, sortedRankRows(data, "personalOrders", (record) => record.sales), person);
   renderPersonalGroupRank(person);
   renderPersonalPipeline(person, data);
@@ -2856,13 +2913,6 @@ function bindEvents() {
     if (managementTrendRange) {
       state.managementTrendRange = managementTrendRange.dataset.managementTrendRange;
       renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
-      return;
-    }
-
-    const managementTalentMetric = event.target.closest("[data-management-talent-metric]");
-    if (managementTalentMetric) {
-      state.managementTalentMetric = managementTalentMetric.dataset.managementTalentMetric;
-      renderManagementTalentRank(enrichedRecords());
       return;
     }
 

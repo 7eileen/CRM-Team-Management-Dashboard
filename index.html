@@ -361,10 +361,8 @@
                     <svg aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
                   </button>
                 </div>
-                <div class="management-talent-rank-tabs" id="managementTalentRankTabs" role="tablist" aria-label="达人排行榜维度">
-                  <button type="button" role="tab" data-management-talent-metric="sales">销售额排行</button>
-                  <button type="button" role="tab" data-management-talent-metric="gmv">GMV排行</button>
-                  <button type="button" role="tab" data-management-talent-metric="special">专场排行</button>
+                <div class="management-talent-rank-tabs" aria-label="达人销售额排行">
+                  <span>销售额排行</span>
                 </div>
                 <div class="talent-sales-list talent-ranking-compact" id="managementTalentRank"></div>
               </article>
@@ -410,35 +408,28 @@
                 <div class="kanban-columns personal-kanban-columns" id="personalKanbanColumns"></div>
               </article>
 
-              <article class="panel">
-                <div class="panel-head">
-                  <div>
-                    <span class="panel-kicker">Product</span>
-                    <h2>个人销售额分品</h2>
+              <div class="personal-insight-row">
+                <article class="panel personal-product-panel">
+                  <div class="panel-head">
+                    <div>
+                      <span class="panel-kicker">Product</span>
+                      <h2>个人销售额分品</h2>
+                    </div>
                   </div>
-                </div>
-                <div class="sales-bars" id="personalProductSales"></div>
-              </article>
+                  <div class="personal-product-trend" id="personalProductSales"></div>
+                </article>
 
-              <article class="panel">
-                <div class="panel-head">
-                  <div>
-                    <span class="panel-kicker">SABC</span>
-                    <h2>个人分 SABC 销售额</h2>
+                <article class="panel personal-tier-panel">
+                  <div class="panel-head">
+                    <div>
+                      <span class="panel-kicker">SABC</span>
+                      <h2>个人分 SABC 销售额</h2>
+                    </div>
                   </div>
-                </div>
-                <div class="sales-donut" id="personalTierSales"></div>
-              </article>
+                  <div class="sales-donut" id="personalTierSales"></div>
+                </article>
 
-              <article class="panel">
-                <div class="panel-head">
-                  <div>
-                    <span class="panel-kicker">Status</span>
-                    <h2>达人状态</h2>
-                  </div>
-                </div>
-                <div class="sales-bars" id="personalStageSales"></div>
-              </article>
+              </div>
 
               <article class="panel">
                 <div class="panel-head">
