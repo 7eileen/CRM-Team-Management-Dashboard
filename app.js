@@ -1,10 +1,10 @@
 const PIPELINE_STAGES = [
-  { id: "waiting-connect", label: "待建联", sourceStages: ["待触达", "已触达", "已流失", "公海达人"], color: "#7b8794", soft: "#f5f8fb", icon: "user-check" },
-  { id: "connecting", label: "建联中", sourceStages: ["沟通中"], color: "#ff7a3d", soft: "#fff4ed", icon: "handshake" },
-  { id: "sampled", label: "已寄样", sourceStages: ["已寄样"], color: "#ff9a63", soft: "#fff8f4", icon: "truck" },
-  { id: "scheduling", label: "待排期", sourceStages: ["试播中", "洽谈排期"], color: "#ffc75a", soft: "#fff9ed", icon: "calendar" },
-  { id: "partnered", label: "已合作", color: "#7ca6e8", soft: "#f0f6ff", icon: "star", predicate: (record) => record.stage === "已签约" && !isDeepPartner(record) },
-  { id: "deep-partnered", label: "深度合作", color: "#5f91d0", soft: "#edf5ff", icon: "star", predicate: isDeepPartner },
+  { id: "waiting-connect", label: "待建联", sourceStages: ["待触达", "已触达", "已流失", "公海达人"], color: "#8aa0bd", soft: "#f4f8fd", icon: "user-check" },
+  { id: "connecting", label: "建联中", sourceStages: ["沟通中"], color: "#ff7138", soft: "#fff4ed", icon: "handshake" },
+  { id: "sampled", label: "已寄样", sourceStages: ["已寄样"], color: "#ff9566", soft: "#fff7f2", icon: "truck" },
+  { id: "scheduling", label: "待排期", sourceStages: ["试播中", "洽谈排期"], color: "#ffc24a", soft: "#fff9e9", icon: "calendar" },
+  { id: "partnered", label: "已合作", color: "#5594f7", soft: "#eef5ff", icon: "star", predicate: (record) => record.stage === "已签约" && !isDeepPartner(record) },
+  { id: "deep-partnered", label: "深度合作", color: "#3278df", soft: "#edf4ff", icon: "star", predicate: isDeepPartner },
 ];
 const DISPLAY_STAGE_SOURCE_FALLBACK = {
   待触达: "待建联",
@@ -72,12 +72,12 @@ const BUSINESS_GROUP_BY_PERSON = BUSINESS_PEOPLE.reduce((acc, person) => {
 }, {});
 
 const SALES_TEAM_META = [
-  { label: "A组", color: "#ff7a3d", soft: "#fff4ed" },
-  { label: "B组", color: "#ffc75a", soft: "#fff9ed" },
-  { label: "C组", color: "#7ca6e8", soft: "#f0f6ff" },
+  { label: "A组", color: "#ff7138", soft: "#fff4ed" },
+  { label: "B组", color: "#ffc24a", soft: "#fff9e9" },
+  { label: "C组", color: "#5594f7", soft: "#eef5ff" },
 ];
 
-const chartPalette = ["#ff7a3d", "#ff9a63", "#ffb987", "#ffc75a", "#7ca6e8", "#a4c5ee", "#89a5c3", "#b7c9dd"];
+const chartPalette = ["#ff7138", "#ff9566", "#ffb184", "#ffc24a", "#5594f7", "#7eacf8", "#a8c7f8", "#c7daf7"];
 const SALES_METRICS_STORAGE_KEY = "crm-sales-metrics-v1";
 const TIME_RANGE_OPTIONS = [
   { id: "7d", label: "近7天", desc: "最近一周成交节奏", factor: 0.28, previousFactor: 0.26, targetFactor: 0.23, specialFactor: 0.34 },
@@ -95,17 +95,17 @@ const MANAGEMENT_TREND_RANGES = [
 ];
 
 const tierMeta = {
-  S: { color: "#ff7a3d", soft: "#fff4ed", score: 35 },
-  A: { color: "#ffc75a", soft: "#fff9ed", score: 28 },
-  B: { color: "#7ca6e8", soft: "#f0f6ff", score: 20 },
-  C: { color: "#9eb5ce", soft: "#f4f8fc", score: 14 },
+  S: { color: "#ff7138", soft: "#fff4ed", score: 35 },
+  A: { color: "#ffc24a", soft: "#fff9e9", score: 28 },
+  B: { color: "#5594f7", soft: "#eef5ff", score: 20 },
+  C: { color: "#9bb8df", soft: "#f3f7fd", score: 14 },
 };
 
 const tierChartMeta = {
-  S: { color: "#ff7a3d" },
-  A: { color: "#ffc75a" },
-  B: { color: "#7ca6e8" },
-  C: { color: "#c7d6e6" },
+  S: { color: "#ff7138" },
+  A: { color: "#ffc24a" },
+  B: { color: "#5594f7" },
+  C: { color: "#c7daf7" },
 };
 
 const typeIconMap = {
@@ -128,10 +128,10 @@ const formatIconMap = {
   美垂日播: "star",
 };
 const orderStatusMeta = [
-  { label: "已支付", color: "#ff7a3d", soft: "#fff4ed" },
-  { label: "待发货", color: "#ffc75a", soft: "#fff9ed" },
-  { label: "已发货", color: "#89a5c3", soft: "#f4f8fc" },
-  { label: "已完成", color: "#7ca6e8", soft: "#f0f6ff" },
+  { label: "已支付", color: "#ff7138", soft: "#fff4ed" },
+  { label: "待发货", color: "#ffc24a", soft: "#fff9e9" },
+  { label: "已发货", color: "#8aa0bd", soft: "#f4f8fd" },
+  { label: "已完成", color: "#5594f7", soft: "#eef5ff" },
 ];
 const orderChannels = ["专场成交", "混播成交", "短视频挂车", "切片号成交", "单品直播间", "美垂日播"];
 
@@ -1009,11 +1009,11 @@ function managementKpiCards() {
   const monthLabel = formatMetricMonth(metrics.month);
   const rangeLabel = metrics.range.label;
   return [
-    { label: "当月销售额", value: compactCurrency(monthlySales), sub: `${monthLabel} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7a3d", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: "当月目标销售额", value: compactCurrency(monthlyTarget), sub: `${monthLabel}目标`, trend: "月度目标", trendValue: 1, icon: "calendar", color: "#ff9a63", soft: "#fff8f4", path: "M2 31 C12 24 21 27 30 18 C39 9 47 20 55 12 C62 6 67 9 70 5" },
-    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#ffc75a", soft: "#fff9ed", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
-    { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#7ca6e8", soft: "#f0f6ff", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
-    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#e9b15a" : "#d95656", soft: mom >= 0 ? "#fff7e8" : "#fceeee", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
+    { label: "当月销售额", value: compactCurrency(monthlySales), sub: `${monthLabel} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "当月目标销售额", value: compactCurrency(monthlyTarget), sub: `${monthLabel}目标`, trend: "月度目标", trendValue: 1, icon: "calendar", color: "#ff9566", soft: "#fff7f2", path: "M2 31 C12 24 21 27 30 18 C39 9 47 20 55 12 C62 6 67 9 70 5" },
+    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#ffc24a", soft: "#fff9e9", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
+    { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#5594f7", soft: "#eef5ff", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
+    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f2a928" : "#e45b65", soft: mom >= 0 ? "#fff8e8" : "#fff1f2", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
   ];
 }
 
@@ -1061,12 +1061,12 @@ function personalKpiCards() {
   const specialGap = nextSpecialLeader ? nextSpecialLeader.specialCount - row.specialCount : 0;
   const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
   return [
-    { label: `${rangeLabel}销售额`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7a3d", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: `${rangeLabel}销售额排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#ffc75a", soft: "#fff9ed", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
-    { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#ff9a63", soft: "#fff8f4", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
-    { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#7ca6e8", soft: "#f0f6ff", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
-    { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#89a5c3", soft: "#f4f8fc", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
-    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 对比周期`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#e9b15a" : "#d95656", soft: mom >= 0 ? "#fff7e8" : "#fceeee", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
+    { label: `${rangeLabel}销售额`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: `${rangeLabel}销售额排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#ffc24a", soft: "#fff9e9", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
+    { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#ff9566", soft: "#fff7f2", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
+    { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#5594f7", soft: "#eef5ff", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
+    { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#8aa0bd", soft: "#f4f8fd", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
+    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 对比周期`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f2a928" : "#e45b65", soft: mom >= 0 ? "#fff8e8" : "#fff1f2", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
   ];
 }
 
@@ -1940,10 +1940,10 @@ function personalScheduleEntries(data, person) {
   return days.map((day, index) => {
     const record = fallback[index % fallback.length];
     const status = index < 5
-      ? { label: "已完成", color: "#7ca6e8", soft: "#f0f6ff" }
+      ? { label: "已完成", color: "#5594f7", soft: "#eef5ff" }
       : index === 5
-        ? { label: "进行中", color: "#ff7a3d", soft: "#fff4ed" }
-        : { label: "待开始", color: "#89a5c3", soft: "#f4f8fc" };
+        ? { label: "进行中", color: "#ff7138", soft: "#fff4ed" }
+        : { label: "待开始", color: "#8aa0bd", soft: "#f4f8fd" };
     return {
       id: `SPECIAL-${monthKey.replace("-", "")}-${String(index + 1).padStart(2, "0")}`,
       date: `${monthKey}-${String(day).padStart(2, "0")}`,

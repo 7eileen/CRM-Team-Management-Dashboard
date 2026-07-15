@@ -6928,3 +6928,735 @@ textarea:focus-visible {
     padding: 10px;
   }
 }
+
+/* Unified clear-orange dashboard system */
+:root {
+  --color-primary: #ff7138;
+  --color-primary-strong: #f25720;
+  --color-success: #5594f7;
+  --color-warning: #ffc24a;
+  --color-violet: #ff9566;
+  --color-cyan: #7eacf8;
+  --color-bg: #f6f9fe;
+  --color-surface: #ffffff;
+  --color-text: #172033;
+  --color-muted: #687a92;
+  --color-border: #e7eef7;
+  --radius: 8px;
+  --shadow-panel: 0 6px 20px rgba(37, 78, 127, 0.045);
+  --shadow-soft: 0 4px 14px rgba(37, 78, 127, 0.04);
+  --ui-primary-soft: #fff4ed;
+  --ui-amber-soft: #fff9e9;
+  --ui-blue: #5594f7;
+  --ui-blue-soft: #eef5ff;
+  --ui-surface-soft: #f8fbff;
+  --ui-divider: #edf2f8;
+  --ui-danger: #e45b65;
+}
+
+html,
+body,
+.app-shell,
+.workspace {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+body {
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar {
+  border-right: 1px solid var(--color-border);
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.brand-icon {
+  background: var(--color-primary);
+  box-shadow: 0 6px 16px rgba(255, 113, 56, 0.16);
+}
+
+.nav-item {
+  border-radius: 7px;
+  color: #5e7189;
+}
+
+.nav-item:hover {
+  background: #fff8f3;
+  color: var(--color-primary-strong);
+}
+
+.nav-item.active {
+  background: var(--ui-primary-soft);
+  color: var(--color-primary-strong);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.topbar {
+  min-height: 64px;
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: none;
+}
+
+.content {
+  width: min(100%, 1780px);
+  padding: 16px 22px 32px;
+}
+
+.page-view.active,
+.personal-shell,
+.personal-grid {
+  gap: 16px;
+}
+
+.top-control,
+.icon-button,
+.small-button,
+.quick-filters select,
+#pipelinePage .pipeline-filters select,
+.sidebar-clear {
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.top-control:hover,
+.icon-button:hover,
+.small-button:hover,
+.sidebar-clear:hover {
+  border-color: #ffd5c2;
+  background: #fff8f3;
+  color: var(--color-primary-strong);
+}
+
+.primary-button {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  box-shadow: 0 6px 16px rgba(255, 113, 56, 0.17);
+}
+
+.primary-button:hover {
+  background: var(--color-primary-strong);
+}
+
+.kpi-grid {
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi-card,
+.kpi-grid.directory-kpis .kpi-card,
+.kpi-grid.directory-kpis .kpi-card:first-child {
+  min-height: 108px;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 11px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
+}
+
+.kpi-card:first-child,
+.kpi-card:first-child:hover,
+.kpi-card:first-child:focus-within,
+.kpi-grid.directory-kpis .kpi-card:first-child {
+  border-color: #ffe0d0;
+  background: #fff8f3;
+  box-shadow: 0 6px 18px rgba(255, 113, 56, 0.07);
+}
+
+.kpi-card:hover,
+.kpi-card:focus-within {
+  border-color: #ffd7c4;
+  background: #ffffff;
+  color: var(--color-text);
+  box-shadow: 0 8px 22px rgba(255, 113, 56, 0.075);
+  transform: none;
+}
+
+.metric-icon,
+.kpi-grid.directory-kpis .kpi-card .metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--metric-soft);
+  color: var(--metric-color);
+}
+
+.metric-icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.kpi-card:first-child .metric-icon,
+.kpi-grid.directory-kpis .kpi-card:first-child .metric-icon {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.metric-body span,
+.kpi-card:first-child .metric-body span,
+.kpi-grid.directory-kpis .kpi-card .metric-body span {
+  color: #667890;
+  font-size: 11px;
+}
+
+.metric-body strong,
+.kpi-grid.directory-kpis .kpi-card .metric-body strong {
+  margin-top: 6px;
+  color: var(--color-text);
+  font-size: clamp(20px, 1.6vw, 26px);
+}
+
+.metric-trend {
+  margin-top: 7px;
+  font-size: 11px;
+}
+
+.metric-trend .vs,
+.sparkline {
+  opacity: 0.78;
+}
+
+.sparkline {
+  right: 12px;
+  bottom: 11px;
+  width: 54px;
+  height: 30px;
+}
+
+.panel,
+.quick-filters,
+#pipelinePage .pipeline-filters,
+.report-card,
+.format-card,
+.detail-profile,
+.detail-block {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow-panel);
+}
+
+.panel-head,
+.personal-compact-row .panel-head {
+  min-height: 56px;
+  gap: 12px;
+  border-bottom: 1px solid var(--ui-divider);
+  padding: 12px 16px;
+}
+
+.panel-head.compact {
+  min-height: 54px;
+}
+
+.panel-kicker,
+.drawer-kicker {
+  color: #8191a7;
+  font-size: 10px;
+}
+
+.panel h2,
+.drawer-head h3 {
+  margin-top: 2px;
+  color: var(--color-text);
+  font-size: 15px;
+}
+
+.panel-badge,
+.table-count,
+.count-pill {
+  min-height: 26px;
+  border-radius: 999px;
+  background: var(--ui-primary-soft);
+  color: var(--color-primary-strong);
+  font-size: 11px;
+}
+
+.dashboard-grid {
+  grid-template-columns: minmax(260px, 1fr) minmax(280px, 1fr) minmax(260px, 0.9fr) minmax(280px, 0.82fr);
+  gap: 16px;
+}
+
+.dashboard-rail,
+.side-panels {
+  gap: 16px;
+}
+
+.panel-product-sales,
+.panel-type-sales,
+.panel-team-sales {
+  min-height: 332px;
+}
+
+.sales-bars,
+.funnel-chart,
+.bar-chart,
+.stack-chart,
+.format-grid,
+.contribution-list,
+.stage-trend {
+  gap: 9px;
+  padding: 14px 16px 16px;
+}
+
+.sales-bar-row {
+  min-height: 22px;
+  gap: 10px;
+}
+
+.sales-bar-label,
+.sales-bar-value,
+.sales-bar-percent {
+  font-size: 11px;
+}
+
+.sales-bar-track,
+.rank-meter,
+.contribution-track,
+.progress-track,
+.chart-bar,
+.stack-bar,
+.team-line-meter,
+.team-progress-track {
+  background: #edf3fa;
+}
+
+.sales-bar-track i,
+.rank-meter i,
+.contribution-track i,
+.progress-fill,
+.chart-fill,
+.team-line-meter i,
+.team-progress-track i {
+  background: linear-gradient(90deg, var(--bar-color, var(--team-color, #ff7138)), color-mix(in srgb, var(--bar-color, var(--team-color, #ff7138)) 58%, #ffffff));
+}
+
+.team-detail-board,
+.category-trend-body,
+.personal-product-trend,
+.personal-schedule,
+.personal-group-ranking {
+  padding: 14px 16px 16px;
+}
+
+.team-detail-board,
+.team-product-view,
+.team-detail-layout,
+.team-product-group-list {
+  gap: 12px;
+}
+
+.team-choice,
+.team-focus,
+.team-detail-section,
+.team-product-card,
+.team-product-summary,
+.category-trend-metric,
+.schedule-entry,
+.group-ranking-row,
+.talent-card {
+  border: 1px solid var(--ui-divider);
+  border-radius: 7px;
+  background: var(--ui-surface-soft);
+  box-shadow: none;
+}
+
+.team-choice:hover,
+.team-choice.active,
+.team-product-tabs button:hover,
+.team-product-tabs button.active,
+.team-detail-switch button:hover,
+.team-detail-switch button.active {
+  border-color: #ffd4bf;
+  background: var(--ui-primary-soft);
+  color: var(--color-primary-strong);
+  box-shadow: none;
+}
+
+.team-focus,
+.team-product-summary {
+  background: #fffaf6;
+}
+
+.team-detail-section,
+.team-product-card {
+  background: #ffffff;
+}
+
+.team-detail-layout,
+.team-detail-columns,
+.team-product-group-list,
+.team-metric-grid {
+  gap: 12px;
+}
+
+.category-trend-toolbar {
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.category-trend-summary {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--ui-divider);
+  border-radius: 7px;
+  background: #fbfdff;
+}
+
+.category-trend-metric {
+  border: 0;
+  border-right: 1px solid var(--ui-divider);
+  border-radius: 0;
+  background: transparent;
+}
+
+.category-trend-metric:last-child {
+  border-right: 0;
+}
+
+.category-trend-chart {
+  margin-top: 12px;
+  border: 1px solid var(--ui-divider);
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.management-person-rank-tabs {
+  min-height: 42px;
+  margin: 0 16px;
+  gap: 18px;
+}
+
+.management-person-rank-tabs button {
+  min-height: 42px;
+  color: #667890;
+}
+
+.management-person-rank-tabs button.active {
+  color: var(--color-primary-strong);
+}
+
+.management-leaderboard {
+  padding: 10px 14px 14px;
+}
+
+.management-leaderboard .leaderboard-row {
+  min-height: 70px;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.management-leaderboard .leaderboard-row + .leaderboard-row {
+  border-top: 1px solid var(--ui-divider);
+}
+
+.management-leaderboard .leaderboard-row.top-1,
+.management-leaderboard .leaderboard-row.top-3 {
+  background: #fff9f4;
+}
+
+.management-leaderboard .leaderboard-row.top-2 {
+  background: #f5f9ff;
+}
+
+.personal-grid,
+.personal-compact-row,
+.personal-insight-row {
+  gap: 16px;
+}
+
+.personal-compact-row {
+  grid-template-columns: minmax(0, 1.65fr) minmax(330px, 0.75fr);
+}
+
+.personal-compact-row > .panel {
+  height: 440px;
+}
+
+.personal-insight-row {
+  grid-template-columns: minmax(520px, 1.35fr) minmax(340px, 0.85fr);
+  overflow: visible;
+  padding-bottom: 0;
+}
+
+.personal-group-ranking,
+.personal-group-ranking .group-podium-card,
+.personal-group-ranking .group-podium-card.rank-1,
+.personal-group-ranking .group-podium-card.rank-2,
+.personal-group-ranking .group-podium-card.rank-3 {
+  box-shadow: none;
+}
+
+.personal-group-ranking {
+  background: #fffdfb;
+}
+
+.personal-group-ranking .group-podium-card.rank-1 {
+  background: #fff8e9;
+}
+
+.personal-group-ranking .group-podium-card.rank-2 {
+  background: #f4f8fd;
+}
+
+.personal-group-ranking .group-podium-card.rank-3 {
+  background: #fff6f0;
+}
+
+.personal-group-ranking .group-ranking-row {
+  background: #fbfdff;
+}
+
+.personal-product-chart-summary {
+  border: 1px solid #ffe6d8;
+  border-radius: 7px;
+  background: #fff9f5;
+}
+
+#pipelinePage .pipeline-filters {
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+}
+
+.page-layout {
+  gap: 16px;
+}
+
+.kanban-columns {
+  gap: 10px;
+  padding: 12px;
+  background: #fbfdff;
+}
+
+.kanban-col {
+  border: 1px solid var(--ui-divider);
+  border-radius: 7px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.talent-card {
+  background: #ffffff;
+}
+
+.owner-item,
+.format-card,
+.talent-sales-row,
+.ranking-row {
+  border-color: var(--ui-divider);
+}
+
+.table-wrap {
+  padding: 0 16px 16px;
+  background: #ffffff;
+}
+
+.record-table thead th {
+  background: #f7faff;
+  color: #536780;
+}
+
+.record-table tbody tr {
+  border-bottom-color: var(--ui-divider);
+}
+
+.record-table tbody tr:hover {
+  background: #fff9f5;
+}
+
+.donut-ring,
+.status-donut {
+  box-shadow: inset 0 0 0 1px #ffffff, 0 8px 20px rgba(59, 103, 160, 0.06);
+}
+
+.donut-ring > div,
+.status-donut > div {
+  box-shadow: 0 0 0 1px var(--ui-divider);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ccdaeb;
+}
+
+@media (max-width: 1480px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "team-detail team-detail team-detail"
+      "trend trend trend"
+      "type rank stage"
+      "table table rail";
+  }
+
+  .kpi-grid.management-kpis,
+  .kpi-grid.personal-kpis,
+  .kpi-grid.directory-kpis {
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  .content {
+    padding-inline: 16px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "team-detail team-detail"
+      "trend trend"
+      "type rank"
+      "stage rail"
+      "table table";
+  }
+
+  .personal-compact-row,
+  .personal-insight-row {
+    grid-template-columns: minmax(0, 1fr);
+    overflow: visible;
+  }
+
+  .personal-compact-row > .panel {
+    height: auto;
+    min-height: 420px;
+  }
+
+  .page-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .side-panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    min-height: auto;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-block: 12px;
+  }
+
+  .toolbar {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "team-detail"
+      "trend"
+      "type"
+      "rank"
+      "stage"
+      "rail"
+      "table";
+  }
+
+  .dashboard-rail,
+  .side-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kpi-grid.management-kpis,
+  .kpi-grid.personal-kpis,
+  .kpi-grid.directory-kpis {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+
+  .team-detail-head-actions,
+  .category-trend-toolbar {
+    align-items: stretch;
+  }
+
+  .team-detail-head-actions {
+    flex-direction: column;
+  }
+
+  .category-trend-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .category-trend-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .category-trend-metric:nth-child(2) {
+    border-right: 0;
+  }
+
+  .category-trend-metric:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--ui-divider);
+  }
+
+  .personal-product-trend,
+  .table-wrap,
+  .management-leaderboard,
+  .kanban-columns {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .personal-product-chart {
+    min-width: 640px !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .content {
+    padding: 12px 10px 24px;
+  }
+
+  .kpi-grid.management-kpis,
+  .kpi-grid.personal-kpis,
+  .kpi-grid.directory-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel-head,
+  .personal-compact-row .panel-head {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .team-detail-board,
+  .category-trend-body,
+  .personal-product-trend,
+  .personal-schedule,
+  .personal-group-ranking {
+    padding: 12px;
+  }
+
+  .category-trend-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .category-trend-metric,
+  .category-trend-metric:nth-child(2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--ui-divider);
+  }
+
+  .category-trend-metric:last-child {
+    border-bottom: 0;
+  }
+
+  .personal-product-chart {
+    min-width: 560px !important;
+  }
+}
