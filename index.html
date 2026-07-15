@@ -367,16 +367,29 @@
         <section class="page-view" data-page="personal" id="personalPage">
           <div class="personal-shell">
             <div class="personal-grid">
-              <article class="panel personal-group-ranking-panel">
-                <div class="panel-head">
-                  <div>
-                    <span class="panel-kicker">Team Ranking</span>
-                    <h2>组内销售排行榜</h2>
+              <div class="personal-compact-row">
+                <article class="panel personal-group-ranking-panel">
+                  <div class="panel-head compact">
+                    <div>
+                      <span class="panel-kicker">Team Ranking</span>
+                      <h2>组内销售排行榜</h2>
+                    </div>
+                    <span class="panel-badge" id="personalGroupRankBadge"></span>
                   </div>
-                  <span class="panel-badge" id="personalGroupRankBadge"></span>
-                </div>
-                <div class="personal-group-ranking" id="personalGroupRank"></div>
-              </article>
+                  <div class="personal-group-ranking" id="personalGroupRank"></div>
+                </article>
+
+                <article class="panel personal-schedule-panel">
+                  <div class="panel-head compact">
+                    <div>
+                      <span class="panel-kicker">Special Schedule</span>
+                      <h2>专场排期安排</h2>
+                    </div>
+                    <span class="panel-badge" id="personalScheduleBadge"></span>
+                  </div>
+                  <div class="personal-schedule" id="personalSchedule"></div>
+                </article>
+              </div>
 
               <article class="panel personal-pipeline-panel">
                 <div class="panel-head">
@@ -387,17 +400,6 @@
                   <span class="panel-badge" id="personalPipelineBadge"></span>
                 </div>
                 <div class="kanban-columns personal-kanban-columns" id="personalKanbanColumns"></div>
-              </article>
-
-              <article class="panel personal-schedule-panel">
-                <div class="panel-head">
-                  <div>
-                    <span class="panel-kicker">Special Schedule</span>
-                    <h2>专场排期安排</h2>
-                  </div>
-                  <span class="panel-badge" id="personalScheduleBadge"></span>
-                </div>
-                <div class="personal-schedule" id="personalSchedule"></div>
               </article>
 
               <article class="panel">
