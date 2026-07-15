@@ -1552,11 +1552,11 @@ function renderManagementCategoryTrend(data) {
   `).join("");
 
   const width = 960;
-  const height = 280;
-  const left = 66;
-  const right = 22;
-  const top = 24;
-  const bottom = 44;
+  const height = 300;
+  const left = 72;
+  const right = 30;
+  const top = 32;
+  const bottom = 46;
   const chartWidth = width - left - right;
   const chartHeight = height - top - bottom;
   const maxValue = Math.max(...series, 1000);
@@ -1587,8 +1587,9 @@ function renderManagementCategoryTrend(data) {
       <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(chartTitle)}${range.label}销售趋势折线图" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="categoryTrendArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#ff8a4c" stop-opacity="0.26"></stop>
-            <stop offset="100%" stop-color="#ff8a4c" stop-opacity="0.02"></stop>
+            <stop offset="0%" stop-color="#ff8a4c" stop-opacity="0.22"></stop>
+            <stop offset="72%" stop-color="#ffb080" stop-opacity="0.08"></stop>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>
           </linearGradient>
         </defs>
         ${gridRows.map((row) => `

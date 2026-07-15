@@ -5778,24 +5778,35 @@ textarea:focus-visible {
 }
 
 .category-trend-head {
-  align-items: flex-end;
+  align-items: center;
+}
+
+.category-trend-toolbar {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 232px);
+  align-items: center;
+  gap: 14px;
 }
 
 .category-trend-select {
-  min-width: 176px;
+  min-width: 0;
   display: grid;
-  gap: 5px;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
 }
 
 .category-trend-select > span {
   color: #8292a8;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .category-trend-select select {
   width: 100%;
-  min-height: 36px;
+  min-height: 38px;
   padding: 0 32px 0 12px;
   border: 1px solid #e7edf5;
   border-radius: 8px;
@@ -5816,18 +5827,23 @@ textarea:focus-visible {
 }
 
 .category-trend-ranges {
-  display: inline-flex;
+  min-width: 0;
+  display: flex;
   align-items: center;
   gap: 4px;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
   padding: 3px;
   border: 1px solid #edf2f7;
   border-radius: 8px;
   background: #f8fbff;
+  scrollbar-width: none;
 }
 
 .category-trend-ranges button {
   min-width: 62px;
-  min-height: 30px;
+  min-height: 32px;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -5852,21 +5868,23 @@ textarea:focus-visible {
 .category-trend-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
   margin-top: 14px;
-  border: 1px solid #f1f4f8;
-  border-radius: 8px;
-  background: #fffaf7;
+  background: transparent;
 }
 
 .category-trend-metric {
   min-width: 0;
   display: grid;
   gap: 5px;
-  padding: 14px 18px;
+  border: 1px solid #f2e7df;
+  border-radius: 10px;
+  padding: 13px 16px;
+  background: linear-gradient(145deg, #fffaf6, #ffffff 74%);
 }
 
 .category-trend-metric + .category-trend-metric {
-  border-left: 1px solid #f2e9e3;
+  border-left: 1px solid #f2e7df;
 }
 
 .category-trend-metric > span {
@@ -5897,8 +5915,10 @@ textarea:focus-visible {
 
 .category-trend-chart {
   margin-top: 14px;
-  border-top: 1px solid #f1f4f8;
-  padding-top: 12px;
+  border: 1px solid #edf1f5;
+  border-radius: 12px;
+  padding: 13px 14px 8px;
+  background: linear-gradient(180deg, #ffffff, #fffdfb);
 }
 
 .category-chart-caption {
@@ -5906,7 +5926,7 @@ textarea:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 0 4px 8px;
+  padding: 0 2px 10px;
 }
 
 .category-chart-caption span {
@@ -5944,15 +5964,16 @@ textarea:focus-visible {
 .category-chart-scroll svg {
   width: 100%;
   min-width: 720px;
-  height: 280px;
+  height: 300px;
   display: block;
   overflow: visible;
   font-family: inherit;
 }
 
 .category-chart-gridline line {
-  stroke: #e8eef5;
+  stroke: #edf1f5;
   stroke-width: 1;
+  stroke-dasharray: 4 5;
 }
 
 .category-chart-gridline text,
@@ -5969,10 +5990,10 @@ textarea:focus-visible {
 .category-chart-line {
   fill: none;
   stroke: #ff7a3d;
-  stroke-width: 3;
+  stroke-width: 3.25;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 5px 7px rgba(255, 122, 61, 0.14));
+  filter: drop-shadow(0 6px 8px rgba(255, 122, 61, 0.16));
 }
 
 .category-chart-point {
@@ -5983,7 +6004,7 @@ textarea:focus-visible {
 .category-chart-point > circle {
   fill: #ffffff;
   stroke: #ff7a3d;
-  stroke-width: 3;
+  stroke-width: 2.5;
   transition: r 140ms ease, fill 140ms ease;
 }
 
@@ -6215,12 +6236,12 @@ textarea:focus-visible {
 
 @media (max-width: 760px) {
   .category-trend-head {
-    align-items: stretch;
-    flex-direction: column;
+    align-items: center;
   }
 
-  .category-trend-select {
-    width: 100%;
+  .category-trend-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 210px);
+    gap: 10px;
   }
 
   .category-trend-body {
@@ -6238,14 +6259,6 @@ textarea:focus-visible {
 
   .category-trend-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .category-trend-metric:nth-child(3) {
-    border-left: 0;
-  }
-
-  .category-trend-metric:nth-child(n + 3) {
-    border-top: 1px solid #f2e9e3;
   }
 
   .category-trend-metric {
@@ -6371,5 +6384,15 @@ textarea:focus-visible {
 
   .group-ranking-row .group-rank-change {
     display: none;
+  }
+}
+
+@media (max-width: 540px) {
+  .category-trend-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .category-trend-select {
+    grid-template-columns: 72px minmax(0, 1fr);
   }
 }
