@@ -1,22 +1,22 @@
 :root {
-  --color-primary: #4f63ff;
-  --color-primary-strong: #3b4fe0;
+  --color-primary: #ff6f2f;
+  --color-primary-strong: #c94912;
   --color-navy: #031b3d;
   --color-navy-deep: #021126;
   --color-sidebar-text: #dbeafe;
   --color-sidebar-muted: #8aa2c8;
-  --color-success: #22c7a7;
-  --color-warning: #7b5cff;
+  --color-success: #6d9ed8;
+  --color-warning: #ff9656;
   --color-danger: #ef4444;
-  --color-violet: #7b5cff;
-  --color-cyan: #22c7a7;
+  --color-violet: #ff9656;
+  --color-cyan: #6d9ed8;
   --color-bg: #f4f7fb;
   --color-surface: #ffffff;
-  --color-text: #07142f;
-  --color-muted: #66748d;
+  --color-text: #2f3338;
+  --color-muted: #667080;
   --color-border: #dfe8f4;
-  --shadow-panel: 0 10px 26px rgba(15, 34, 64, 0.08);
-  --shadow-soft: 0 5px 14px rgba(15, 34, 64, 0.06);
+  --shadow-panel: 0 10px 26px rgba(68, 68, 68, 0.08);
+  --shadow-soft: 0 5px 14px rgba(68, 68, 68, 0.06);
   --radius: 8px;
   --sidebar-width: 222px;
   --rank-list-max-height: 646px;
@@ -118,7 +118,7 @@ svg {
   height: 36px;
   display: grid;
   place-items: center;
-  color: #3b82f6;
+  color: #6d9ed8;
 }
 
 .brand-icon svg {
@@ -200,7 +200,7 @@ svg {
 .sidebar-section-title svg {
   width: 17px;
   height: 17px;
-  color: #60a5fa;
+  color: #94b7df;
 }
 
 .quick-filters label {
@@ -221,7 +221,7 @@ svg {
   border: 1px solid rgba(148, 163, 184, 0.3);
   border-radius: 7px;
   background: rgba(9, 34, 70, 0.72);
-  color: #f8fbff;
+  color: #ffffff;
 }
 
 .quick-filters select {
@@ -254,7 +254,7 @@ svg {
   width: 9px;
   height: 9px;
   border-radius: 999px;
-  background: #22c7a7;
+  background: #6d9ed8;
   box-shadow: 0 0 0 4px rgba(34, 199, 167, 0.14);
 }
 
@@ -384,7 +384,7 @@ svg {
 .top-control.active {
   color: var(--color-primary);
   border-color: rgba(37, 99, 235, 0.35);
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .chevron {
@@ -402,7 +402,7 @@ svg {
   max-height: min(620px, calc(100dvh - 118px));
   overflow: auto;
   background: #ffffff;
-  box-shadow: 0 22px 48px rgba(31, 45, 79, 0.16);
+  box-shadow: 0 22px 48px rgba(68, 68, 68, 0.16);
 }
 
 .quarter-popover[hidden] {
@@ -431,12 +431,12 @@ svg {
 
 .quarter-popover-head h3 {
   margin: 3px 0 0;
-  color: #101936;
+  color: #2f3338;
   font-size: 18px;
 }
 
 .quarter-popover-head > strong {
-  color: #101936;
+  color: #2f3338;
   font-size: 26px;
   font-variant-numeric: tabular-nums;
 }
@@ -450,17 +450,17 @@ svg {
 
 .quarter-summary div {
   min-width: 0;
-  border: 1px solid #edf2f8;
+  border: 1px solid #edf1f5;
   border-radius: 14px;
   padding: 10px 12px;
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .quarter-summary span,
 .quarter-card-top span,
 .quarter-meta span,
 .quarter-card small {
-  color: #66758e;
+  color: #667080;
   font-size: 12px;
   font-weight: 820;
 }
@@ -468,7 +468,7 @@ svg {
 .quarter-summary strong {
   display: block;
   margin-top: 5px;
-  color: #101936;
+  color: #2f3338;
   font-size: 16px;
   font-variant-numeric: tabular-nums;
 }
@@ -482,7 +482,7 @@ svg {
 
 .quarter-card {
   min-width: 0;
-  border: 1px solid #e5ecf8;
+  border: 1px solid #e5eaf0;
   border-radius: 17px;
   padding: 14px;
   background: #ffffff;
@@ -490,9 +490,9 @@ svg {
 }
 
 .quarter-card.active {
-  border-color: var(--quarter-color, #4f63ff);
-  background: linear-gradient(180deg, #f7faff, #ffffff);
-  box-shadow: 0 12px 28px rgba(79, 99, 255, 0.1);
+  border-color: var(--quarter-color, #ff6f2f);
+  background: linear-gradient(180deg, #ffffff, #ffffff);
+  box-shadow: 0 12px 28px rgba(240, 100, 51, 0.1);
 }
 
 .quarter-card-top {
@@ -504,7 +504,7 @@ svg {
 
 .quarter-card-top h4 {
   margin: 3px 0 0;
-  color: #101936;
+  color: #2f3338;
   font-size: 18px;
 }
 
@@ -514,8 +514,8 @@ svg {
   align-items: center;
   border-radius: 999px;
   padding: 0 8px;
-  background: #eef4ff;
-  color: var(--quarter-color, #4f63ff);
+  background: #fff3eb;
+  color: var(--quarter-color, #ff6f2f);
   font-size: 12px;
   font-style: normal;
   font-weight: 900;
@@ -524,7 +524,7 @@ svg {
 .quarter-card > strong {
   display: block;
   margin-top: 12px;
-  color: #101936;
+  color: #2f3338;
   font-size: 24px;
   font-variant-numeric: tabular-nums;
 }
@@ -538,7 +538,7 @@ svg {
 }
 
 .quarter-meta span:last-child {
-  color: #16a34a;
+  color: #557aa5;
 }
 
 .quarter-meta span.down {
@@ -550,7 +550,7 @@ svg {
   overflow: hidden;
   border-radius: 999px;
   margin-top: 12px;
-  background: #edf2fb;
+  background: #eef2f6;
 }
 
 .quarter-progress i {
@@ -558,7 +558,7 @@ svg {
   height: 100%;
   display: block;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--quarter-color, #4f63ff), #8fb4ff);
+  background: linear-gradient(90deg, var(--quarter-color, #ff6f2f), #ffd2b6);
 }
 
 .quarter-card small {
@@ -571,9 +571,9 @@ svg {
   border-color: transparent;
   background:
     radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.28), transparent 24%),
-    linear-gradient(135deg, #465dff 0%, #6c5bff 58%, #7b46ee 100%);
+    linear-gradient(135deg, #ff6f2f 0%, #ff9656 58%, #ffb06f 100%);
   color: #ffffff;
-  box-shadow: 0 18px 36px rgba(79, 99, 255, 0.28);
+  box-shadow: 0 18px 36px rgba(240, 100, 51, 0.28);
   transform: translateY(-2px);
 }
 
@@ -620,7 +620,7 @@ svg {
   max-height: min(560px, calc(100dvh - 118px));
   overflow: auto;
   background: #ffffff;
-  box-shadow: 0 22px 48px rgba(31, 45, 79, 0.16);
+  box-shadow: 0 22px 48px rgba(68, 68, 68, 0.16);
 }
 
 .time-range-popover[hidden] {
@@ -655,34 +655,34 @@ svg {
 
 .time-range-popover-head h3 {
   margin: 3px 0 0;
-  color: #101936;
+  color: #2f3338;
   font-size: 18px;
 }
 
 .time-range-popover-head > strong {
-  color: #101936;
+  color: #2f3338;
   font-size: 24px;
   font-variant-numeric: tabular-nums;
 }
 
 .time-range-active {
   margin-top: 14px;
-  border: 1px solid #edf2f8;
+  border: 1px solid #edf1f5;
   border-radius: 15px;
   padding: 12px;
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .time-range-active span,
 .time-range-active em {
-  color: #66758e;
+  color: #667080;
   font-size: 12px;
   font-style: normal;
   font-weight: 830;
 }
 
 .time-range-active strong {
-  color: #101936;
+  color: #2f3338;
   font-size: 20px;
   font-variant-numeric: tabular-nums;
 }
@@ -695,11 +695,11 @@ svg {
 
 .time-range-option {
   min-height: 62px;
-  border: 1px solid #e5ecf8;
+  border: 1px solid #e5eaf0;
   border-radius: 15px;
   padding: 11px 12px;
   background: #ffffff;
-  color: #101936;
+  color: #2f3338;
   text-align: left;
   cursor: pointer;
   transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
@@ -708,7 +708,7 @@ svg {
 .time-range-option:hover,
 .time-range-option.active {
   border-color: rgba(37, 99, 235, 0.5);
-  background: #f8fbff;
+  background: #ffffff;
   box-shadow: 0 10px 24px rgba(37, 99, 235, 0.08);
 }
 
@@ -723,7 +723,7 @@ svg {
 }
 
 .time-range-option strong {
-  color: #101936;
+  color: #2f3338;
   font-size: 13px;
   font-weight: 950;
 }
@@ -739,7 +739,7 @@ svg {
 }
 
 .time-range-option > b {
-  color: #101936;
+  color: #2f3338;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -750,7 +750,7 @@ svg {
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: #edf2fb;
+  background: #eef2f6;
 }
 
 .time-range-option > i span {
@@ -758,7 +758,7 @@ svg {
   height: 100%;
   display: block;
   border-radius: inherit;
-  background: linear-gradient(90deg, #4f63ff, #8fb4ff);
+  background: linear-gradient(90deg, #ff6f2f, #ffd2b6);
 }
 
 .calendar-range-caption {
@@ -777,7 +777,7 @@ svg {
   align-items: center;
   gap: 10px;
   margin-top: 18px;
-  border-bottom: 1px solid #e8eef8;
+  border-bottom: 1px solid #eef2f6;
   padding-bottom: 13px;
 }
 
@@ -812,7 +812,7 @@ svg {
 }
 
 .calendar-nav button:hover {
-  background: #eef3ff;
+  background: #fff3eb;
   color: var(--color-primary);
 }
 
@@ -869,7 +869,7 @@ svg {
 .calendar-day.in-range,
 .calendar-day.range-start,
 .calendar-day.range-end {
-  background: #eef3ff;
+  background: #fff3eb;
 }
 
 .calendar-day.range-start {
@@ -886,9 +886,9 @@ svg {
 
 .calendar-day.range-start span,
 .calendar-day.range-end span {
-  background: linear-gradient(135deg, #465dff, #7b46ee);
+  background: linear-gradient(135deg, #ff6f2f, #ffb06f);
   color: #ffffff;
-  box-shadow: 0 8px 18px rgba(79, 99, 255, 0.24);
+  box-shadow: 0 8px 18px rgba(240, 100, 51, 0.24);
 }
 
 .time-range-shortcuts {
@@ -896,16 +896,16 @@ svg {
   flex-wrap: wrap;
   gap: 7px;
   margin-top: 14px;
-  border-top: 1px solid #edf2f8;
+  border-top: 1px solid #edf1f5;
   padding-top: 13px;
 }
 
 .time-range-shortcuts button {
   min-height: 32px;
-  border: 1px solid #e5ecf8;
+  border: 1px solid #e5eaf0;
   border-radius: 999px;
   padding: 0 11px;
-  background: #f8fbff;
+  background: #ffffff;
   color: #52627b;
   font-size: 12px;
   font-weight: 850;
@@ -915,7 +915,7 @@ svg {
 .time-range-shortcuts button:hover,
 .time-range-shortcuts button.active {
   border-color: transparent;
-  background: linear-gradient(135deg, #465dff, #7b46ee);
+  background: linear-gradient(135deg, #ff6f2f, #ffb06f);
   color: #ffffff;
 }
 
@@ -941,7 +941,7 @@ svg {
 .small-button:hover {
   color: var(--color-primary);
   border-color: rgba(37, 99, 235, 0.35);
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .primary-button:hover {
@@ -1024,7 +1024,7 @@ svg {
 .metric-body strong {
   display: block;
   margin-top: 9px;
-  color: #07142f;
+  color: #2f3338;
   font-size: clamp(24px, 2vw, 29px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -1154,7 +1154,7 @@ svg {
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #1f2a44;
+  color: #444444;
   font-size: 12px;
   font-weight: 900;
 }
@@ -1169,7 +1169,7 @@ svg {
   height: 14px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e8eef8;
+  background: #eef2f6;
 }
 
 .sales-bar-track i {
@@ -1182,7 +1182,7 @@ svg {
 
 .sales-bar-row strong,
 .sales-bar-row em {
-  color: #101936;
+  color: #2f3338;
   font-size: 12px;
   font-style: normal;
   font-weight: 900;
@@ -1216,7 +1216,7 @@ svg {
   border: 1px solid #e3ebf7;
   border-radius: 999px;
   padding: 4px;
-  background: #f7faff;
+  background: #ffffff;
 }
 
 .team-detail-switch button {
@@ -1234,9 +1234,9 @@ svg {
 
 .team-detail-switch button:hover,
 .team-detail-switch button.active {
-  background: linear-gradient(135deg, #465dff, #7b46ee);
+  background: linear-gradient(135deg, #ff6f2f, #ffb06f);
   color: #ffffff;
-  box-shadow: 0 10px 18px rgba(79, 99, 255, 0.2);
+  box-shadow: 0 10px 18px rgba(240, 100, 51, 0.2);
 }
 
 .team-detail-switch button:active {
@@ -1265,11 +1265,11 @@ svg {
   min-height: 108px;
   display: grid;
   gap: 8px;
-  border: 1px solid #e5ecf8;
+  border: 1px solid #e5eaf0;
   border-radius: 15px;
   padding: 14px;
   background: #ffffff;
-  color: #101936;
+  color: #2f3338;
   text-align: left;
   cursor: pointer;
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, background 180ms ease;
@@ -1277,8 +1277,8 @@ svg {
 
 .team-choice:hover,
 .team-choice.active {
-  border-color: var(--team-color, #4f63ff);
-  background: linear-gradient(180deg, var(--team-soft, #f7faff), #ffffff);
+  border-color: var(--team-color, #ff6f2f);
+  background: linear-gradient(180deg, var(--team-soft, #ffffff), #ffffff);
   box-shadow: 0 14px 28px rgba(37, 99, 235, 0.1);
 }
 
@@ -1298,19 +1298,19 @@ svg {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--team-color, #4f63ff);
-  box-shadow: 0 0 0 5px var(--team-soft, #eef4ff);
+  background: var(--team-color, #ff6f2f);
+  box-shadow: 0 0 0 5px var(--team-soft, #fff3eb);
 }
 
 .team-choice strong {
-  color: #101936;
+  color: #2f3338;
   font-size: clamp(20px, 1.6vw, 24px);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .team-choice em {
-  color: #66758e;
+  color: #667080;
   font-size: 12px;
   font-style: normal;
   font-weight: 800;
@@ -1323,7 +1323,7 @@ svg {
   display: block;
   overflow: hidden;
   border-radius: 999px;
-  background: #edf2fb;
+  background: #eef2f6;
 }
 
 .team-choice b i,
@@ -1334,16 +1334,16 @@ svg {
   height: 100%;
   display: block;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--team-color, var(--line-color, #4f63ff)), #8fb4ff);
+  background: linear-gradient(90deg, var(--team-color, var(--line-color, #ff6f2f)), #ffd2b6);
 }
 
 .team-focus {
   grid-area: focus;
-  border: 1px solid #e5ecf8;
+  border: 1px solid #e5eaf0;
   border-radius: 18px;
   padding: 16px;
   background: #ffffff;
-  background: linear-gradient(135deg, var(--team-soft, #f7faff), #ffffff 58%);
+  background: linear-gradient(135deg, var(--team-soft, #ffffff), #ffffff 58%);
 }
 
 .team-focus-head,
@@ -1356,12 +1356,12 @@ svg {
 
 .team-focus-head h3 {
   margin: 3px 0 0;
-  color: #101936;
+  color: #2f3338;
   font-size: 20px;
 }
 
 .team-focus-head > strong {
-  color: #101936;
+  color: #2f3338;
   font-size: clamp(24px, 2vw, 28px);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -1377,14 +1377,14 @@ svg {
 
 .team-focus-progress span,
 .team-focus-progress em {
-  color: #66758e;
+  color: #667080;
   font-size: 12px;
   font-style: normal;
   font-weight: 850;
 }
 
 .team-progress-track i {
-  background: linear-gradient(90deg, var(--team-color, #4f63ff), #5edfc0);
+  background: linear-gradient(90deg, var(--team-color, #ff6f2f), #a8bedb);
 }
 
 .team-focus-metrics {
@@ -1396,7 +1396,7 @@ svg {
 
 .team-focus-metrics div {
   min-width: 0;
-  border: 1px solid #edf2f8;
+  border: 1px solid #edf1f5;
   border-radius: 13px;
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.74);
@@ -1419,7 +1419,7 @@ svg {
 }
 
 .team-focus-metrics strong.success {
-  color: #16a34a;
+  color: #557aa5;
 }
 
 .team-focus-metrics strong.danger {
@@ -1449,11 +1449,11 @@ svg {
 .team-stage-strip svg {
   width: 14px;
   height: 14px;
-  color: var(--stage-color, #4f63ff);
+  color: var(--stage-color, #ff6f2f);
 }
 
 .team-stage-strip b {
-  color: #101936;
+  color: #2f3338;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1467,7 +1467,7 @@ svg {
 .team-detail-section {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid #edf2f8;
+  border: 1px solid #edf1f5;
   border-radius: 16px;
   padding: 14px;
   background: rgba(255, 255, 255, 0.74);
@@ -1479,7 +1479,7 @@ svg {
 }
 
 .team-section-head span {
-  color: #101936;
+  color: #2f3338;
   font-weight: 950;
 }
 
@@ -1489,8 +1489,8 @@ svg {
   align-items: center;
   border-radius: 999px;
   padding: 0 9px;
-  background: #eef4ff;
-  color: #4f63ff;
+  background: #fff3eb;
+  color: #ff6f2f;
   font-size: 12px;
 }
 
@@ -1500,7 +1500,7 @@ svg {
   grid-template-columns: minmax(96px, 0.88fr) minmax(54px, 1fr) max-content;
   align-items: center;
   gap: 8px;
-  border-top: 1px solid #edf2f8;
+  border-top: 1px solid #edf1f5;
   padding: 9px 0;
 }
 
@@ -1525,7 +1525,7 @@ svg {
   grid-row: 1 / span 2;
   width: 16px;
   height: 16px;
-  color: #4f63ff;
+  color: #ff6f2f;
 }
 
 .team-line-title strong,
@@ -1553,11 +1553,11 @@ svg {
 }
 
 .team-line-meter i {
-  background: linear-gradient(90deg, var(--line-color, #4f63ff), #8fb4ff);
+  background: linear-gradient(90deg, var(--line-color, #ff6f2f), #ffd2b6);
 }
 
 .team-detail-line > b {
-  color: #101936;
+  color: #2f3338;
   text-align: right;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -1596,9 +1596,9 @@ svg {
 
 .team-product-tabs button:hover,
 .team-product-tabs button.active {
-  background: linear-gradient(135deg, #4f63ff 0%, #7b5cff 100%);
+  background: linear-gradient(135deg, #ff6f2f 0%, #ff9656 100%);
   color: #ffffff;
-  box-shadow: 0 12px 22px rgba(79, 99, 255, 0.2);
+  box-shadow: 0 12px 22px rgba(240, 100, 51, 0.2);
 }
 
 .team-product-tabs button:active {
@@ -1618,7 +1618,7 @@ svg {
   gap: 7px;
   border-radius: 999px;
   padding: 0 12px;
-  background: color-mix(in srgb, var(--accent-soft, #eef4ff) 76%, #ffffff);
+  background: color-mix(in srgb, var(--accent-soft, #fff3eb) 76%, #ffffff);
   color: #24334f;
   font-size: 12px;
   font-weight: 900;
@@ -1628,11 +1628,11 @@ svg {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent, #4f63ff);
+  background: var(--accent, #ff6f2f);
 }
 
 .team-product-team-strip b {
-  color: #101936;
+  color: #2f3338;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1648,12 +1648,12 @@ svg {
   grid-template-columns: minmax(190px, 0.82fr) minmax(0, 1.35fr);
   align-items: center;
   gap: 8px 18px;
-  border: 1px solid color-mix(in srgb, var(--accent, #4f63ff) 22%, #e5ecf8);
+  border: 1px solid color-mix(in srgb, var(--accent, #ff6f2f) 22%, #e5eaf0);
   border-radius: 14px;
   padding: 12px 16px;
   background:
-    radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--accent, #4f63ff) 12%, transparent), transparent 34%),
-    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft, #eef4ff) 78%, #ffffff) 0%, #ffffff 72%);
+    radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--accent, #ff6f2f) 12%, transparent), transparent 34%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft, #fff3eb) 78%, #ffffff) 0%, #ffffff 72%);
 }
 
 .team-product-card .team-card-head {
@@ -1695,7 +1695,7 @@ svg {
 .team-product-progress span,
 .team-product-progress em,
 .team-product-foot span {
-  color: #66758e;
+  color: #667080;
   font-size: 12px;
   font-style: normal;
   font-weight: 850;
@@ -1755,7 +1755,7 @@ svg {
   align-items: center;
   gap: 10px;
   border: 0;
-  border-bottom: 1px solid #edf2f8;
+  border-bottom: 1px solid #edf1f5;
   background: #ffffff;
   color: inherit;
   text-align: left;
@@ -1780,12 +1780,12 @@ svg {
 
 .person-rank-row:hover,
 .talent-sales-row:hover {
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .person-avatar {
   color: var(--color-primary);
-  background: #eef3ff;
+  background: #fff3eb;
 }
 
 .rank-growth {
@@ -1869,7 +1869,7 @@ svg {
   border: 1px solid #dbe7f6;
   border-radius: 10px;
   background: linear-gradient(180deg, #ffffff, #f7fbff);
-  color: #4b63ff;
+  color: #ff6f2f;
   box-shadow: 0 8px 18px rgba(60, 87, 170, 0.08);
   cursor: pointer;
   transition: color 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
@@ -1888,7 +1888,7 @@ svg {
 
 .sort-toggle:hover {
   border-color: #b9c9ff;
-  background: #eef4ff;
+  background: #fff3eb;
   box-shadow: 0 10px 22px rgba(75, 99, 255, 0.14);
   transform: translateY(-1px);
 }
@@ -1911,7 +1911,7 @@ svg {
 .panel h2,
 .drawer-head h3 {
   margin: 3px 0 0;
-  color: #101936;
+  color: #2f3338;
   font-size: 17px;
 }
 
@@ -1924,7 +1924,7 @@ svg {
   border-radius: 7px;
   padding: 0 10px;
   background: #f1f6ff;
-  color: #4f63ff;
+  color: #ff6f2f;
   font-size: 12px;
   font-weight: 900;
   white-space: nowrap;
@@ -1953,7 +1953,7 @@ svg {
   margin: 0 auto;
   border-radius: 50%;
   background: var(--donut);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 14px 30px rgba(15, 34, 64, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 14px 30px rgba(68, 68, 68, 0.08);
 }
 
 .sales-donut-layout .donut-ring {
@@ -1980,10 +1980,10 @@ svg {
 .sales-donut-layout .donut-ring > div {
   width: 50%;
   background:
-    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
   box-shadow:
     0 0 0 1px rgba(224, 232, 246, 0.95),
-    0 10px 26px rgba(31, 45, 79, 0.1);
+    0 10px 26px rgba(68, 68, 68, 0.1);
 }
 
 .donut-ring strong,
@@ -1998,7 +1998,7 @@ svg {
 .status-donut span {
   display: block;
   margin-top: 8px;
-  color: #40516c;
+  color: #667080;
   font-size: 12px;
   font-weight: 800;
 }
@@ -2013,7 +2013,7 @@ svg {
   grid-template-columns: minmax(0, 1fr) minmax(68px, max-content) minmax(46px, max-content);
   align-items: center;
   gap: 10px;
-  color: #1f2a44;
+  color: #444444;
   font-size: 12px;
 }
 
@@ -2030,7 +2030,7 @@ svg {
 .legend-label svg {
   width: 15px;
   height: 15px;
-  color: #66748d;
+  color: #667080;
 }
 
 .legend-dot {
@@ -2068,7 +2068,7 @@ svg {
   align-items: center;
   gap: 10px;
   border: 0;
-  border-bottom: 1px solid #edf2f8;
+  border-bottom: 1px solid #edf1f5;
   background: #ffffff;
   color: inherit;
   text-align: left;
@@ -2076,11 +2076,11 @@ svg {
 }
 
 .ranking-row:hover {
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .rank-number {
-  color: #64748b;
+  color: #718096;
   font-weight: 900;
   text-align: center;
 }
@@ -2121,7 +2121,7 @@ svg {
 }
 
 .rank-info strong {
-  color: #101936;
+  color: #2f3338;
   font-size: 13px;
 }
 
@@ -2137,7 +2137,7 @@ svg {
 .progress-track {
   overflow: hidden;
   border-radius: 999px;
-  background: #e8eef8;
+  background: #eef2f6;
 }
 
 .rank-meter {
@@ -2160,7 +2160,7 @@ svg {
 .ranking-row b,
 .person-rank-row b,
 .talent-sales-row b {
-  color: #101936;
+  color: #2f3338;
   font-size: 13px;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -2191,7 +2191,7 @@ svg {
   grid-template-columns: minmax(0, 1fr) 34px 54px;
   align-items: center;
   gap: 9px;
-  color: #1f2a44;
+  color: #444444;
   font-size: 13px;
 }
 
@@ -2270,14 +2270,14 @@ svg {
 }
 
 .trend-item strong {
-  color: #101936;
+  color: #2f3338;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
 .trend-item em {
   min-height: 30px;
-  color: #66748d;
+  color: #667080;
   font-size: 11px;
   font-style: normal;
   line-height: 1.25;
@@ -2301,7 +2301,7 @@ svg {
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #1f2a44;
+  color: #444444;
   font-size: 12px;
   font-weight: 850;
 }
@@ -2309,7 +2309,7 @@ svg {
 .contribution-row svg {
   width: 16px;
   height: 16px;
-  color: #4f63ff;
+  color: #ff6f2f;
 }
 
 .contribution-track {
@@ -2361,7 +2361,7 @@ svg {
   flex-direction: column;
   border: 1px solid #e8eef7;
   border-radius: var(--radius);
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .kanban-col-head {
@@ -2580,7 +2580,7 @@ svg {
 }
 
 .bottleneck-item:hover {
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .bottleneck-top,
@@ -2695,7 +2695,7 @@ svg {
 
 .dimension-switch span,
 .period-control span {
-  color: #40516c;
+  color: #667080;
   font-weight: 850;
 }
 
@@ -2714,9 +2714,9 @@ svg {
 
 .dimension-switch button.active,
 .sales-product-tabs button.active {
-  background: linear-gradient(135deg, #4f63ff 0%, #7b5cff 100%);
+  background: linear-gradient(135deg, #ff6f2f 0%, #ff9656 100%);
   color: #ffffff;
-  box-shadow: 0 12px 24px rgba(79, 99, 255, 0.2);
+  box-shadow: 0 12px 24px rgba(240, 100, 51, 0.2);
 }
 
 .dimension-switch button:active,
@@ -2733,7 +2733,7 @@ svg {
   border: 1px solid var(--color-border);
   border-radius: 9px;
   background: #ffffff;
-  color: #101936;
+  color: #2f3338;
   font-size: 15px;
   font-variant-numeric: tabular-nums;
 }
@@ -2753,7 +2753,7 @@ svg {
 
 .sales-product-tabs button {
   flex: 0 0 auto;
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .sales-view-body {
@@ -2777,13 +2777,13 @@ svg {
 .team-card-head h3,
 .annual-head h3 {
   margin: 2px 0 0;
-  color: #101936;
+  color: #2f3338;
   font-size: 20px;
 }
 
 .sales-section-head > strong,
 .annual-head > strong {
-  color: #5b5ff7;
+  color: #ff6f2f;
   font-size: 22px;
   font-variant-numeric: tabular-nums;
 }
@@ -2805,13 +2805,13 @@ svg {
 .sales-group-card,
 .team-sales-card,
 .annual-sales-card {
-  border: 1px solid #e5ecf8;
-  border: 1px solid color-mix(in srgb, var(--accent, #4f63ff) 22%, #e5ecf8);
+  border: 1px solid #e5eaf0;
+  border: 1px solid color-mix(in srgb, var(--accent, #ff6f2f) 22%, #e5eaf0);
   border-radius: 14px;
   padding: 18px;
   background: #ffffff;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft, #eef3ff) 62%, #ffffff) 0%, #ffffff 100%);
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft, #fff3eb) 62%, #ffffff) 0%, #ffffff 100%);
 }
 
 .sales-card-head span,
@@ -2844,7 +2844,7 @@ svg {
 .annual-summary span,
 .sales-progress-line span {
   display: block;
-  color: #66758e;
+  color: #667080;
   font-size: 12px;
   font-weight: 850;
 }
@@ -2854,7 +2854,7 @@ svg {
 .annual-summary strong {
   display: block;
   margin-top: 6px;
-  color: #101936;
+  color: #2f3338;
   font-size: 22px;
   font-variant-numeric: tabular-nums;
 }
@@ -2865,12 +2865,12 @@ svg {
 
 .team-metric-grid strong.green,
 .annual-summary strong.green {
-  color: #13b8a6;
+  color: #6d9ed8;
 }
 
 .team-metric-grid strong.blue,
 .annual-summary strong.blue {
-  color: #3b82f6;
+  color: #6d9ed8;
 }
 
 .team-metric-grid strong.danger {
@@ -2889,7 +2889,7 @@ svg {
   height: 11px;
   overflow: hidden;
   border-radius: 999px;
-  background: #edf2fb;
+  background: #eef2f6;
 }
 
 .sales-progress-track i {
@@ -2897,19 +2897,19 @@ svg {
   height: 100%;
   display: block;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--progress-color, #4f63ff), var(--progress-end, #8fb4ff));
+  background: linear-gradient(90deg, var(--progress-color, #ff6f2f), var(--progress-end, #ffd2b6));
 }
 
 .sales-progress-line em,
 .annual-row em {
-  color: #66758e;
+  color: #667080;
   font-style: normal;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .annual-sales-card {
-  --accent: #3b82f6;
+  --accent: #6d9ed8;
   --accent-soft: #edf5ff;
 }
 
@@ -2964,7 +2964,7 @@ svg {
   height: 32px;
   overflow: hidden;
   border-radius: var(--radius);
-  background: #e8eef8;
+  background: #eef2f6;
 }
 
 .chart-fill {
@@ -2998,7 +2998,7 @@ svg {
   display: flex;
   overflow: hidden;
   border-radius: var(--radius);
-  background: #e8eef8;
+  background: #eef2f6;
 }
 
 .stack-segment {
@@ -3062,8 +3062,8 @@ svg {
 }
 
 .record-table th {
-  background: #f7faff;
-  color: #40516c;
+  background: #ffffff;
+  color: #667080;
   font-size: 12px;
   font-weight: 900;
 }
@@ -3088,7 +3088,7 @@ svg {
 
 .record-name strong {
   display: block;
-  color: #101936;
+  color: #2f3338;
   font-size: 14px;
 }
 
@@ -3100,7 +3100,7 @@ svg {
 }
 
 .gmv-value {
-  color: #101936;
+  color: #2f3338;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -3181,7 +3181,7 @@ svg {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: 14px;
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .detail-profile span {
@@ -3200,7 +3200,7 @@ svg {
 }
 
 .detail-profile strong {
-  color: #101936;
+  color: #2f3338;
   font-size: 18px;
 }
 
@@ -3268,7 +3268,7 @@ svg {
 }
 
 .form-field span {
-  color: #40516c;
+  color: #667080;
   font-size: 12px;
   font-weight: 900;
 }
@@ -3291,7 +3291,7 @@ svg {
 }
 
 .metric-editor-summary {
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .metric-preview-grid {
@@ -3305,7 +3305,7 @@ svg {
   border-radius: 14px;
   padding: 12px;
   background: #ffffff;
-  box-shadow: inset 0 0 0 1px #edf2f8;
+  box-shadow: inset 0 0 0 1px #edf1f5;
 }
 
 .metric-preview-grid em,
@@ -3336,10 +3336,10 @@ svg {
   min-width: 0;
   display: grid;
   gap: 12px;
-  border: 1px solid #e5ecf8;
+  border: 1px solid #e5eaf0;
   border-radius: 16px;
   padding: 14px;
-  background: #f8fbff;
+  background: #ffffff;
 }
 
 .metric-section-head {
@@ -3351,7 +3351,7 @@ svg {
 
 .metric-section-head h4 {
   margin: 0;
-  color: #101936;
+  color: #2f3338;
   font-size: 15px;
 }
 
@@ -3369,7 +3369,7 @@ svg {
   align-items: center;
   border-radius: 999px;
   padding: 0 10px;
-  background: #eef3ff;
+  background: #fff3eb;
   color: var(--color-primary);
   font-size: 12px;
   font-weight: 900;
@@ -3386,12 +3386,12 @@ svg {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  border: 1px solid color-mix(in srgb, var(--accent, var(--color-primary)) 22%, #e5ecf8);
+  border: 1px solid color-mix(in srgb, var(--accent, var(--color-primary)) 22%, #e5eaf0);
   border-radius: 14px;
   padding: 12px;
   background:
     radial-gradient(circle at 98% 0%, color-mix(in srgb, var(--accent, var(--color-primary)) 9%, transparent), transparent 36%),
-    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft, #eef3ff) 66%, #ffffff) 0%, #ffffff 100%);
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft, #fff3eb) 66%, #ffffff) 0%, #ffffff 100%);
 }
 
 .metric-team-card .form-field,
@@ -3405,7 +3405,7 @@ svg {
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: #101936;
+  color: #2f3338;
   font-size: 14px;
 }
 
@@ -3414,7 +3414,7 @@ svg {
   height: 9px;
   border-radius: 50%;
   background: var(--accent, var(--color-primary));
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent-soft, #eef3ff) 72%, transparent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent-soft, #fff3eb) 72%, transparent);
 }
 
 .toast {
@@ -3425,7 +3425,7 @@ svg {
   max-width: min(360px, calc(100vw - 36px));
   padding: 12px 14px;
   border-radius: var(--radius);
-  background: #07142f;
+  background: #2f3338;
   color: #ffffff;
   box-shadow: 0 14px 34px rgba(15, 23, 42, 0.24);
   opacity: 0;
@@ -3827,19 +3827,19 @@ svg {
 
 /* Light SaaS dashboard skin inspired by polished web analytics products. */
 :root {
-  --color-primary: #4f63ff;
-  --color-primary-strong: #3548e8;
-  --color-navy: #eef4ff;
-  --color-navy-deep: #f8fbff;
+  --color-primary: #ff6f2f;
+  --color-primary-strong: #ef6433;
+  --color-navy: #fff3eb;
+  --color-navy-deep: #ffffff;
   --color-sidebar-text: #4b5a73;
-  --color-sidebar-muted: #8b98ad;
-  --color-bg: #f4f7ff;
+  --color-sidebar-muted: #7f8792;
+  --color-bg: #f5f8fb;
   --color-surface: #ffffff;
-  --color-text: #11172a;
+  --color-text: #2f3338;
   --color-muted: #728096;
   --color-border: #e6ecf7;
-  --shadow-panel: 0 18px 42px rgba(31, 45, 79, 0.09);
-  --shadow-soft: 0 8px 24px rgba(35, 50, 86, 0.08);
+  --shadow-panel: 0 18px 42px rgba(68, 68, 68, 0.09);
+  --shadow-soft: 0 8px 24px rgba(68, 68, 68, 0.08);
   --radius: 18px;
   --sidebar-width: 206px;
 }
@@ -3925,7 +3925,7 @@ body::before {
   color: #111827;
   font-size: clamp(15px, 2vw, 24px);
   font-weight: 950;
-  box-shadow: inset 0 -10px 20px rgba(79, 99, 255, 0.12);
+  box-shadow: inset 0 -10px 20px rgba(240, 100, 51, 0.12);
 }
 
 .dashboard-showcase {
@@ -3965,9 +3965,9 @@ body::before {
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #4f63ff, #7484ff);
+  background: linear-gradient(135deg, #ff6f2f, #ffb06f);
   color: #ffffff;
-  box-shadow: 0 14px 28px rgba(79, 99, 255, 0.26);
+  box-shadow: 0 14px 28px rgba(240, 100, 51, 0.26);
 }
 
 .brand-icon svg {
@@ -3981,7 +3981,7 @@ body::before {
 }
 
 .brand span {
-  color: #8b98ad;
+  color: #7f8792;
   font-weight: 800;
 }
 
@@ -3994,7 +3994,7 @@ body::before {
   min-height: 44px;
   gap: 11px;
   border-radius: 14px;
-  color: #66758e;
+  color: #667080;
   font-weight: 900;
 }
 
@@ -4004,20 +4004,20 @@ body::before {
 }
 
 .nav-item:hover {
-  background: #eef4ff;
+  background: #fff3eb;
   color: #32425f;
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, #4b63ff, #5b8cff);
+  background: linear-gradient(135deg, #ff6f2f, #ffb06f);
   color: #ffffff;
-  box-shadow: 0 14px 30px rgba(79, 99, 255, 0.28);
+  box-shadow: 0 14px 30px rgba(240, 100, 51, 0.28);
 }
 
 .quick-filters {
   margin: 6px 12px 0;
   padding: 12px;
-  border-color: #e5ecf8;
+  border-color: #e5eaf0;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.74);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
@@ -4028,7 +4028,7 @@ body::before {
 }
 
 .sidebar-section-title svg {
-  color: #4f63ff;
+  color: #ff6f2f;
 }
 
 .quick-filters label span {
@@ -4037,23 +4037,23 @@ body::before {
 
 .quick-filters select,
 .sidebar-clear {
-  border-color: #e2e9f5;
+  border-color: #e5eaf0;
   border-radius: 12px;
-  background: #f7faff;
+  background: #ffffff;
   color: #26344e;
   box-shadow: none;
 }
 
 .sidebar-clear:hover {
-  background: #eef4ff;
+  background: #fff3eb;
 }
 
 .sidebar-footer {
-  border-top-color: #e5ecf8;
+  border-top-color: #e5eaf0;
 }
 
 .sidebar-footer span {
-  color: #8b98ad;
+  color: #7f8792;
 }
 
 .sidebar-footer strong {
@@ -4063,8 +4063,8 @@ body::before {
 .workspace {
   min-width: 0;
   background:
-    radial-gradient(circle at 88% 6%, rgba(90, 137, 255, 0.16), transparent 22%),
-    linear-gradient(180deg, #f9fbff 0%, #f4f7ff 100%);
+    radial-gradient(circle at 88% 6%, rgba(255, 165, 91, 0.16), transparent 22%),
+    linear-gradient(180deg, #f9fbff 0%, #f5f8fb 100%);
 }
 
 .topbar {
@@ -4082,7 +4082,7 @@ body::before {
 
 .page-heading p {
   margin-top: 6px;
-  color: #66758e;
+  color: #667080;
   font-size: 13px;
 }
 
@@ -4095,9 +4095,9 @@ body::before {
 .icon-button,
 .primary-button,
 .small-button {
-  border-color: #e3eaf5;
+  border-color: #e5eaf0;
   border-radius: 16px;
-  box-shadow: 0 9px 24px rgba(31, 45, 79, 0.06);
+  box-shadow: 0 9px 24px rgba(68, 68, 68, 0.06);
 }
 
 .search-field {
@@ -4113,13 +4113,13 @@ body::before {
 }
 
 .primary-button {
-  background: linear-gradient(135deg, #4b63ff, #6b57f6);
+  background: linear-gradient(135deg, #ff6f2f, #ff9656);
   border-color: transparent;
-  box-shadow: 0 14px 30px rgba(79, 99, 255, 0.28);
+  box-shadow: 0 14px 30px rgba(240, 100, 51, 0.28);
 }
 
 .primary-button:hover {
-  background: linear-gradient(135deg, #3548e8, #5744dc);
+  background: linear-gradient(135deg, #ef6433, #f27a45);
 }
 
 .content {
@@ -4137,7 +4137,7 @@ body::before {
   border-color: rgba(223, 231, 246, 0.96);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 10px 24px rgba(35, 50, 86, 0.06);
+  box-shadow: 0 10px 24px rgba(68, 68, 68, 0.06);
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, color 180ms ease;
 }
 
@@ -4147,9 +4147,9 @@ body::before {
   border-color: transparent;
   background:
     radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.28), transparent 24%),
-    linear-gradient(135deg, #465dff 0%, #6c5bff 58%, #7b46ee 100%);
+    linear-gradient(135deg, #ff6f2f 0%, #ff9656 58%, #ffb06f 100%);
   color: #ffffff;
-  box-shadow: 0 12px 26px rgba(79, 99, 255, 0.22);
+  box-shadow: 0 12px 26px rgba(240, 100, 51, 0.22);
   transform: none;
 }
 
@@ -4157,7 +4157,7 @@ body::before {
   border-color: rgba(223, 231, 246, 0.96);
   background: rgba(255, 255, 255, 0.88);
   color: inherit;
-  box-shadow: 0 10px 24px rgba(35, 50, 86, 0.06);
+  box-shadow: 0 10px 24px rgba(68, 68, 68, 0.06);
   transform: none;
 }
 
@@ -4194,11 +4194,11 @@ body::before {
 }
 
 .kpi-grid:hover .kpi-card:first-child:not(:hover) .metric-body span {
-  color: #56657d;
+  color: #667080;
 }
 
 .kpi-grid:hover .kpi-card:first-child:not(:hover) .metric-body strong {
-  color: #11172a;
+  color: #2f3338;
 }
 
 .kpi-grid:hover .kpi-card:first-child:not(:hover) .metric-trend,
@@ -4222,12 +4222,12 @@ body::before {
 }
 
 .metric-body span {
-  color: #56657d;
+  color: #667080;
   transition: color 180ms ease;
 }
 
 .metric-body strong {
-  color: #11172a;
+  color: #2f3338;
   font-size: clamp(23px, 1.8vw, 28px);
   transition: color 180ms ease;
 }
@@ -4258,12 +4258,12 @@ body::before {
   border-color: rgba(225, 232, 245, 0.95);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 18px 42px rgba(31, 45, 79, 0.08);
+  box-shadow: 0 18px 42px rgba(68, 68, 68, 0.08);
 }
 
 .panel-head {
   min-height: 62px;
-  border-bottom-color: #edf2f8;
+  border-bottom-color: #edf1f5;
   padding: 14px 18px;
 }
 
@@ -4291,8 +4291,8 @@ body::before {
 
 .panel-badge,
 .table-count {
-  background: #eef4ff;
-  color: #4f63ff;
+  background: #fff3eb;
+  color: #ff6f2f;
 }
 
 .sales-bars,
@@ -4311,7 +4311,7 @@ body::before {
 .progress-track,
 .chart-bar,
 .stack-bar {
-  background: #edf2fb;
+  background: #eef2f6;
 }
 
 .sales-bar-track {
@@ -4323,17 +4323,17 @@ body::before {
 .contribution-track i,
 .progress-fill,
 .chart-fill {
-  background: linear-gradient(90deg, var(--bar-color, #4f63ff), #72a2ff);
+  background: linear-gradient(90deg, var(--bar-color, #ff6f2f), #ffb06f);
 }
 
 .donut-ring,
 .status-donut {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.62), 0 18px 36px rgba(31, 45, 79, 0.09);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.62), 0 18px 36px rgba(68, 68, 68, 0.09);
 }
 
 .donut-ring > div,
 .status-donut > div {
-  box-shadow: 0 0 0 1px rgba(225, 232, 245, 0.96), 0 12px 24px rgba(31, 45, 79, 0.06);
+  box-shadow: 0 0 0 1px rgba(225, 232, 245, 0.96), 0 12px 24px rgba(68, 68, 68, 0.06);
 }
 
 .person-rank-row,
@@ -4342,14 +4342,14 @@ body::before {
 .bottleneck-item,
 .owner-item {
   background: transparent;
-  border-bottom-color: #edf2f8;
+  border-bottom-color: #edf1f5;
 }
 
 .person-rank-row:hover,
 .talent-sales-row:hover,
 .ranking-row:hover,
 .bottleneck-item:hover {
-  background: #f7faff;
+  background: #ffffff;
 }
 
 .dashboard-grid {
@@ -4454,7 +4454,7 @@ body::before {
 }
 
 .kanban-col {
-  border-color: #e5ecf8;
+  border-color: #e5eaf0;
   border-radius: 18px;
   background: rgba(248, 251, 255, 0.92);
 }
@@ -4464,10 +4464,10 @@ body::before {
 }
 
 .talent-card {
-  border-color: #e3eaf5;
+  border-color: #e5eaf0;
   border-radius: 16px;
   background: #ffffff;
-  box-shadow: 0 12px 24px rgba(31, 45, 79, 0.06);
+  box-shadow: 0 12px 24px rgba(68, 68, 68, 0.06);
 }
 
 .record-table th {
@@ -4513,7 +4513,7 @@ body::before {
 
   .sidebar {
     border-right: 0;
-    border-bottom: 1px solid #e5ecf8;
+    border-bottom: 1px solid #e5eaf0;
   }
 
   .side-nav {
@@ -4586,7 +4586,7 @@ body::before {
   border: 1px solid rgba(225, 232, 245, 0.95);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 8px 22px rgba(31, 45, 79, 0.05);
+  box-shadow: 0 8px 22px rgba(68, 68, 68, 0.05);
 }
 
 #pipelinePage .page-layout {
@@ -4623,9 +4623,9 @@ body::before {
 #pipelinePage .pipeline-filters .sidebar-clear {
   width: 100%;
   min-height: 42px;
-  border-color: #e2e9f5;
+  border-color: #e5eaf0;
   border-radius: 12px;
-  background: #f7faff;
+  background: #ffffff;
   color: #26344e;
   box-shadow: none;
 }
@@ -4637,7 +4637,7 @@ body::before {
 }
 
 #pipelinePage .pipeline-filters .sidebar-clear:hover {
-  background: #eef4ff;
+  background: #fff3eb;
 }
 
 @media (max-width: 760px) {
@@ -4714,108 +4714,126 @@ body::before {
   }
 }
 
-/* Warm amber theme */
+/* Light coral theme */
 :root {
-  --color-primary: #f59e0b;
-  --color-primary-strong: #d97706;
-  --color-warning: #fbbf24;
-  --color-violet: #f59e0b;
-  --color-bg: #fffaf5;
-  --color-border: #eee3d4;
+  --color-primary: #ff6f2f;
+  --color-primary-strong: #ef6433;
+  --color-success: #6d9ed8;
+  --color-warning: #f6c75f;
+  --color-violet: #ff9656;
+  --color-cyan: #6d9ed8;
+  --color-navy: #ffffff;
+  --color-navy-deep: #ffffff;
+  --color-sidebar-text: #444444;
+  --color-sidebar-muted: #7f8792;
+  --color-bg: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-text: #2f3338;
+  --color-muted: #667080;
+  --color-border: #e5eaf0;
+  --shadow-panel: 0 10px 28px rgba(68, 68, 68, 0.07);
+  --shadow-soft: 0 5px 16px rgba(68, 68, 68, 0.06);
 }
 
 html,
 body {
-  background: #fffaf5;
+  background: #f7f8fa;
 }
 
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline-color: rgba(245, 158, 11, 0.28);
+  outline-color: rgba(240, 100, 51, 0.24);
 }
 
 .app-shell {
-  background: linear-gradient(180deg, #fffdf9 0%, #fff8ed 100%);
+  background: #f7f8fa;
 }
 
 .sidebar {
-  border-right-color: #f0e5d6;
-  background: linear-gradient(180deg, #ffffff 0%, #fff8ed 100%);
+  border-right-color: #ebe7e2;
+  background: #ffffff;
+  box-shadow: 10px 0 28px rgba(68, 68, 68, 0.05);
 }
 
 .brand-icon {
-  background: linear-gradient(135deg, #f97316, #fbbf24);
+  background: #ff6f2f;
   color: #ffffff;
-  box-shadow: 0 14px 28px rgba(245, 158, 11, 0.24);
+  box-shadow: 0 10px 22px rgba(240, 100, 51, 0.2);
 }
 
 .nav-item:hover,
 .sidebar-clear:hover {
-  background: #fff3df;
+  background: #fff3eb;
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, #f97316, #fbbf24);
-  color: #ffffff;
-  box-shadow: 0 14px 30px rgba(245, 158, 11, 0.28);
+  background: #fff0e6;
+  color: #c94912;
+  box-shadow: inset 0 0 0 1px #ffd2b6;
 }
 
 .sidebar-section-title svg,
 .panel-badge,
 .table-count {
-  color: #d97706;
+  color: #e15f2d;
 }
 
 .quick-filters select,
 .sidebar-clear,
 #pipelinePage .pipeline-filters select,
 #pipelinePage .pipeline-filters .sidebar-clear {
-  border-color: #f0e4d3;
-  background: #fffaf2;
+  border-color: #e5eaf0;
+  background: #ffffff;
 }
 
 .workspace {
-  background:
-    radial-gradient(circle at 88% 6%, rgba(251, 191, 36, 0.16), transparent 23%),
-    linear-gradient(180deg, #fffdf9 0%, #fff8ef 100%);
+  background: #f7f8fa;
 }
 
 .topbar {
-  border-bottom-color: rgba(240, 229, 214, 0.92);
+  border-bottom-color: #ebe7e2;
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .primary-button {
   border-color: transparent;
-  background: linear-gradient(135deg, #f97316, #fbbf24);
+  background: #c94912;
   color: #ffffff;
-  box-shadow: 0 14px 30px rgba(245, 158, 11, 0.26);
+  box-shadow: 0 8px 18px rgba(201, 73, 18, 0.18);
 }
 
 .primary-button:hover {
-  background: linear-gradient(135deg, #ea580c, #f59e0b);
+  background: #b43f0d;
+}
+
+.kpi-card:hover,
+.kpi-card:focus-within {
+  border-color: #ffd2b6;
+  background: #ffffff;
+  color: var(--color-text);
+  box-shadow: 0 12px 26px rgba(240, 100, 51, 0.1);
 }
 
 .kpi-card:first-child,
-.kpi-card:hover,
-.kpi-card:focus-within {
-  border-color: transparent;
-  background:
-    radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.3), transparent 24%),
-    linear-gradient(135deg, #f97316 0%, #f59e0b 58%, #fbbf24 100%);
-  color: #ffffff;
-  box-shadow: 0 12px 26px rgba(245, 158, 11, 0.22);
+.kpi-card:first-child:hover,
+.kpi-card:first-child:focus-within {
+  border-color: #ffd2b6;
+  background: linear-gradient(135deg, #fff3eb 0%, #ffe6d6 100%);
+  color: var(--color-text);
+  box-shadow: 0 10px 24px rgba(240, 100, 51, 0.09);
 }
 
 .kpi-grid:hover .kpi-card:first-child:not(:hover) {
-  border-color: rgba(238, 227, 212, 0.96);
-  background: rgba(255, 255, 255, 0.9);
+  border-color: #e5eaf0;
+  background: #ffffff;
+  color: var(--color-text);
 }
 
 .panel-badge,
 .table-count {
-  background: #fff4da;
+  background: #fff3eb;
 }
 
 .team-detail-switch button:hover,
@@ -4824,19 +4842,20 @@ textarea:focus-visible {
 .team-product-tabs button.active,
 .time-range-shortcuts button:hover,
 .time-range-shortcuts button.active {
-  background: linear-gradient(135deg, #f97316, #fbbf24);
-  color: #ffffff;
-  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+  border-color: #ffd2b6;
+  background: #fff0e6;
+  color: #c94912;
+  box-shadow: none;
 }
 
 .calendar-nav button:hover {
-  background: #fff3df;
-  color: #d97706;
+  background: #fff3eb;
+  color: #e15f2d;
 }
 
 .calendar-day:hover span {
-  background: #fff0d5;
-  color: #d97706;
+  background: #ffe9da;
+  color: #e15f2d;
 }
 
 .calendar-day.in-range,
@@ -4847,29 +4866,30 @@ textarea:focus-visible {
 
 .calendar-day.range-start span,
 .calendar-day.range-end span {
-  background: linear-gradient(135deg, #f97316, #fbbf24);
+  background: #c94912;
   color: #ffffff;
-  box-shadow: 0 8px 18px rgba(245, 158, 11, 0.24);
+  box-shadow: 0 8px 18px rgba(201, 73, 18, 0.16);
 }
 
 .quarter-card:hover,
 .quarter-card:focus-within {
-  background:
-    radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.3), transparent 24%),
-    linear-gradient(135deg, #f97316 0%, #f59e0b 58%, #fbbf24 100%);
-  box-shadow: 0 18px 36px rgba(245, 158, 11, 0.26);
+  border-color: #ffd2b6;
+  background: #ffffff;
+  color: var(--color-text);
+  box-shadow: 0 12px 28px rgba(240, 100, 51, 0.1);
 }
 
 .quarter-card.active {
-  background: linear-gradient(180deg, #fffaf2, #ffffff);
-  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.12);
+  border-color: #ff9656;
+  background: #fff6f0;
+  box-shadow: 0 10px 24px rgba(240, 100, 51, 0.1);
 }
 
 .quarter-progress i {
   background: linear-gradient(
     90deg,
-    var(--quarter-color, #f59e0b),
-    color-mix(in srgb, var(--quarter-color, #f59e0b) 60%, #ffffff)
+    var(--quarter-color, #ff6f2f),
+    color-mix(in srgb, var(--quarter-color, #ff6f2f) 52%, #ffffff)
   );
 }
 
@@ -4877,13 +4897,13 @@ textarea:focus-visible {
 .team-section-head strong,
 .team-line-title svg,
 .contribution-row svg {
-  color: #d97706;
+  color: #e15f2d;
 }
 
 .sort-toggle:hover {
-  border-color: #f8c86a;
-  background: #fff4df;
-  box-shadow: 0 10px 22px rgba(245, 158, 11, 0.16);
+  border-color: #ffc49e;
+  background: #fff3eb;
+  box-shadow: 0 8px 18px rgba(240, 100, 51, 0.1);
 }
 
 .sales-bar-track,
@@ -4894,7 +4914,7 @@ textarea:focus-visible {
 .stack-bar,
 .team-line-meter,
 .team-progress-track {
-  background: #f3eee6;
+  background: #eef2f6;
 }
 
 .sales-bar-track i,
@@ -4902,16 +4922,16 @@ textarea:focus-visible {
 .chart-fill {
   background: linear-gradient(
     90deg,
-    var(--bar-color, #f59e0b),
-    color-mix(in srgb, var(--bar-color, #f59e0b) 62%, #ffffff)
+    var(--bar-color, #ff6f2f),
+    color-mix(in srgb, var(--bar-color, #ff6f2f) 52%, #ffffff)
   );
 }
 
 .rank-meter i {
   background: linear-gradient(
     90deg,
-    var(--rank-color, #f59e0b),
-    color-mix(in srgb, var(--rank-color, #f59e0b) 62%, #ffffff)
+    var(--rank-color, #ff6f2f),
+    color-mix(in srgb, var(--rank-color, #ff6f2f) 52%, #ffffff)
   );
 }
 
@@ -4919,8 +4939,8 @@ textarea:focus-visible {
 .sales-progress-track i {
   background: linear-gradient(
     90deg,
-    var(--progress-color, #f59e0b),
-    color-mix(in srgb, var(--progress-color, #f59e0b) 62%, #ffffff)
+    var(--progress-color, #ff6f2f),
+    color-mix(in srgb, var(--progress-color, #ff6f2f) 52%, #ffffff)
   );
 }
 
@@ -4928,7 +4948,137 @@ textarea:focus-visible {
 .team-progress-track i {
   background: linear-gradient(
     90deg,
-    var(--line-color, var(--team-color, #f59e0b)),
-    color-mix(in srgb, var(--line-color, var(--team-color, #f59e0b)) 62%, #ffffff)
+    var(--line-color, var(--team-color, #ff6f2f)),
+    color-mix(in srgb, var(--line-color, var(--team-color, #ff6f2f)) 52%, #ffffff)
   );
+}
+
+/* Orange palette refinement */
+.brand strong,
+.page-heading h1,
+.panel h2,
+.drawer-head h3,
+.sidebar-section-title {
+  color: var(--color-text);
+}
+
+.nav-item {
+  color: #666d76;
+}
+
+.nav-item:hover {
+  background: #fff3eb;
+  color: #e15f2d;
+}
+
+.quick-filters,
+#pipelinePage .pipeline-filters,
+.panel,
+.report-card,
+.format-card,
+.detail-profile,
+.detail-block,
+.kpi-card {
+  border-color: var(--color-border);
+  background: #ffffff;
+  box-shadow: var(--shadow-panel);
+}
+
+.panel-head {
+  border-bottom-color: #edf1f5;
+}
+
+.panel-kicker,
+.drawer-kicker,
+.quick-filters label span,
+#pipelinePage .pipeline-filters label span {
+  color: #858b94;
+}
+
+.top-control,
+.icon-button,
+.small-button,
+.search-field {
+  border-color: #e5eaf0;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(68, 68, 68, 0.05);
+}
+
+.top-control:hover,
+.icon-button:hover,
+.small-button:hover {
+  border-color: #ffc49e;
+  background: #fff7f0;
+  color: #e15f2d;
+}
+
+.kpi-card:not(:first-child):hover .metric-icon,
+.kpi-card:not(:first-child):focus-within .metric-icon {
+  background: var(--metric-soft);
+  color: var(--metric-color);
+}
+
+.kpi-card:not(:first-child):hover .metric-body span,
+.kpi-card:not(:first-child):hover .metric-body strong,
+.kpi-card:not(:first-child):hover .metric-trend,
+.kpi-card:not(:first-child):hover .metric-trend.down,
+.kpi-card:not(:first-child):hover .metric-trend .vs,
+.kpi-card:not(:first-child):hover .sparkline,
+.kpi-card:not(:first-child):focus-within .metric-body span,
+.kpi-card:not(:first-child):focus-within .metric-body strong,
+.kpi-card:not(:first-child):focus-within .metric-trend,
+.kpi-card:not(:first-child):focus-within .metric-trend.down,
+.kpi-card:not(:first-child):focus-within .metric-trend .vs,
+.kpi-card:not(:first-child):focus-within .sparkline {
+  color: inherit;
+}
+
+.kpi-card:first-child .metric-icon,
+.kpi-card:first-child:hover .metric-icon,
+.kpi-card:first-child:focus-within .metric-icon {
+  background: #ff6f2f;
+  color: #ffffff;
+}
+
+.kpi-card:first-child .metric-body span,
+.kpi-card:first-child:hover .metric-body span,
+.kpi-card:first-child:focus-within .metric-body span {
+  color: #667080;
+}
+
+.kpi-card:first-child .metric-body strong,
+.kpi-card:first-child:hover .metric-body strong,
+.kpi-card:first-child:focus-within .metric-body strong {
+  color: var(--color-text);
+}
+
+.kpi-card:first-child .metric-trend,
+.kpi-card:first-child .sparkline,
+.kpi-card:first-child:hover .metric-trend,
+.kpi-card:first-child:hover .sparkline,
+.kpi-card:first-child:focus-within .metric-trend,
+.kpi-card:first-child:focus-within .sparkline {
+  color: #e15f2d;
+}
+
+.person-rank-row:hover,
+.talent-sales-row:hover,
+.ranking-row:hover,
+.bottleneck-item:hover,
+.owner-item:hover {
+  background: #ffffff;
+}
+
+.donut-ring,
+.status-donut {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7), 0 14px 30px rgba(68, 68, 68, 0.07);
+}
+
+.donut-ring > div,
+.status-donut > div {
+  box-shadow: 0 0 0 1px #edf1f5, 0 8px 18px rgba(68, 68, 68, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d7d1ca;
 }
