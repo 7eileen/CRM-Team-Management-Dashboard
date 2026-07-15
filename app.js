@@ -1079,11 +1079,13 @@ function renderSalesBars(container, rows, options = {}) {
     const width = row.value ? Math.max((row.value / max) * 100, 6) : 0;
     const color = row.color || palette[index % palette.length];
     return `
-      <div class="sales-bar-row">
+      <div class="sales-bar-row ${options.hideTrack ? "sales-bar-row--no-track" : ""}">
         <span class="sales-bar-label">${row.icon ? icon(row.icon) : ""}${escapeHtml(row.label)}</span>
-        <div class="sales-bar-track">
-          <i style="--bar-width:${width}%; --bar-color:${color}"></i>
-        </div>
+        ${options.hideTrack ? "" : `
+          <div class="sales-bar-track">
+            <i style="--bar-width:${width}%; --bar-color:${color}"></i>
+          </div>
+        `}
         <strong>${compactCurrency(row.value)}</strong>
         ${options.showPercent ? `<em>${total ? percent(row.value / total) : "0.0%"}</em>` : ""}
       </div>
@@ -1121,6 +1123,43 @@ function renderSalesDonut(container, rows, centerLabel) {
             </span>
             <strong>${compactCurrency(item.count)}</strong>
             <em>${total ? percent(item.count / total) : "0.0%"}</em>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderTeamProductPie(rows, total) {
+  const sortedRows = rows
+    .filter((row) => row.sales > 0)
+    .slice()
+    .sort((a, b) => b.sales - a.sales);
+  const visibleRows = sortedRows.slice(0, 5).map((row, index) => ({
+    ...row,
+    color: chartPalette[index % chartPalette.length],
+  }));
+  const remainingSales = sumBy(sortedRows.slice(5), (row) => row.sales);
+  if (remainingSales > 0) {
+    visibleRows.push({ label: "其他", sales: remainingSales, color: chartPalette[5] });
+  }
+  const pieTotal = sumBy(visibleRows, (row) => row.sales);
+  const gradient = conicGradient(visibleRows.map((row) => ({
+    count: row.sales,
+    color: row.color,
+  })), pieTotal, 2.5);
+
+  if (!visibleRows.length) return `<div class="empty-state compact">暂无品类销售数据</div>`;
+
+  return `
+    <div class="team-product-pie-layout">
+      <div class="team-product-pie" style="--team-product-pie:conic-gradient(${gradient})" role="img" aria-label="品类销售额饼图"></div>
+      <div class="team-product-pie-legend">
+        ${visibleRows.map((row) => `
+          <div>
+            <span><i style="--slice-color:${row.color}"></i>${escapeHtml(row.label)}</span>
+            <em>${percent(total ? row.sales / total : 0)}</em>
+            <strong>${compactCurrency(row.sales)}</strong>
           </div>
         `).join("")}
       </div>
@@ -1412,7 +1451,6 @@ function renderManagementTeamDetail(data) {
   const maxTeamSales = Math.max(...rows.map((row) => row.sales), 1);
   const maxGroupSales = Math.max(...selected.groupRows.map((row) => row.sales), 1);
   const maxPersonSales = Math.max(...selected.personRows.map((row) => row.sales), 1);
-  const maxProductSales = Math.max(...selected.productRows.map((row) => row.sales), 1);
 
   els.managementTeamDetail.innerHTML = `
     <div class="team-detail-layout">
@@ -1479,9 +1517,7 @@ function renderManagementTeamDetail(data) {
             <span>品类结构</span>
             <strong>${percent(selected.share)}</strong>
           </div>
-          ${renderTeamDetailLines(selected.productRows, maxProductSales, {
-            meta: (row) => `${percent(selected.sales ? row.sales / selected.sales : 0)} 占比`,
-          })}
+          ${renderTeamProductPie(selected.productRows, selected.sales)}
         </section>
       </div>
     </div>
@@ -1505,7 +1541,7 @@ function renderManagementDashboard() {
   renderSalesBars(els.managementTypeSales, typeRows);
   renderSalesBars(els.managementTeamSales, teamRows);
   renderSalesDonut(els.managementTierSales, tierRows, "SABC Sales");
-  renderSalesBars(els.managementStageSales, stageRows, { showPercent: true });
+  renderSalesBars(els.managementStageSales, stageRows, { showPercent: true, hideTrack: true });
   renderManagementTeamDetail(data);
   renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
   renderManagementPersonRank(data);
