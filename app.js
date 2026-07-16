@@ -1694,12 +1694,12 @@ function renderManagementCategoryTrend(data) {
     </div>
   `).join("");
 
-  const width = 840;
-  const height = 300;
-  const left = 76;
-  const right = 24;
-  const top = 32;
-  const bottom = 46;
+  const width = 520;
+  const height = 238;
+  const left = 58;
+  const right = 16;
+  const top = 26;
+  const bottom = 38;
   const chartWidth = width - left - right;
   const chartHeight = height - top - bottom;
   const maxValue = Math.max(...series, 1000);
@@ -1758,7 +1758,12 @@ function renderManagementCategoryTrend(data) {
             </g>
           `;
         }).join("")}
-        ${points.map((point) => `<text class="category-chart-axis-label" x="${point.x.toFixed(1)}" y="${height - 13}" text-anchor="middle">${escapeHtml(point.label)}</text>`).join("")}
+        ${points.map((point, index) => {
+          const showLabel = index === 0 || index === points.length - 1 || index % 2 === 0;
+          return showLabel
+            ? `<text class="category-chart-axis-label" x="${point.x.toFixed(1)}" y="${height - 12}" text-anchor="middle">${escapeHtml(point.label)}</text>`
+            : "";
+        }).join("")}
       </svg>
     </div>
   `;
