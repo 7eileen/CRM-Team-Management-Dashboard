@@ -7911,3 +7911,32 @@ body {
     overflow-x: auto;
   }
 }
+
+/* Management summaries now live in the team detail and trend sections. */
+#dashboardPage .dashboard-grid {
+  grid-template-areas:
+    "team-detail team-detail team-detail rail"
+    "trend trend trend rail"
+    "table table table rail";
+}
+
+@media (max-width: 1480px) {
+  #dashboardPage .dashboard-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "team-detail team-detail rail"
+      "trend trend rail"
+      "table table rail";
+  }
+}
+
+@media (max-width: 1180px) {
+  #dashboardPage .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "team-detail"
+      "trend"
+      "rail"
+      "table";
+  }
+}

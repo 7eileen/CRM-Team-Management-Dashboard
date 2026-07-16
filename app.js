@@ -264,9 +264,6 @@ const els = {
   filterStage: document.getElementById("filterStage"),
   filterPerson: document.getElementById("filterPerson"),
   kpiGrid: document.getElementById("kpiGrid"),
-  managementProductSales: document.getElementById("managementProductSales"),
-  managementTypeSales: document.getElementById("managementTypeSales"),
-  managementTeamSales: document.getElementById("managementTeamSales"),
   managementTeamDetail: document.getElementById("managementTeamDetail"),
   managementTeamPeriod: document.getElementById("managementTeamPeriod"),
   managementTrendProduct: document.getElementById("managementTrendProduct"),
@@ -1559,20 +1556,9 @@ function renderManagementTeamDetail(data) {
 
 function renderManagementDashboard() {
   const data = enrichedRecords();
-  const productRows = groupSales(data, "product", PRODUCTS).map((row, index) => ({ ...row, icon: "package", color: chartPalette[index] }));
-  const typeRows = groupSales(data, "type", TYPES).map((row, index) => ({ ...row, icon: typeIcon(row.label), color: chartPalette[index] }));
-  const teamRows = groupSales(data, "group", GROUPS).map((row, index) => ({
-    label: row.label,
-    value: row.value,
-    icon: "users",
-    color: chartPalette[(index + 2) % chartPalette.length],
-  }));
   const tierRows = groupSales(data, "tier", TIERS).map((row) => ({ ...row, label: `${row.label}级`, icon: "star", color: tierChartMeta[row.label]?.color || tierMeta[row.label]?.color }));
   const stageRows = displayStageRows(data, (record) => record.sales);
 
-  renderSalesBars(els.managementProductSales, productRows);
-  renderSalesBars(els.managementTypeSales, typeRows);
-  renderSalesBars(els.managementTeamSales, teamRows);
   renderSalesDonut(els.managementTierSales, tierRows, "SABC Sales");
   renderSalesBars(els.managementStageSales, stageRows, { showPercent: true, hideTrack: true });
   renderManagementTeamDetail(data);
