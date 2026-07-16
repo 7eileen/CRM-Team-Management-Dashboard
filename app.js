@@ -1256,12 +1256,12 @@ function renderTeamDetailLines(rows, max, options = {}) {
 
 function renderPersonalProductTrend(container, rows) {
   if (!container) return;
-  const width = 920;
-  const height = 300;
-  const left = 72;
-  const right = 28;
+  const width = 760;
+  const height = 320;
+  const left = 76;
+  const right = 20;
   const top = 34;
-  const bottom = 60;
+  const bottom = 78;
   const chartWidth = width - left - right;
   const chartHeight = height - top - bottom;
   const maxValue = Math.max(...rows.map((row) => row.value), 1000);
@@ -1309,7 +1309,7 @@ function renderPersonalProductTrend(container, rows) {
             <title>${escapeHtml(point.label)} ${currency(point.value)}</title>
           </g>
         `).join("")}
-        ${points.map((point) => `<text class="category-chart-axis-label personal-product-axis-label" x="${point.x.toFixed(1)}" y="${height - 22}" text-anchor="end" transform="rotate(-32 ${point.x.toFixed(1)} ${height - 22})">${escapeHtml(point.label)}</text>`).join("")}
+        ${points.map((point) => `<text class="category-chart-axis-label personal-product-axis-label" x="${point.x.toFixed(1)}" y="${height - 30}" text-anchor="end" transform="rotate(-24 ${point.x.toFixed(1)} ${height - 30})">${escapeHtml(point.label)}</text>`).join("")}
       </svg>
     </div>
   `;

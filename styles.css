@@ -6745,7 +6745,10 @@ textarea:focus-visible {
 
 .personal-product-chart {
   min-width: 760px !important;
-  height: 300px !important;
+  width: 760px !important;
+  height: 320px !important;
+  max-width: none;
+  text-rendering: geometricPrecision;
 }
 
 .personal-product-chart-area {
@@ -6753,7 +6756,19 @@ textarea:focus-visible {
 }
 
 .personal-product-axis-label {
-  font-size: 9px;
+  fill: #52637a;
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.personal-product-chart .category-chart-gridline text {
+  fill: #5f7087;
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0;
 }
 
 .management-leaderboard {
