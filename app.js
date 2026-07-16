@@ -1284,12 +1284,12 @@ function renderTeamDetailLines(rows, max, options = {}) {
 
 function renderPersonalProductTrend(container, rows) {
   if (!container) return;
-  const width = 760;
-  const height = 320;
-  const left = 76;
-  const right = 20;
-  const top = 34;
-  const bottom = 78;
+  const width = 1120;
+  const height = 340;
+  const left = 86;
+  const right = 28;
+  const top = 36;
+  const bottom = 72;
   const chartWidth = width - left - right;
   const chartHeight = height - top - bottom;
   const maxValue = Math.max(...rows.map((row) => row.value), 1000);
@@ -1297,8 +1297,8 @@ function renderPersonalProductTrend(container, rows) {
   const points = rows.map((row, index) => ({
     label: row.label,
     value: row.value,
-    x: left + (chartWidth * index) / Math.max(1, rows.length - 1),
-    y: top + chartHeight - (row.value / axisMax) * chartHeight,
+    x: Math.round(left + (chartWidth * index) / Math.max(1, rows.length - 1)),
+    y: Math.round(top + chartHeight - (row.value / axisMax) * chartHeight),
   }));
   const linePath = managementTrendPath(points);
   const areaPath = `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${(top + chartHeight).toFixed(1)} L ${points[0].x.toFixed(1)} ${(top + chartHeight).toFixed(1)} Z`;
@@ -1316,7 +1316,7 @@ function renderPersonalProductTrend(container, rows) {
       <em>${activeProducts} 个有效品类</em>
     </div>
     <div class="category-chart-scroll">
-      <svg class="personal-product-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="个人各品类销售额折线图" preserveAspectRatio="xMidYMid meet">
+      <svg class="personal-product-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="个人各品类销售额折线图" preserveAspectRatio="xMinYMin meet">
         <defs>
           <linearGradient id="personalProductArea" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#ff8a4c" stop-opacity="0.24"></stop>
@@ -1337,7 +1337,7 @@ function renderPersonalProductTrend(container, rows) {
             <title>${escapeHtml(point.label)} ${currency(point.value)}</title>
           </g>
         `).join("")}
-        ${points.map((point) => `<text class="category-chart-axis-label personal-product-axis-label" x="${point.x.toFixed(1)}" y="${height - 30}" text-anchor="end" transform="rotate(-24 ${point.x.toFixed(1)} ${height - 30})">${escapeHtml(point.label)}</text>`).join("")}
+        ${points.map((point) => `<text class="category-chart-axis-label personal-product-axis-label" x="${point.x}" y="${height - 27}" text-anchor="middle">${escapeHtml(point.label)}</text>`).join("")}
       </svg>
     </div>
   `;

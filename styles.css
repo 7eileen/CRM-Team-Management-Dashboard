@@ -9010,3 +9010,40 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Keep personal product trend labels crisp at every viewport. */
+.personal-product-trend .category-chart-scroll {
+  overflow-x: auto;
+  padding: 2px 0 8px;
+  scrollbar-gutter: stable;
+}
+
+.personal-product-chart {
+  width: 100% !important;
+  min-width: 1080px !important;
+  height: 340px !important;
+  max-width: none;
+  shape-rendering: geometricPrecision;
+  text-rendering: optimizeLegibility;
+}
+
+.personal-product-chart .category-chart-line {
+  stroke-width: 3;
+}
+
+.personal-product-chart .category-chart-point circle {
+  stroke-width: 2.5;
+}
+
+.personal-product-chart .category-chart-gridline text {
+  fill: #506078;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.personal-product-chart .personal-product-axis-label {
+  fill: #2f3d53;
+  font-size: 13px;
+  font-weight: 700;
+  text-rendering: optimizeLegibility;
+}
