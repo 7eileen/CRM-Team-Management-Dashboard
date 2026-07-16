@@ -277,7 +277,6 @@ const els = {
   managementStageSales: document.getElementById("managementStageSales"),
   managementTalentRank: document.getElementById("managementTalentRank"),
   personalProductSales: document.getElementById("personalProductSales"),
-  personalTierSales: document.getElementById("personalTierSales"),
   personalTalentRank: document.getElementById("personalTalentRank"),
   personalGroupRank: document.getElementById("personalGroupRank"),
   personalGroupRankBadge: document.getElementById("personalGroupRankBadge"),
@@ -2063,10 +2062,8 @@ function renderPersonalDashboard() {
   const data = recordsForPerson(person);
 
   const productRows = groupSales(data, "product", PRODUCTS).map((item, index) => ({ ...item, icon: "package", color: chartPalette[index] }));
-  const tierRows = groupSales(data, "tier", TIERS).map((item) => ({ ...item, label: `${item.label}级`, icon: "star", color: tierChartMeta[item.label]?.color || tierMeta[item.label]?.color }));
 
   renderPersonalProductTrend(els.personalProductSales, productRows);
-  renderSalesDonut(els.personalTierSales, tierRows, "Personal Sales");
   renderPersonalTalentList(els.personalTalentRank, sortedRankRows(data, "personalOrders", (record) => record.sales), person);
   renderPersonalGroupRank(person);
   renderPersonalPipeline(person, data);

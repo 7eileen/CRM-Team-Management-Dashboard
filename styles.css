@@ -9273,3 +9273,72 @@ body {
     --radius-control: 12px;
   }
 }
+
+/* Compact schedule placement beside the personal product insight. */
+.personal-insight-row > .personal-schedule-side {
+  grid-column: auto;
+  min-width: 0;
+}
+
+.personal-schedule-side .personal-schedule {
+  width: 100%;
+  margin: 0;
+  gap: 10px;
+  padding: 14px;
+}
+
+.personal-schedule-side .schedule-date-nav {
+  min-height: 40px;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
+}
+
+.personal-schedule-side .schedule-nav-button {
+  width: 38px;
+  height: 38px;
+}
+
+.personal-schedule-side .schedule-week {
+  grid-template-columns: repeat(5, minmax(48px, 1fr));
+  gap: 6px;
+}
+
+.personal-schedule-side .schedule-day {
+  min-height: 72px;
+  padding: 7px 4px;
+}
+
+.personal-schedule-side .schedule-day strong {
+  font-size: 16px;
+}
+
+.personal-schedule-side .schedule-day span {
+  font-size: 11px;
+}
+
+.personal-schedule-side .schedule-agenda {
+  max-height: 190px;
+  gap: 8px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.personal-schedule-side .schedule-entry-list {
+  gap: 7px;
+}
+
+.personal-schedule-side .schedule-entry {
+  gap: 8px;
+  padding: 9px 10px;
+}
+
+.personal-schedule-side .schedule-entry-copy strong {
+  font-size: 12px;
+}
+
+.personal-schedule-side .schedule-entry-copy em {
+  font-size: 10px;
+}
+
+.personal-schedule-side .schedule-entry-footer {
+  padding-top: 7px;
+}
