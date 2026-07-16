@@ -1015,6 +1015,7 @@ function managementKpiCards() {
   const monthlyTarget = annualTarget / 12;
   const yearlySales = metrics.annualCompletedSales;
   const progress = yearlySales / annualTarget;
+  const monthlyProgress = monthlyTarget ? monthlySales / monthlyTarget : 0;
   const mom = lastMonthSales ? (monthlySales - lastMonthSales) / lastMonthSales : 0;
   const todaySales = scaleMoney(monthlySales, MANAGEMENT_TREND_RANGES[0].factor);
   const yesterdaySales = scaleMoney(lastMonthSales, MANAGEMENT_TREND_RANGES[1].factor);
@@ -1027,6 +1028,19 @@ function managementKpiCards() {
     { label: "年度目标销售额", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#ffc24a", soft: "#fff9e9", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
     { label: "年度目标销售额进度（当月）", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "当月进度", trendValue: progress, icon: "pie", color: "#5594f7", soft: "#eef5ff", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
     { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f2a928" : "#e45b65", soft: mom >= 0 ? "#fff8e8" : "#fff1f2", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
+    {
+      kind: "kpi-progress-card",
+      label: "当月销售额完成进度",
+      value: percent(monthlyProgress),
+      trend: monthlyProgress >= 1 ? "目标已达成" : "目标推进中",
+      trendValue: monthlyProgress,
+      icon: "target",
+      color: "#ff7138",
+      soft: "#fff4ed",
+      progress: monthlyProgress,
+      progressLabel: `${monthLabel}销售目标进度`,
+      progressMeta: `已完成 ${compactCurrency(monthlySales)} / 目标 ${compactCurrency(monthlyTarget)}`,
+    },
   ];
 }
 
@@ -1429,9 +1443,7 @@ function renderManagementProductTeamDetail(data) {
               <span class="tag">${row.records.length} 位达人</span>
             </div>
             <div class="team-metric-grid">
-              <div><span>保底目标</span><strong>${row.target ? compactCurrency(row.target) : "--"}</strong></div>
               <div><span>本月实销</span><strong class="green">${compactCurrency(row.sales)}</strong></div>
-              <div><span>完成率</span><strong class="blue">${Math.round(row.completion)}%</strong></div>
               <div><span>环比上期</span><strong class="${row.mom < 0 ? "danger" : "green"}">${signedPercent(row.mom * 100)}</strong></div>
             </div>
             <div class="team-product-progress">
@@ -1439,7 +1451,7 @@ function renderManagementProductTeamDetail(data) {
               <div class="sales-progress-track">
                 <i style="--progress:${(row.sales / maxSales) * 100}%; --progress-color:${row.color}"></i>
               </div>
-              <em>${compactCurrency(row.sales)} / ${row.sprintTarget ? compactCurrency(row.sprintTarget) : "--"}</em>
+              <em>${compactCurrency(row.sales)}</em>
             </div>
             <div class="team-product-foot">
               <span>${row.records.length} 位达人</span>
@@ -1504,13 +1516,11 @@ function renderManagementTeamDetail(data) {
           <strong>${compactCurrency(selected.sales)}</strong>
         </div>
         <div class="team-focus-progress">
-          <span>保底目标完成率</span>
+          <span>当月销售额进度</span>
           <div class="team-progress-track"><i style="--line-width:${selected.completion}%"></i></div>
           <em>${Math.round(selected.completion)}%</em>
         </div>
-        <div class="team-focus-metrics">
-          <div><span>保底目标</span><strong>${selected.target ? compactCurrency(selected.target) : "¥0"}</strong></div>
-          <div><span>冲刺目标</span><strong>${selected.sprintTarget ? compactCurrency(selected.sprintTarget) : "¥0"}</strong></div>
+        <div class="team-focus-metrics team-focus-metrics--compact">
           <div><span>环比上期</span><strong class="${selected.mom < 0 ? "danger" : "success"}">${signedPercent(selected.mom * 100)}</strong></div>
           <div><span>团队商务</span><strong>${selected.personCount} 人</strong></div>
           <div><span>合作转化</span><strong>${percent(selected.conversion)}</strong></div>

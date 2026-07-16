@@ -7971,30 +7971,51 @@ body {
   }
 }
 
-/* Preserve the full-width personal monthly-plan layout after KPI compaction. */
-.kpi-grid.personal-kpis > .kpi-card.kpi-progress-card {
+/* Preserve full-width monthly progress cards after KPI compaction. */
+.kpi-grid > .kpi-card.kpi-progress-card {
   grid-column: 1 / -1;
   grid-template-columns: 44px minmax(190px, 0.34fr) minmax(260px, 1fr);
   align-items: center;
   min-height: 108px;
 }
 
-.kpi-grid.personal-kpis > .kpi-progress-card .kpi-progress-meter {
+.kpi-grid > .kpi-progress-card .kpi-progress-meter {
   grid-column: 3;
   width: 100%;
 }
 
-.kpi-grid.personal-kpis > .kpi-progress-card .kpi-progress-copy span,
-.kpi-grid.personal-kpis > .kpi-progress-card .kpi-progress-meter small {
+.kpi-grid > .kpi-progress-card .kpi-progress-copy span,
+.kpi-grid > .kpi-progress-card .kpi-progress-meter small {
   white-space: nowrap;
 }
 
+.team-focus-metrics.team-focus-metrics--compact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.team-product-card .team-metric-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@container team-detail (max-width: 760px) {
+  .team-focus-metrics.team-focus-metrics--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container team-detail (max-width: 520px) {
+  .team-focus-metrics.team-focus-metrics--compact,
+  .team-product-card .team-metric-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 720px) {
-  .kpi-grid.personal-kpis > .kpi-card.kpi-progress-card {
+  .kpi-grid > .kpi-card.kpi-progress-card {
     grid-template-columns: 44px minmax(0, 1fr);
   }
 
-  .kpi-grid.personal-kpis > .kpi-progress-card .kpi-progress-meter {
+  .kpi-grid > .kpi-progress-card .kpi-progress-meter {
     grid-column: 1 / -1;
     margin-top: 4px;
   }
