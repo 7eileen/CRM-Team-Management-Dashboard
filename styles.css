@@ -1918,7 +1918,7 @@ svg {
 }
 
 .talent-list-row {
-  grid-template-columns: 26px 38px minmax(150px, 1fr) 78px minmax(96px, 0.72fr) 86px;
+  grid-template-columns: 26px 38px minmax(150px, 1fr) 78px 86px;
 }
 
 .talent-list-row .stage-pill {

@@ -2098,7 +2098,6 @@ function renderTalentSalesRank(container, data, metric = "sales") {
 
 function renderPersonalTalentList(container, data, person) {
   if (!container) return;
-  const max = Math.max(...data.map((record) => record.sales), 1);
   container.innerHTML = data.length ? data.map((record, index) => {
     const tier = tierMeta[record.tier];
     const stage = displayStageForRecord(record);
@@ -2111,9 +2110,6 @@ function renderPersonalTalentList(container, data, person) {
           <em>${escapeHtml(record.product)} · ${escapeHtml(record.format)} · ${record.tier}级</em>
         </span>
         <span class="stage-pill compact" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span>
-        <span class="rank-meter">
-          <i style="--rank-width:${(record.sales / max) * 100}%; --rank-color:${tier.color}"></i>
-        </span>
         <b>${compactCurrency(record.sales)}</b>
       </button>
     `;
