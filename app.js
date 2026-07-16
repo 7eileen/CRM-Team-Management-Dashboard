@@ -978,26 +978,40 @@ function renderKpis() {
   els.kpiGrid.classList.toggle("personal-kpis", state.view === "personal");
   els.kpiGrid.classList.toggle("directory-kpis", state.view === "directory");
   els.kpiGrid.innerHTML = cards.map((card) => {
+    const isStatCard = card.kind === "kpi-stat-card";
     const hasTrend = Boolean(card.trend);
     const hasProgress = Number.isFinite(card.progress);
     const progressWidth = hasProgress ? clamp(card.progress * 100, 0, 100) : 0;
+    if (isStatCard) {
+      return `
+        <article class="kpi-card kpi-stat-card" style="--metric-color:${card.color}; --metric-soft:${card.soft}">
+          <div class="metric-icon">${icon(card.icon)}</div>
+          <div class="metric-body">
+            <strong>${card.value}</strong>
+            <span>${card.label}</span>
+          </div>
+        </article>
+      `;
+    }
     return `
       <article class="kpi-card ${card.kind || ""}" style="--metric-color:${card.color}; --metric-soft:${card.soft}">
         <div class="metric-icon">${icon(card.icon)}</div>
         <div class="metric-body">
           <span>${card.label}</span>
           <strong>${card.value}</strong>
-          <div class="metric-trend ${hasTrend && card.trendValue < 0 ? "down" : ""} ${hasTrend ? "" : "no-label"}">
-            ${hasTrend ? `${icon(card.trendValue < 0 ? "arrow-right" : "arrow-up")} ${card.trend}` : ""}
-          </div>
+          ${hasTrend ? `
+            <div class="metric-trend ${card.trendValue < 0 ? "down" : ""}">
+              ${icon(card.trendValue < 0 ? "arrow-right" : "arrow-up")} ${card.trend}
+            </div>
+          ` : ""}
         </div>
         ${hasProgress ? `
           <div class="kpi-progress-meter">
             <div class="kpi-progress-copy">
-              <span>${card.progressLabel}</span>
+              <span>${card.progressLabel || ""}</span>
               <strong>${percent(card.progress)}</strong>
             </div>
-            <div class="kpi-progress-track" aria-label="${card.progressLabel} ${percent(card.progress)}">
+            <div class="kpi-progress-track" aria-label="${card.label} ${percent(card.progress)}">
               <i style="--kpi-progress:${progressWidth}%"></i>
             </div>
             <small>${card.progressMeta}</small>
@@ -1019,27 +1033,22 @@ function managementKpiCards() {
   const monthlyProgress = monthlyTarget ? monthlySales / monthlyTarget : 0;
   const mom = lastMonthSales ? (monthlySales - lastMonthSales) / lastMonthSales : 0;
   const todaySales = scaleMoney(monthlySales, MANAGEMENT_TREND_RANGES[0].factor);
-  const yesterdaySales = scaleMoney(lastMonthSales, MANAGEMENT_TREND_RANGES[1].factor);
-  const dayGrowth = yesterdaySales ? (todaySales - yesterdaySales) / yesterdaySales : 0;
-  const monthLabel = formatMetricMonth(metrics.month);
   return [
-    { label: "当天销售额", value: compactCurrency(todaySales), sub: "今日累计", trend: signedPercent(dayGrowth * 100), trendValue: dayGrowth, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: "当月销售额", value: compactCurrency(monthlySales), sub: monthLabel, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff9566", soft: "#fff7f2", path: "M2 31 C12 23 20 28 29 18 C38 8 46 21 55 13 C62 7 67 10 70 5" },
-    { label: "当月目标销售额", value: compactCurrency(monthlyTarget), sub: `${monthLabel}目标`, trend: "月度目标", trendValue: 1, icon: "calendar", color: "#ff9566", soft: "#fff7f2", path: "M2 31 C12 24 21 27 30 18 C39 9 47 20 55 12 C62 6 67 9 70 5" },
-    { label: "年度目标销售额", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#ffc24a", soft: "#fff9e9", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
-    { label: "年度目标销售额进度（当月）", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "当月进度", trendValue: progress, icon: "pie", color: "#5594f7", soft: "#eef5ff", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
-    { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f2a928" : "#e45b65", soft: mom >= 0 ? "#fff8e8" : "#fff1f2", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
+    { kind: "kpi-stat-card", label: "当天销售额", value: compactCurrency(todaySales), icon: "chart", color: "#ff7138", soft: "#fff4ed" },
+    { kind: "kpi-stat-card", label: "当月销售额", value: compactCurrency(monthlySales), icon: "chart", color: "#ff8f62", soft: "#fff6f1" },
+    { kind: "kpi-stat-card", label: "当月目标销售额", value: compactCurrency(monthlyTarget), icon: "calendar", color: "#ff9f4a", soft: "#fff8ed" },
+    { kind: "kpi-stat-card", label: "年度目标销售额", value: compactCurrency(annualTarget), icon: "target", color: "#f5ad2f", soft: "#fff9e9" },
+    { kind: "kpi-stat-card", label: "年度目标进度", value: percent(progress), icon: "pie", color: "#5594f7", soft: "#eef5ff" },
+    { kind: "kpi-stat-card", label: "环比上一周期", value: signedPercent(mom * 100), icon: "arrow-up", color: mom >= 0 ? "#f2a928" : "#e45b65", soft: mom >= 0 ? "#fff8e8" : "#fff1f2" },
     {
       kind: "kpi-progress-card",
       label: "当月销售额完成进度",
       value: percent(monthlyProgress),
-      trend: monthlyProgress >= 1 ? "目标已达成" : "目标推进中",
-      trendValue: monthlyProgress,
       icon: "target",
       color: "#ff7138",
       soft: "#fff4ed",
       progress: monthlyProgress,
-      progressLabel: `${monthLabel}销售目标进度`,
+      progressLabel: "",
       progressMeta: `已完成 ${compactCurrency(monthlySales)} / 目标 ${compactCurrency(monthlyTarget)}`,
     },
   ];
@@ -1651,10 +1660,6 @@ function renderManagementCategoryTrend(data) {
   const baseSales = sumBy(selectedRows, (record) => record.sales);
   const rangeSales = Math.max(0, Math.round((baseSales * range.factor) / 100) * 100);
   const series = managementTrendSeries(rangeSales, rangeLabels.length, productIndex, rangeIndex);
-  const orderCount = Math.max(0, Math.round(rangeSales / (3900 + productIndex * 120)));
-  const talentCount = new Set(selectedRows.map((record) => record.name)).size;
-  const averageTalentSales = talentCount ? rangeSales / talentCount : 0;
-  const changes = [9.8, 6.4, 12.5, 5.6].map((value, index) => value + ((productIndex + rangeIndex + index) % 4) * 0.7);
 
   els.managementTrendProduct.innerHTML = ["全部", ...PRODUCTS].map((product) => `
     <option value="${escapeHtml(product)}" ${product === selectedProduct ? "selected" : ""}>${product === "全部" ? "全部品类" : escapeHtml(product)}</option>
@@ -1664,19 +1669,8 @@ function renderManagementCategoryTrend(data) {
     <button class="${item.id === range.id ? "active" : ""}" type="button" data-management-trend-range="${item.id}" aria-pressed="${item.id === range.id}">${item.label}</button>
   `).join("");
 
-  const summaryRows = [
-    { label: "品类销售额", value: compactCurrency(rangeSales), change: changes[0] },
-    { label: "成交订单", value: `${orderCount.toLocaleString("zh-CN")} 单`, change: changes[1] },
-    { label: "合作达人", value: `${talentCount} 人`, change: changes[2] },
-    { label: "达人均产出", value: compactCurrency(averageTalentSales), change: changes[3] },
-  ];
-  els.managementTrendSummary.innerHTML = summaryRows.map((row) => `
-    <div class="category-trend-metric">
-      <span>${row.label}</span>
-      <strong>${row.value}</strong>
-      <em>较上一周期 <b>+${row.change.toFixed(1)}%</b></em>
-    </div>
-  `).join("");
+  els.managementTrendSummary.hidden = true;
+  els.managementTrendSummary.innerHTML = "";
 
   const width = 520;
   const height = 238;
@@ -1706,10 +1700,6 @@ function renderManagementCategoryTrend(data) {
   const chartTitle = selectedProduct === "全部" ? "全部品类" : selectedProduct;
 
   els.managementTrendChart.innerHTML = `
-    <div class="category-chart-caption">
-      <span><i></i>${escapeHtml(chartTitle)}销售额</span>
-      <em>${range.label} · 单位：元</em>
-    </div>
     <div class="category-chart-scroll">
       <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(chartTitle)}${range.label}销售趋势折线图" preserveAspectRatio="xMidYMid meet">
         <defs>

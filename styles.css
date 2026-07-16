@@ -9047,3 +9047,157 @@ body {
   font-weight: 700;
   text-rendering: optimizeLegibility;
 }
+
+/* Minimal management KPI cards and category trend. */
+.kpi-grid.management-kpis {
+  gap: 12px;
+}
+
+.kpi-grid.management-kpis > .kpi-card.kpi-stat-card,
+.kpi-grid.management-kpis > .kpi-card.kpi-stat-card:first-child,
+.kpi-grid.management-kpis > .kpi-card.kpi-stat-card:hover,
+.kpi-grid.management-kpis > .kpi-card.kpi-stat-card:focus-within {
+  min-height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px 12px;
+  background: #ffffff;
+  color: var(--color-text);
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(45, 74, 110, 0.05);
+}
+
+.kpi-grid.management-kpis > .kpi-card.kpi-stat-card:hover,
+.kpi-grid.management-kpis > .kpi-card.kpi-stat-card:focus-within {
+  border-color: color-mix(in srgb, var(--metric-color) 34%, #ffffff);
+  background: color-mix(in srgb, var(--metric-soft) 58%, #ffffff);
+  box-shadow: 0 10px 24px rgba(45, 74, 110, 0.08);
+  transform: translateY(-2px);
+}
+
+.kpi-grid.management-kpis > .kpi-stat-card .metric-icon,
+.kpi-grid.management-kpis > .kpi-stat-card:first-child .metric-icon,
+.kpi-grid.management-kpis > .kpi-stat-card:hover .metric-icon,
+.kpi-grid.management-kpis > .kpi-stat-card:focus-within .metric-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--metric-soft);
+  color: var(--metric-color);
+}
+
+.kpi-grid.management-kpis > .kpi-stat-card .metric-icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.kpi-grid.management-kpis > .kpi-stat-card .metric-body {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.kpi-grid.management-kpis > .kpi-stat-card .metric-body strong,
+.kpi-grid.management-kpis > .kpi-stat-card:first-child .metric-body strong,
+.kpi-grid.management-kpis > .kpi-stat-card:hover .metric-body strong,
+.kpi-grid.management-kpis > .kpi-stat-card:focus-within .metric-body strong {
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(22px, 1.65vw, 28px);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.kpi-grid.management-kpis > .kpi-stat-card .metric-body span,
+.kpi-grid.management-kpis > .kpi-stat-card:first-child .metric-body span,
+.kpi-grid.management-kpis > .kpi-stat-card:hover .metric-body span,
+.kpi-grid.management-kpis > .kpi-stat-card:focus-within .metric-body span {
+  color: #74839a;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.kpi-grid.management-kpis > .kpi-progress-card .kpi-progress-copy span:empty {
+  visibility: hidden;
+}
+
+.panel-category-trend-compact .category-trend-body {
+  padding: 12px 14px 14px;
+}
+
+.panel-category-trend-compact .category-trend-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-category-trend-compact .category-trend-ranges {
+  width: 100%;
+  min-width: 0;
+}
+
+.panel-category-trend-compact .category-trend-ranges button {
+  min-width: 0;
+  min-height: 30px;
+  padding-inline: 4px;
+  font-size: 10px;
+}
+
+.panel-category-trend-compact .category-trend-select {
+  display: block;
+}
+
+.panel-category-trend-compact .category-trend-select > span,
+.panel-category-trend-compact .category-trend-summary {
+  display: none;
+}
+
+.panel-category-trend-compact .category-trend-select select {
+  min-height: 36px;
+  padding-inline: 10px 28px;
+}
+
+.panel-category-trend-compact .category-trend-chart {
+  margin-top: 10px;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 4px 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.panel-category-trend-compact .category-chart-scroll svg {
+  height: 238px;
+}
+
+.panel-category-trend-compact .category-chart-line {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 5px 7px rgba(255, 122, 61, 0.12));
+}
+
+.panel-category-trend-compact .category-chart-point circle {
+  r: 4;
+}
+
+@media (max-width: 620px) {
+  .panel-category-trend-compact .category-trend-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel-category-trend-compact .category-chart-scroll {
+    overflow-x: auto;
+  }
+
+  .panel-category-trend-compact .category-chart-scroll svg {
+    min-width: 520px;
+  }
+}
