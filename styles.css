@@ -7947,7 +7947,7 @@ body {
   grid-template-areas:
     "team-detail team-detail team-detail rail"
     "trend trend trend rail"
-    "table table table rail";
+    "table table table table";
 }
 
 @media (max-width: 1480px) {
@@ -7956,7 +7956,7 @@ body {
     grid-template-areas:
       "team-detail team-detail rail"
       "trend trend rail"
-      "table table rail";
+      "table table table";
   }
 }
 
