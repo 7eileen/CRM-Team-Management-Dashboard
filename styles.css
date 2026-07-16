@@ -6839,34 +6839,6 @@ textarea:focus-visible {
   padding: 14px 16px 16px;
 }
 
-.personal-product-chart-summary {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content max-content;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  padding: 10px 12px;
-  background: #fff8f3;
-}
-
-.personal-product-chart-summary span,
-.personal-product-chart-summary em {
-  color: #74849a;
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.personal-product-chart-summary strong {
-  color: #ed672d;
-  font-size: 18px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
 .personal-product-chart {
   min-width: 760px !important;
   width: 760px !important;
@@ -7550,12 +7522,6 @@ body {
 
 .personal-group-ranking .group-ranking-row {
   background: #fbfdff;
-}
-
-.personal-product-chart-summary {
-  border: 1px solid #ffe6d8;
-  border-radius: 7px;
-  background: #fff9f5;
 }
 
 #pipelinePage .pipeline-filters {

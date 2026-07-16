@@ -282,8 +282,11 @@ const els = {
   personalGroupRankBadge: document.getElementById("personalGroupRankBadge"),
   personalKanbanColumns: document.getElementById("personalKanbanColumns"),
   personalPipelineBadge: document.getElementById("personalPipelineBadge"),
+  personalProductPeriod: document.getElementById("personalProductPeriod"),
+  personalProductPeriodLabel: document.getElementById("personalProductPeriodLabel"),
   personalSchedule: document.getElementById("personalSchedule"),
-  personalScheduleBadge: document.getElementById("personalScheduleBadge"),
+  personalSchedulePeriod: document.getElementById("personalSchedulePeriod"),
+  personalSchedulePeriodLabel: document.getElementById("personalSchedulePeriodLabel"),
   dashboardTableCount: document.getElementById("dashboardTableCount"),
   tierLegend: document.getElementById("tierLegend"),
   kanbanColumns: document.getElementById("kanbanColumns"),
@@ -691,6 +694,13 @@ function renderTimeRangePopover() {
     els.managementTeamPeriod.setAttribute("aria-expanded", String(state.timeRangePopoverOpen));
     els.managementTeamPeriod.classList.toggle("active", state.timeRangePopoverOpen);
   }
+  [els.personalProductPeriod, els.personalSchedulePeriod].forEach((control) => {
+    if (!control) return;
+    control.setAttribute("aria-expanded", String(state.timeRangePopoverOpen));
+    control.classList.toggle("active", state.timeRangePopoverOpen);
+  });
+  if (els.personalProductPeriodLabel) els.personalProductPeriodLabel.textContent = range.label;
+  if (els.personalSchedulePeriodLabel) els.personalSchedulePeriodLabel.textContent = formatMetricMonth(metrics.month);
   els.timeRangePopover.hidden = !state.timeRangePopoverOpen;
   if (!state.timeRangePopoverOpen) return;
 
@@ -1318,15 +1328,7 @@ function renderPersonalProductTrend(container, rows) {
     const ratio = index / 3;
     return { y: top + chartHeight * ratio, value: axisMax * (1 - ratio) };
   });
-  const total = sumBy(rows, (row) => row.value);
-  const activeProducts = rows.filter((row) => row.value > 0).length;
-
   container.innerHTML = `
-    <div class="personal-product-chart-summary">
-      <span>当月分品销售趋势</span>
-      <strong>${compactCurrency(total)}</strong>
-      <em>${activeProducts} 个有效品类</em>
-    </div>
     <div class="category-chart-scroll">
       <svg class="personal-product-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="个人各品类销售额折线图" preserveAspectRatio="xMinYMin meet">
         <defs>
@@ -2018,9 +2020,7 @@ function renderPersonalSchedule(person, data) {
   const previousRangeDisabled = !localDateKey(previousRangeDate).startsWith(scheduleMonthKey);
   const nextRangeDisabled = !localDateKey(nextRangeDate).startsWith(scheduleMonthKey);
 
-  if (els.personalScheduleBadge) {
-    els.personalScheduleBadge.textContent = `${monthLabel} · 本月专场 ${entries.length} 个`;
-  }
+  if (els.personalSchedulePeriodLabel) els.personalSchedulePeriodLabel.textContent = monthLabel;
 
   els.personalSchedule.innerHTML = `
     <div class="schedule-date-nav">

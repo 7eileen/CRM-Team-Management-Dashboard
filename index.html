@@ -387,6 +387,11 @@
                       <span class="panel-kicker">Product</span>
                       <h2>个人销售额分品</h2>
                     </div>
+                    <button class="panel-period-selector" id="personalProductPeriod" type="button" data-open-time-range aria-label="选择分品销售时间">
+                      <svg><use href="#icon-calendar"></use></svg>
+                      <span id="personalProductPeriodLabel">当月</span>
+                      <svg class="chevron"><use href="#icon-chevron"></use></svg>
+                    </button>
                   </div>
                   <div class="personal-product-trend" id="personalProductSales"></div>
                 </article>
@@ -397,7 +402,11 @@
                       <span class="panel-kicker">Special Schedule</span>
                       <h2>专场排期安排</h2>
                     </div>
-                    <span class="panel-badge" id="personalScheduleBadge"></span>
+                    <button class="panel-period-selector" id="personalSchedulePeriod" type="button" data-open-time-range aria-label="选择专场排期月份">
+                      <svg><use href="#icon-calendar"></use></svg>
+                      <span id="personalSchedulePeriodLabel">当月</span>
+                      <svg class="chevron"><use href="#icon-chevron"></use></svg>
+                    </button>
                   </div>
                   <div class="personal-schedule" id="personalSchedule"></div>
                 </article>
