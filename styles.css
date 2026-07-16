@@ -9019,33 +9019,51 @@ body {
 }
 
 .personal-product-chart {
-  width: 100% !important;
-  min-width: 1080px !important;
+  width: 1120px !important;
+  min-width: 1120px !important;
   height: 340px !important;
   max-width: none;
   shape-rendering: geometricPrecision;
-  text-rendering: optimizeLegibility;
+  text-rendering: geometricPrecision;
 }
 
 .personal-product-chart .category-chart-line {
-  stroke-width: 3;
+  stroke: #329af0;
+  stroke-width: 3.5;
+  filter: drop-shadow(0 5px 7px rgba(50, 154, 240, 0.16));
 }
 
 .personal-product-chart .category-chart-point circle {
+  fill: #329af0;
+  stroke: #ffffff;
   stroke-width: 2.5;
 }
 
 .personal-product-chart .category-chart-gridline text {
-  fill: #506078;
-  font-size: 13px;
-  font-weight: 700;
+  fill: #66758c;
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .personal-product-chart .personal-product-axis-label {
-  fill: #2f3d53;
-  font-size: 13px;
-  font-weight: 700;
-  text-rendering: optimizeLegibility;
+  fill: #66758c;
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-rendering: geometricPrecision;
+}
+
+.personal-product-chart .category-chart-gridline line {
+  stroke: #e7edf5;
+  stroke-width: 1;
+  stroke-dasharray: none;
+}
+
+.personal-product-chart .category-chart-point:hover > circle,
+.personal-product-chart .category-chart-point:focus > circle {
+  fill: #147fd1;
 }
 
 /* Minimal management KPI cards and category trend. */

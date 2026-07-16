@@ -1327,14 +1327,15 @@ function renderPersonalProductTrend(container, rows) {
       <svg class="personal-product-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="个人各品类销售额折线图" preserveAspectRatio="xMinYMin meet">
         <defs>
           <linearGradient id="personalProductArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#ff8a4c" stop-opacity="0.24"></stop>
+            <stop offset="0%" stop-color="#42a5f5" stop-opacity="0.42"></stop>
+            <stop offset="68%" stop-color="#8bc9fb" stop-opacity="0.16"></stop>
             <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>
           </linearGradient>
         </defs>
         ${gridRows.map((row) => `
           <g class="category-chart-gridline">
             <line x1="${left}" y1="${row.y.toFixed(1)}" x2="${width - right}" y2="${row.y.toFixed(1)}"></line>
-            <text x="${left - 12}" y="${(row.y + 4).toFixed(1)}" text-anchor="end">${compactCurrency(row.value).replace("¥", "")}</text>
+            <text x="${left - 12}" y="${(row.y + 4).toFixed(1)}" text-anchor="end">${compactCurrency(row.value)}</text>
           </g>
         `).join("")}
         <path class="personal-product-chart-area" d="${areaPath}"></path>
@@ -1345,7 +1346,10 @@ function renderPersonalProductTrend(container, rows) {
             <title>${escapeHtml(point.label)} ${currency(point.value)}</title>
           </g>
         `).join("")}
-        ${points.map((point) => `<text class="category-chart-axis-label personal-product-axis-label" x="${point.x}" y="${height - 27}" text-anchor="middle">${escapeHtml(point.label)}</text>`).join("")}
+        ${points.map((point) => {
+          const shortLabel = point.label.length > 5 ? `${point.label.slice(0, 5)}…` : point.label;
+          return `<text class="category-chart-axis-label personal-product-axis-label" x="${point.x}" y="${height - 27}" text-anchor="middle">${escapeHtml(shortLabel)}<title>${escapeHtml(point.label)}</title></text>`;
+        }).join("")}
       </svg>
     </div>
   `;
