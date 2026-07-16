@@ -1684,10 +1684,10 @@ function renderManagementCategoryTrend(data) {
     </div>
   `).join("");
 
-  const width = 960;
+  const width = 840;
   const height = 300;
-  const left = 72;
-  const right = 30;
+  const left = 76;
+  const right = 24;
   const top = 32;
   const bottom = 46;
   const chartWidth = width - left - right;
