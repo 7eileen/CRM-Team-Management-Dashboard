@@ -1930,7 +1930,7 @@ function renderPersonalGroupRank(person) {
 
 function renderPersonalPipeline(person, data) {
   if (!els.personalKanbanColumns) return;
-  els.personalKanbanColumns.innerHTML = kanbanColumnsMarkup(data, false);
+  els.personalKanbanColumns.innerHTML = kanbanColumnsMarkup(data, false, false);
   if (els.personalPipelineBadge) {
     els.personalPipelineBadge.textContent = `${person} · ${data.length} 位达人`;
   }
@@ -2346,7 +2346,7 @@ function renderLegend() {
   `).join("");
 }
 
-function kanbanColumnsMarkup(data, interactive = true) {
+function kanbanColumnsMarkup(data, interactive = true, showCardFooter = true) {
   return PIPELINE_STAGES.map((stage) => {
     const stageRecords = pipelineStageRecords(data, stage);
     return `
@@ -2356,7 +2356,7 @@ function kanbanColumnsMarkup(data, interactive = true) {
           <span class="count-pill">${stageRecords.length}</span>
         </div>
         <div class="kanban-stack">
-          ${stageRecords.length ? stageRecords.map(renderTalentCard).join("") : `<div class="empty-state">暂无达人</div>`}
+          ${stageRecords.length ? stageRecords.map((record) => renderTalentCard(record, showCardFooter)).join("") : `<div class="empty-state">暂无达人</div>`}
         </div>
       </section>
     `;
@@ -2368,7 +2368,7 @@ function renderKanban() {
   els.kanbanColumns.innerHTML = kanbanColumnsMarkup(data);
 }
 
-function renderTalentCard(record) {
+function renderTalentCard(record, showFooter = true) {
   const tier = tierMeta[record.tier];
   const stage = displayStageForRecord(record);
   return `
@@ -2386,10 +2386,10 @@ function renderTalentCard(record) {
         <span>${icon(formatIcon(record.format))}${escapeHtml(record.format)}</span>
       </div>
       ${record.bottleneck ? `<div class="bottleneck-chip">${icon("alert")}<span>${escapeHtml(record.bottleneck)}</span></div>` : ""}
-      <div class="talent-card-foot">
+      ${showFooter ? `<div class="talent-card-foot">
         <span class="muted">${escapeHtml(record.group)} · ${escapeHtml(record.person)}</span>
         <span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span>
-      </div>
+      </div>` : ""}
     </button>
   `;
 }
