@@ -981,8 +981,10 @@ function renderKpis() {
   els.kpiGrid.classList.toggle("directory-kpis", state.view === "directory");
   els.kpiGrid.innerHTML = cards.map((card) => {
     const hasTrend = Boolean(card.trend);
+    const hasProgress = Number.isFinite(card.progress);
+    const progressWidth = hasProgress ? clamp(card.progress * 100, 0, 100) : 0;
     return `
-      <article class="kpi-card" style="--metric-color:${card.color}; --metric-soft:${card.soft}">
+      <article class="kpi-card ${card.kind || ""}" style="--metric-color:${card.color}; --metric-soft:${card.soft}">
         <div class="metric-icon">${icon(card.icon)}</div>
         <div class="metric-body">
           <span>${card.label}</span>
@@ -991,28 +993,42 @@ function renderKpis() {
             ${hasTrend ? `${icon(card.trendValue < 0 ? "arrow-right" : "arrow-up")} ${card.trend}` : ""}
           </div>
         </div>
-        ${sparkline(card.path)}
+        ${hasProgress ? `
+          <div class="kpi-progress-meter">
+            <div class="kpi-progress-copy">
+              <span>${card.progressLabel}</span>
+              <strong>${percent(card.progress)}</strong>
+            </div>
+            <div class="kpi-progress-track" aria-label="${card.progressLabel} ${percent(card.progress)}">
+              <i style="--kpi-progress:${progressWidth}%"></i>
+            </div>
+            <small>${card.progressMeta}</small>
+          </div>
+        ` : sparkline(card.path)}
       </article>
     `;
   }).join("");
 }
 
 function managementKpiCards() {
-  const metrics = timeAdjustedSalesMetrics();
-  const monthlySales = metrics.currentRangeSales;
-  const lastMonthSales = metrics.previousRangeSales;
+  const metrics = getSalesMetrics();
+  const monthlySales = metrics.currentMonthSales;
+  const lastMonthSales = metrics.previousMonthSales;
   const annualTarget = metrics.annualTarget;
   const monthlyTarget = annualTarget / 12;
   const yearlySales = metrics.annualCompletedSales;
   const progress = yearlySales / annualTarget;
   const mom = lastMonthSales ? (monthlySales - lastMonthSales) / lastMonthSales : 0;
+  const todaySales = scaleMoney(monthlySales, MANAGEMENT_TREND_RANGES[0].factor);
+  const yesterdaySales = scaleMoney(lastMonthSales, MANAGEMENT_TREND_RANGES[1].factor);
+  const dayGrowth = yesterdaySales ? (todaySales - yesterdaySales) / yesterdaySales : 0;
   const monthLabel = formatMetricMonth(metrics.month);
-  const rangeLabel = metrics.range.label;
   return [
-    { label: "当月销售额", value: compactCurrency(monthlySales), sub: `${monthLabel} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "当天销售额", value: compactCurrency(todaySales), sub: "今日累计", trend: signedPercent(dayGrowth * 100), trendValue: dayGrowth, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "当月销售额", value: compactCurrency(monthlySales), sub: monthLabel, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff9566", soft: "#fff7f2", path: "M2 31 C12 23 20 28 29 18 C38 8 46 21 55 13 C62 7 67 10 70 5" },
     { label: "当月目标销售额", value: compactCurrency(monthlyTarget), sub: `${monthLabel}目标`, trend: "月度目标", trendValue: 1, icon: "calendar", color: "#ff9566", soft: "#fff7f2", path: "M2 31 C12 24 21 27 30 18 C39 9 47 20 55 12 C62 6 67 9 70 5" },
-    { label: "全年销售额目标", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#ffc24a", soft: "#fff9e9", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
-    { label: "进度", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "年度进度", trendValue: progress, icon: "pie", color: "#5594f7", soft: "#eef5ff", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
+    { label: "年度目标销售额", value: compactCurrency(annualTarget), sub: "可编辑年度目标", trend: "目标锁定", trendValue: 1, icon: "target", color: "#ffc24a", soft: "#fff9e9", path: "M2 28 C13 19 20 24 29 15 C40 5 46 20 55 12 C62 7 66 11 70 5" },
+    { label: "年度目标销售额进度（当月）", value: percent(progress), sub: `${compactCurrency(yearlySales)} 已完成`, trend: "当月进度", trendValue: progress, icon: "pie", color: "#5594f7", soft: "#eef5ff", path: "M2 36 C12 32 18 26 26 22 C35 17 43 15 51 11 C60 7 65 7 70 4" },
     { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(lastMonthSales)} 对比周期`, trend: mom >= 0 ? "增长" : "下降", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f2a928" : "#e45b65", soft: mom >= 0 ? "#fff8e8" : "#fff1f2", path: "M2 22 C12 19 20 26 28 16 C36 7 44 18 52 12 C60 6 65 9 70 4" },
   ];
 }
@@ -1053,13 +1069,17 @@ function personalKpiCards() {
   const person = selectedPerson();
   const rangeLabel = selectedTimeRange().label;
   const rows = personSalesRows(enrichedRecords(state.records));
+  const monthlyRows = personSalesRows(enrichedRecords(state.records, { ignoreTimeRange: true }));
   const row = rows.find((item) => item.person === person) || rows[0];
+  const monthlyRow = monthlyRows.find((item) => item.person === person) || monthlyRows[0] || row;
   const rank = rows.findIndex((item) => item.person === row.person) + 1;
   const previous = rows[rank - 2];
   const nextSpecialLeader = [...rows].sort((a, b) => b.specialCount - a.specialCount).find((item) => item.specialCount > row.specialCount);
   const gap = previous ? previous.sales - row.sales : 0;
   const specialGap = nextSpecialLeader ? nextSpecialLeader.specialCount - row.specialCount : 0;
   const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
+  const monthlyPlanTarget = Math.max(1000, Math.ceil((monthlyRow.sales / 0.82) / 1000) * 1000);
+  const monthlyPlanProgress = monthlyRow.sales / monthlyPlanTarget;
   return [
     { label: `${rangeLabel}销售额`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
     { label: `${rangeLabel}销售额排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#ffc24a", soft: "#fff9e9", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
@@ -1067,6 +1087,19 @@ function personalKpiCards() {
     { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#5594f7", soft: "#eef5ff", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
     { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#8aa0bd", soft: "#f4f8fd", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
     { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 对比周期`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f2a928" : "#e45b65", soft: mom >= 0 ? "#fff8e8" : "#fff1f2", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
+    {
+      kind: "kpi-progress-card",
+      label: "本人月度销售计划",
+      value: percent(monthlyPlanProgress),
+      trend: "计划推进中",
+      trendValue: monthlyPlanProgress,
+      icon: "target",
+      color: "#ff7138",
+      soft: "#fff4ed",
+      progress: monthlyPlanProgress,
+      progressLabel: `${formatMetricMonth(getSalesMetrics().month)}计划进度`,
+      progressMeta: `已完成 ${compactCurrency(monthlyRow.sales)} / 目标 ${compactCurrency(monthlyPlanTarget)}`,
+    },
   ];
 }
 

@@ -972,7 +972,7 @@ svg {
 }
 
 .kpi-grid.management-kpis {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .kpi-grid.personal-kpis {
@@ -1079,6 +1079,64 @@ svg {
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.kpi-progress-card {
+  grid-column: 1 / -1;
+  min-height: 92px;
+  grid-template-columns: 44px minmax(180px, 0.38fr) minmax(320px, 1fr);
+  padding-block: 13px;
+}
+
+.kpi-progress-card .metric-body strong {
+  font-size: 22px;
+}
+
+.kpi-progress-meter {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 7px 14px;
+}
+
+.kpi-progress-copy {
+  display: contents;
+}
+
+.kpi-progress-copy span,
+.kpi-progress-meter small {
+  color: #667890;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.kpi-progress-copy strong {
+  color: var(--metric-color);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.kpi-progress-track {
+  grid-column: 1 / -1;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #fff0e7;
+}
+
+.kpi-progress-track i {
+  display: block;
+  width: var(--kpi-progress);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff7138, #ffad67);
+}
+
+.kpi-progress-meter small {
+  grid-column: 1 / -1;
+  font-style: normal;
 }
 
 .page-view {
@@ -7641,6 +7699,14 @@ body {
   .kpi-grid.personal-kpis,
   .kpi-grid.directory-kpis {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kpi-progress-card {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .kpi-progress-card .kpi-progress-meter {
+    grid-column: 1 / -1;
   }
 
   .panel-head,
