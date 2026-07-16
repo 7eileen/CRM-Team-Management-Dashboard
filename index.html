@@ -184,6 +184,10 @@
           <svg><use href="#icon-board"></use></svg>
           跟进看板
         </button>
+        <button class="nav-item" type="button" data-view="pool">
+          <svg><use href="#icon-target"></use></svg>
+          达人池
+        </button>
         <button class="nav-item" type="button" data-view="directory">
           <svg><use href="#icon-table"></use></svg>
           达人列表
@@ -490,6 +494,44 @@
               </article>
             </aside>
           </div>
+        </section>
+
+        <section class="page-view" data-page="pool" id="talentPoolPage">
+          <article class="panel talent-pool-panel">
+            <div class="panel-head">
+              <div>
+                <span class="panel-kicker">Talent Pool</span>
+                <h2>达人池</h2>
+              </div>
+              <span class="table-count" id="talentPoolCount">0 位达人</span>
+            </div>
+            <div class="talent-pool-content">
+              <div class="talent-pool-stats" id="talentPoolStats" aria-label="达人池状态概览"></div>
+              <div class="talent-pool-toolbar">
+                <div class="talent-pool-filter-tabs" id="talentPoolFilters" role="tablist" aria-label="达人池状态筛选"></div>
+                <label class="talent-pool-search">
+                  <svg><use href="#icon-search"></use></svg>
+                  <input id="talentPoolSearch" type="search" placeholder="搜索达人、商务、组别" aria-label="搜索达人池" />
+                </label>
+              </div>
+              <div class="table-wrap talent-pool-table-wrap">
+                <table class="record-table talent-pool-table">
+                  <thead>
+                    <tr>
+                      <th>达人</th>
+                      <th>合作阶段</th>
+                      <th>商务 / 组别</th>
+                      <th>最近开播</th>
+                      <th>坑产趋势</th>
+                      <th>系统判断</th>
+                      <th>人工标签</th>
+                    </tr>
+                  </thead>
+                  <tbody id="talentPoolBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </article>
         </section>
 
         <section class="page-view" data-page="directory" id="directoryPage">
