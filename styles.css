@@ -7746,3 +7746,87 @@ body {
     overflow-x: auto;
   }
 }
+
+/* Give the final personal schedule a roomier calendar-and-agenda rhythm. */
+.personal-schedule-last {
+  min-height: 352px;
+}
+
+.personal-schedule-last .personal-schedule {
+  min-height: 294px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding: 18px 20px 20px;
+}
+
+.personal-schedule-last .schedule-date-head,
+.personal-schedule-last .schedule-week,
+.personal-schedule-last .schedule-agenda {
+  grid-column: 1;
+}
+
+.personal-schedule-last .schedule-date-head strong {
+  font-size: 17px;
+}
+
+.personal-schedule-last .schedule-week {
+  gap: 10px;
+}
+
+.personal-schedule-last .schedule-day {
+  min-height: 78px;
+  gap: 4px;
+  padding: 10px 8px;
+}
+
+.personal-schedule-last .schedule-day strong {
+  font-size: 16px;
+}
+
+.personal-schedule-last .schedule-agenda {
+  max-height: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-right: 0;
+}
+
+.personal-schedule-last .schedule-entry {
+  min-height: 66px;
+  grid-template-columns: 54px 4px minmax(150px, 1fr) 78px 62px;
+  gap: 10px;
+  padding: 11px 12px;
+}
+
+.personal-schedule-last .schedule-entry-line {
+  height: 40px;
+}
+
+.personal-schedule-last .schedule-entry-copy strong,
+.personal-schedule-last .schedule-entry time,
+.personal-schedule-last .schedule-entry > b {
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .personal-schedule-last .schedule-agenda {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .personal-schedule-last .personal-schedule {
+    padding: 14px 12px 16px;
+  }
+
+  .personal-schedule-last .schedule-week {
+    grid-template-columns: repeat(7, minmax(68px, 1fr));
+  }
+
+  .personal-schedule-last .schedule-entry {
+    min-width: 560px;
+  }
+
+  .personal-schedule-last .schedule-agenda {
+    overflow-x: auto;
+  }
+}
