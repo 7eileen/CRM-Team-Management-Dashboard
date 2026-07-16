@@ -7970,3 +7970,32 @@ body {
       "table";
   }
 }
+
+/* Preserve the full-width personal monthly-plan layout after KPI compaction. */
+.kpi-grid.personal-kpis > .kpi-card.kpi-progress-card {
+  grid-column: 1 / -1;
+  grid-template-columns: 44px minmax(190px, 0.34fr) minmax(260px, 1fr);
+  align-items: center;
+  min-height: 108px;
+}
+
+.kpi-grid.personal-kpis > .kpi-progress-card .kpi-progress-meter {
+  grid-column: 3;
+  width: 100%;
+}
+
+.kpi-grid.personal-kpis > .kpi-progress-card .kpi-progress-copy span,
+.kpi-grid.personal-kpis > .kpi-progress-card .kpi-progress-meter small {
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .kpi-grid.personal-kpis > .kpi-card.kpi-progress-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .kpi-grid.personal-kpis > .kpi-progress-card .kpi-progress-meter {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
+}
