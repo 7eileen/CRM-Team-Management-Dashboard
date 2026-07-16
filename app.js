@@ -231,6 +231,7 @@ const state = {
   managementPersonMetric: "gmv",
   personalPerson: PERSONS[0],
   personalScheduleDate: "",
+  personalScheduleRangeDate: "",
   rankSort: {
     managementPerson: "desc",
     managementTalent: "desc",
@@ -1080,17 +1081,13 @@ function personalKpiCards() {
   const person = selectedPerson();
   const rangeLabel = selectedTimeRange().label;
   const rows = personSalesRows(enrichedRecords(state.records));
-  const monthlyRows = personSalesRows(enrichedRecords(state.records, { ignoreTimeRange: true }));
   const row = rows.find((item) => item.person === person) || rows[0];
-  const monthlyRow = monthlyRows.find((item) => item.person === person) || monthlyRows[0] || row;
   const rank = rows.findIndex((item) => item.person === row.person) + 1;
   const previous = rows[rank - 2];
   const nextSpecialLeader = [...rows].sort((a, b) => b.specialCount - a.specialCount).find((item) => item.specialCount > row.specialCount);
   const gap = previous ? previous.sales - row.sales : 0;
   const specialGap = nextSpecialLeader ? nextSpecialLeader.specialCount - row.specialCount : 0;
   const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
-  const monthlyPlanTarget = Math.max(1000, Math.ceil((monthlyRow.sales / 0.82) / 1000) * 1000);
-  const monthlyPlanProgress = monthlyRow.sales / monthlyPlanTarget;
   return [
     { label: `${rangeLabel}销售额`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
     { label: `${rangeLabel}销售额排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#ffc24a", soft: "#fff9e9", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
@@ -1098,19 +1095,6 @@ function personalKpiCards() {
     { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#5594f7", soft: "#eef5ff", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
     { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#8aa0bd", soft: "#f4f8fd", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
     { label: "环比上一周期", value: signedPercent(mom * 100), sub: `${compactCurrency(row.lastMonthSales)} 对比周期`, trend: "", trendValue: mom, icon: "arrow-up", color: mom >= 0 ? "#f2a928" : "#e45b65", soft: mom >= 0 ? "#fff8e8" : "#fff1f2", path: "M2 34 C12 29 18 27 26 22 C35 16 43 13 51 10 C59 8 65 6 70 4" },
-    {
-      kind: "kpi-progress-card",
-      label: "本人月度销售计划",
-      value: percent(monthlyPlanProgress),
-      trend: "计划推进中",
-      trendValue: monthlyPlanProgress,
-      icon: "target",
-      color: "#ff7138",
-      soft: "#fff4ed",
-      progress: monthlyPlanProgress,
-      progressLabel: `${formatMetricMonth(getSalesMetrics().month)}计划进度`,
-      progressMeta: `已完成 ${compactCurrency(monthlyRow.sales)} / 目标 ${compactCurrency(monthlyPlanTarget)}`,
-    },
   ];
 }
 
@@ -1994,61 +1978,93 @@ function personalScheduleEntries(data, person) {
 function renderPersonalSchedule(person, data) {
   if (!els.personalSchedule) return;
   const entries = personalScheduleEntries(data, person);
-  const availableDates = new Set(entries.map((entry) => entry.date));
-  if (!state.personalScheduleDate || !availableDates.has(state.personalScheduleDate)) {
+  const scheduleMonthKey = entries[0]?.date.slice(0, 7) || String(getSalesMetrics().month || currentMonthKey()).slice(0, 7);
+  if (!state.personalScheduleDate || !state.personalScheduleDate.startsWith(scheduleMonthKey)) {
     state.personalScheduleDate = entries[7]?.date || entries[0]?.date || localDateKey(new Date());
+  }
+  if (!state.personalScheduleRangeDate || !state.personalScheduleRangeDate.startsWith(scheduleMonthKey)) {
+    state.personalScheduleRangeDate = state.personalScheduleDate;
   }
 
   const selectedDate = new Date(`${state.personalScheduleDate}T12:00:00`);
-  const mondayOffset = (selectedDate.getDay() + 6) % 7;
-  const weekStart = new Date(selectedDate);
-  weekStart.setDate(selectedDate.getDate() - mondayOffset);
-  const weekDates = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(weekStart);
-    date.setDate(weekStart.getDate() + index);
+  const rangeCenterDate = new Date(`${state.personalScheduleRangeDate}T12:00:00`);
+  const visibleDates = Array.from({ length: 5 }, (_, index) => {
+    const date = new Date(rangeCenterDate);
+    date.setDate(rangeCenterDate.getDate() + index - 2);
     return date;
   });
   const selectedEntries = entries.filter((entry) => entry.date === state.personalScheduleDate);
   const monthLabel = `${selectedDate.getFullYear()}年${String(selectedDate.getMonth() + 1).padStart(2, "0")}月`;
   const fullDateLabel = `${selectedDate.getFullYear()}年${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日`;
   const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  const previousRangeDate = new Date(rangeCenterDate);
+  previousRangeDate.setDate(rangeCenterDate.getDate() - 5);
+  const nextRangeDate = new Date(rangeCenterDate);
+  nextRangeDate.setDate(rangeCenterDate.getDate() + 5);
+  const previousRangeDisabled = !localDateKey(previousRangeDate).startsWith(scheduleMonthKey);
+  const nextRangeDisabled = !localDateKey(nextRangeDate).startsWith(scheduleMonthKey);
 
   if (els.personalScheduleBadge) {
     els.personalScheduleBadge.textContent = `${monthLabel} · 本月专场 ${entries.length} 个`;
   }
 
   els.personalSchedule.innerHTML = `
-    <div class="schedule-date-head">
-      <div><strong>${fullDateLabel}</strong><span>${weekdays[selectedDate.getDay()]}</span></div>
-      <em>${escapeHtml(person)}的专场日程</em>
+    <div class="schedule-date-nav">
+      <button class="schedule-nav-button previous" type="button" data-personal-schedule-shift="-5" aria-label="查看前五天" ${previousRangeDisabled ? "disabled" : ""}>
+        ${icon("arrow-right")}
+      </button>
+      <div class="schedule-date-title">
+        ${icon("calendar")}
+        <strong>${fullDateLabel}</strong>
+        <span>${weekdays[selectedDate.getDay()]}</span>
+      </div>
+      <button class="schedule-nav-button next" type="button" data-personal-schedule-shift="5" aria-label="查看后五天" ${nextRangeDisabled ? "disabled" : ""}>
+        ${icon("arrow-right")}
+      </button>
     </div>
-    <div class="schedule-week" role="tablist" aria-label="专场排期日期">
-      ${weekDates.map((date) => {
+    <div class="schedule-week" aria-label="专场排期日期">
+      ${visibleDates.map((date) => {
         const dateKey = localDateKey(date);
         const count = entries.filter((entry) => entry.date === dateKey).length;
+        const isActive = dateKey === state.personalScheduleDate;
+        const isOutsideMonth = !dateKey.startsWith(scheduleMonthKey);
         return `
-          <button class="schedule-day ${dateKey === state.personalScheduleDate ? "active" : ""}" type="button" data-personal-schedule-date="${dateKey}" role="tab" aria-selected="${dateKey === state.personalScheduleDate}">
-            <span>${weekdays[date.getDay()].replace("周", "")}</span>
+          <button class="schedule-day ${isActive ? "active" : ""} ${isOutsideMonth ? "outside" : ""}" type="button" data-personal-schedule-date="${dateKey}" aria-label="${date.getMonth() + 1}月${date.getDate()}日 ${weekdays[date.getDay()]}${count ? `，${count}场专场` : "，暂无专场"}" ${isActive ? 'aria-current="date"' : ""} ${isOutsideMonth ? "disabled" : ""}>
             <strong>${date.getDate()}</strong>
-            ${count ? `<i>${count}场</i>` : `<i aria-hidden="true">-</i>`}
+            <span>${weekdays[date.getDay()].replace("周", "")}</span>
+            <i>${count ? `${count}场` : "暂无"}</i>
           </button>
         `;
       }).join("")}
     </div>
-    <div class="schedule-agenda">
-      ${selectedEntries.length ? selectedEntries.map((entry) => `
-        <article class="schedule-entry" style="--schedule-color:${entry.status.color}; --schedule-soft:${entry.status.soft}">
-          <time>${entry.time}</time>
-          <span class="schedule-entry-line"></span>
-          <span class="schedule-entry-copy">
-            <strong>${escapeHtml(entry.talent)} · ${escapeHtml(entry.product)}专场</strong>
-            <em>${icon("calendar")}${escapeHtml(entry.room)} · ${escapeHtml(person)}</em>
-          </span>
-          <b>${compactCurrency(entry.amount)}</b>
-          <span class="schedule-status">${entry.status.label}</span>
-        </article>
-      `).join("") : `<div class="schedule-empty">当日暂无专场安排，可选择有场次标记的日期查看</div>`}
-    </div>
+    <section class="schedule-agenda" aria-live="polite" aria-label="${fullDateLabel}专场日程">
+      <div class="schedule-agenda-head">
+        <div>
+          <span>${selectedEntries.length ? `${selectedEntries.length} 场专场` : "暂无安排"}</span>
+          <h3>${fullDateLabel}日程</h3>
+        </div>
+        <em>${escapeHtml(person)}</em>
+      </div>
+      <div class="schedule-entry-list">
+        ${selectedEntries.length ? selectedEntries.map((entry) => `
+          <article class="schedule-entry" style="--schedule-color:${entry.status.color}; --schedule-soft:${entry.status.soft}">
+            <div class="schedule-entry-top">
+              <span class="schedule-status"><i aria-hidden="true"></i>${entry.status.label}</span>
+              <time datetime="${entry.date}T${entry.time}">${icon("clock")}${entry.time}</time>
+            </div>
+            <div class="schedule-entry-copy">
+              <strong>${escapeHtml(entry.talent)} · ${escapeHtml(entry.product)}专场</strong>
+              <em>${icon("calendar")}<span>${escapeHtml(entry.room)}</span><i aria-hidden="true"></i><span>${escapeHtml(person)}</span></em>
+            </div>
+            <div class="schedule-entry-footer">
+              <span>预计成交额</span>
+              <b>${compactCurrency(entry.amount)}</b>
+              <small>${escapeHtml(entry.id)}</small>
+            </div>
+          </article>
+        `).join("") : `<div class="schedule-empty">当日暂无专场安排，可选择带有场次标记的日期查看</div>`}
+      </div>
+    </section>
   `;
 }
 
@@ -2933,6 +2949,16 @@ function bindEvents() {
     }
 
     if (event.target.closest("#timeRangePopover")) {
+      return;
+    }
+
+    const personalScheduleShift = event.target.closest("[data-personal-schedule-shift]");
+    if (personalScheduleShift) {
+      const date = new Date(`${state.personalScheduleRangeDate || state.personalScheduleDate}T12:00:00`);
+      date.setDate(date.getDate() + Number(personalScheduleShift.dataset.personalScheduleShift || 0));
+      state.personalScheduleDate = localDateKey(date);
+      state.personalScheduleRangeDate = state.personalScheduleDate;
+      renderPersonalSchedule(selectedPerson(), recordsForPerson());
       return;
     }
 
