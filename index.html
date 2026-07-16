@@ -215,7 +215,8 @@
           </div>
           <div class="period-popover-wrap" id="timeRangeControl">
             <button class="top-control" id="timeRangeControlBtn" type="button" aria-expanded="false" aria-controls="timeRangePopover">
-              <span id="timeRangeControlLabel">Compare: 近30天</span>
+              <svg><use href="#icon-calendar"></use></svg>
+              <span id="timeRangeControlLabel">近30天</span>
               <svg class="chevron"><use href="#icon-chevron"></use></svg>
             </button>
           </div>
@@ -249,7 +250,11 @@
                     <button type="button" data-management-team-view="team">按团队</button>
                     <button type="button" data-management-team-view="product">按品类</button>
                   </div>
-                  <span class="panel-badge" id="managementTeamPeriod">当月</span>
+                  <button class="panel-period-selector" id="managementTeamPeriod" type="button" data-open-time-range aria-label="选择时间范围">
+                    <svg><use href="#icon-calendar"></use></svg>
+                    <span id="managementTeamPeriodLabel">当月</span>
+                    <svg class="chevron"><use href="#icon-chevron"></use></svg>
+                  </button>
                 </div>
               </div>
               <div class="team-detail-board" id="managementTeamDetail"></div>
@@ -259,16 +264,16 @@
               <div class="panel-head">
                 <div>
                   <span class="panel-kicker">Ranking</span>
-                  <h2>销售排行榜</h2>
+                  <h2>商务排行榜</h2>
                 </div>
                 <div class="panel-actions">
-                  <button class="sort-toggle desc" type="button" data-rank-sort="managementPerson" data-sort-label="销售排行榜" aria-label="销售排行榜倒序排列" title="倒序排列">
+                  <button class="sort-toggle desc" type="button" data-rank-sort="managementPerson" data-sort-label="商务排行榜" aria-label="商务排行榜倒序排列" title="倒序排列">
                     <svg aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
                   </button>
                   <span class="table-count" id="dashboardTableCount">当月排行</span>
                 </div>
               </div>
-              <div class="management-person-rank-tabs" id="managementPersonRankTabs" role="tablist" aria-label="销售排行榜维度">
+              <div class="management-person-rank-tabs" id="managementPersonRankTabs" role="tablist" aria-label="商务排行榜维度">
                 <button class="active" type="button" role="tab" aria-selected="true" data-management-person-metric="gmv">GMV</button>
                 <button type="button" role="tab" aria-selected="false" data-management-person-metric="product">品类</button>
                 <button type="button" role="tab" aria-selected="false" data-management-person-metric="channel">渠道</button>

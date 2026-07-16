@@ -74,7 +74,6 @@ const BUSINESS_GROUP_BY_PERSON = BUSINESS_PEOPLE.reduce((acc, person) => {
 const SALES_TEAM_META = [
   { label: "A组", color: "#ff7138", soft: "#fff4ed" },
   { label: "B组", color: "#ffc24a", soft: "#fff9e9" },
-  { label: "C组", color: "#5594f7", soft: "#eef5ff" },
 ];
 
 const chartPalette = ["#ff7138", "#ff9566", "#ffb184", "#ffc24a", "#5594f7", "#7eacf8", "#a8c7f8", "#c7daf7"];
@@ -267,6 +266,7 @@ const els = {
   kpiGrid: document.getElementById("kpiGrid"),
   managementTeamDetail: document.getElementById("managementTeamDetail"),
   managementTeamPeriod: document.getElementById("managementTeamPeriod"),
+  managementTeamPeriodLabel: document.getElementById("managementTeamPeriodLabel"),
   managementTrendProduct: document.getElementById("managementTrendProduct"),
   managementTrendRange: document.getElementById("managementTrendRange"),
   managementTrendSummary: document.getElementById("managementTrendSummary"),
@@ -683,10 +683,14 @@ function renderTimeRangePopover() {
   const range = selectedTimeRange();
 
   if (els.timeRangeControlLabel) {
-    els.timeRangeControlLabel.textContent = `时间：${range.label}`;
+    els.timeRangeControlLabel.textContent = range.label;
   }
   els.timeRangeControlBtn.setAttribute("aria-expanded", String(state.timeRangePopoverOpen));
   els.timeRangeControlBtn.classList.toggle("active", state.timeRangePopoverOpen);
+  if (els.managementTeamPeriod) {
+    els.managementTeamPeriod.setAttribute("aria-expanded", String(state.timeRangePopoverOpen));
+    els.managementTeamPeriod.classList.toggle("active", state.timeRangePopoverOpen);
+  }
   els.timeRangePopover.hidden = !state.timeRangePopoverOpen;
   if (!state.timeRangePopoverOpen) return;
 
@@ -1469,7 +1473,7 @@ function renderManagementTeamDetail(data) {
     button.classList.toggle("active", button.dataset.managementTeamView === mode);
     button.setAttribute("aria-pressed", String(button.dataset.managementTeamView === mode));
   });
-  if (els.managementTeamPeriod) els.managementTeamPeriod.textContent = `${formatMetricMonth(getSalesMetrics().month)} · ${selectedTimeRange().label}`;
+  if (els.managementTeamPeriodLabel) els.managementTeamPeriodLabel.textContent = formatMetricMonth(getSalesMetrics().month);
 
   if (mode === "product") {
     els.managementTeamDetail.innerHTML = renderManagementProductTeamDetail(data);
@@ -1778,44 +1782,61 @@ function aggregateManagementRankRows(data, keyGetter, metaLabel) {
   }));
 }
 
+function dominantManagementDimension(records, keyGetter) {
+  const values = new Map();
+  records.forEach((record) => {
+    const label = keyGetter(record) || "其他";
+    values.set(label, (values.get(label) || 0) + record.sales);
+  });
+  return [...values.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh-CN"))[0]?.[0] || "其他";
+}
+
+function managementBusinessRankRows(data, dimensionGetter = null) {
+  return personSalesRows(data).map((row) => {
+    const records = data.filter((record) => record.person === row.person);
+    return {
+      key: row.person,
+      label: row.person,
+      person: row.person,
+      value: row.sales,
+      previousValue: row.lastMonthSales,
+      specialCount: row.specialCount,
+      talentCount: row.talentCount,
+      dimension: dimensionGetter ? dominantManagementDimension(records, dimensionGetter) : "",
+      meta: `${BUSINESS_GROUP_BY_PERSON[row.person] || "未分组"} · ${row.talentCount} 位达人`,
+    };
+  });
+}
+
 function managementPersonRankMetric(data) {
   const metrics = {
     gmv: {
       label: "GMV",
-      title: "商务 GMV 榜",
+      dimensionLabel: "",
       totalLabel: "当月 GMV",
       countLabel: "位商务",
-      rows: () => personSalesRows(data).map((row) => ({
-        key: row.person,
-        label: row.person,
-        person: row.person,
-        value: row.sales,
-        previousValue: row.lastMonthSales,
-        specialCount: row.specialCount,
-        talentCount: row.talentCount,
-        meta: `${BUSINESS_GROUP_BY_PERSON[row.person] || "未分组"} · ${row.talentCount} 位达人`,
-      })),
+      rows: () => managementBusinessRankRows(data),
     },
     product: {
-      label: "品类",
-      title: "品类销售贡献榜",
-      totalLabel: "品类销售合计",
-      countLabel: "个品类",
-      rows: () => aggregateManagementRankRows(data, (record) => record.product, "品类贡献"),
+      label: "GMV",
+      dimensionLabel: "品类",
+      totalLabel: "当月 GMV",
+      countLabel: "位商务",
+      rows: () => managementBusinessRankRows(data, (record) => record.product),
     },
     channel: {
-      label: "渠道",
-      title: "渠道 GMV 贡献榜",
-      totalLabel: "渠道 GMV 合计",
-      countLabel: "个渠道",
-      rows: () => aggregateManagementRankRows(data, managementRecordChannel, "渠道贡献"),
+      label: "GMV",
+      dimensionLabel: "渠道",
+      totalLabel: "当月 GMV",
+      countLabel: "位商务",
+      rows: () => managementBusinessRankRows(data, managementRecordChannel),
     },
     format: {
-      label: "玩法",
-      title: "玩法销售贡献榜",
-      totalLabel: "玩法销售合计",
-      countLabel: "种玩法",
-      rows: () => aggregateManagementRankRows(data, (record) => record.format, "玩法贡献"),
+      label: "GMV",
+      dimensionLabel: "玩法",
+      totalLabel: "当月 GMV",
+      countLabel: "位商务",
+      rows: () => managementBusinessRankRows(data, (record) => record.format),
     },
   };
   return metrics[state.managementPersonMetric] || metrics.gmv;
@@ -1858,7 +1879,7 @@ function renderManagementPersonRank(data) {
         <span class="leaderboard-rank ${rank <= 3 ? "has-medal" : ""}" aria-label="第 ${rank} 名">${rankMark}</span>
         <span class="leaderboard-profile">
           <span class="leaderboard-avatar">${escapeHtml(row.label.slice(0, 1))}</span>
-          <span><strong>${escapeHtml(row.label)}</strong><em>${escapeHtml(row.person ? BUSINESS_GROUP_BY_PERSON[row.person] || "未分组" : row.meta)}</em></span>
+          <span><strong>${escapeHtml(row.label)}</strong><em>${escapeHtml(row.meta)}${row.dimension ? ` · ${escapeHtml(metric.dimensionLabel)}：${escapeHtml(row.dimension)}` : ""}</em></span>
         </span>
         <span class="leaderboard-metric primary"><em>${metric.label}及环比</em><strong>${compactCurrency(row.value)} <i class="${mom < 0 ? "down" : ""}">${signedPercent(mom * 100)}</i></strong></span>
         <span class="leaderboard-metric"><em>上期销售额</em><strong>${compactCurrency(row.previousValue)}</strong></span>
@@ -2880,7 +2901,7 @@ function bindEvents() {
       return;
     }
 
-    const timeRangeButton = event.target.closest("#timeRangeControlBtn");
+    const timeRangeButton = event.target.closest("#timeRangeControlBtn, [data-open-time-range]");
     if (timeRangeButton) {
       state.timeRangePopoverOpen = !state.timeRangePopoverOpen;
       state.quarterPopoverOpen = false;

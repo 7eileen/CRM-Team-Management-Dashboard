@@ -1317,6 +1317,42 @@ svg {
   transform: scale(0.98);
 }
 
+.panel-period-selector {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #e1e7ef;
+  border-radius: 10px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: #334155;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.panel-period-selector svg {
+  width: 15px;
+  height: 15px;
+  color: #8b99ad;
+}
+
+.panel-period-selector .chevron {
+  width: 12px;
+  height: 12px;
+}
+
+.panel-period-selector:hover,
+.panel-period-selector.active {
+  border-color: #ffb18f;
+  color: #f06433;
+  box-shadow: 0 6px 16px rgba(240, 100, 51, 0.1);
+}
+
 .team-detail-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1330,7 +1366,7 @@ svg {
 .team-choice-list {
   grid-area: choices;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
   gap: 10px;
 }
@@ -4303,7 +4339,7 @@ svg {
   }
 
   .team-choice-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .team-focus-metrics {
@@ -4378,7 +4414,7 @@ svg {
   }
 
   .team-choice-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .team-focus-metrics,
