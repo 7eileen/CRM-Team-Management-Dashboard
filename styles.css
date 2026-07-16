@@ -7660,3 +7660,89 @@ body {
     min-width: 560px !important;
   }
 }
+
+/* Keep the personal ranking podium fully visible after global compaction. */
+.personal-compact-row > .personal-group-ranking-panel,
+.personal-compact-row > .personal-talent-panel {
+  height: 470px;
+}
+
+.personal-group-ranking {
+  grid-template-rows: minmax(250px, 1.45fr) minmax(112px, 0.7fr);
+  gap: 12px;
+}
+
+.personal-compact-row .group-ranking-podium {
+  min-height: 250px;
+  padding: 58px 10px 0;
+}
+
+.personal-compact-row .group-podium-card {
+  height: 162px;
+  padding: 62px 12px 16px;
+}
+
+.personal-compact-row .group-podium-card.rank-1 {
+  height: 200px;
+}
+
+.personal-compact-row .group-podium-card.rank-2 {
+  height: 174px;
+}
+
+.personal-compact-row .group-podium-card.rank-3 {
+  height: 166px;
+}
+
+.personal-compact-row .group-rank-avatar {
+  top: -40px;
+  width: 78px;
+  height: 78px;
+  font-size: 22px;
+}
+
+.personal-compact-row .rank-1 .group-rank-avatar {
+  top: -50px;
+  width: 92px;
+  height: 92px;
+}
+
+.personal-compact-row .group-rank-medal {
+  top: 27px;
+  width: 42px;
+  height: 32px;
+}
+
+.personal-compact-row .rank-1 .group-rank-medal {
+  top: 30px;
+  width: 48px;
+  height: 36px;
+}
+
+.personal-compact-row .group-podium-card strong {
+  font-size: 14px;
+}
+
+.personal-compact-row .group-podium-card b {
+  font-size: 18px;
+}
+
+.personal-compact-row .group-ranking-list {
+  min-height: 112px;
+  overflow-y: auto;
+}
+
+@media (max-width: 1180px) {
+  .personal-compact-row > .personal-group-ranking-panel,
+  .personal-compact-row > .personal-talent-panel {
+    height: 470px;
+    min-height: 470px;
+  }
+}
+
+@media (max-width: 620px) {
+  .personal-compact-row .group-ranking-podium {
+    min-width: 560px;
+    overflow-x: auto;
+  }
+}
