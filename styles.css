@@ -9342,9 +9342,8 @@ body {
 }
 
 .panel-category-trend-compact .category-chart-scroll {
-  overflow-x: auto;
+  overflow-x: hidden;
   padding-bottom: 5px;
-  scrollbar-gutter: stable;
 }
 
 .panel-category-trend-compact .category-chart-scroll::-webkit-scrollbar {
@@ -9371,6 +9370,8 @@ body {
 
 .panel-category-trend-compact .management-category-chart {
   display: block;
+  width: 100%;
+  min-width: 0;
   height: 252px;
 }
 
@@ -9928,7 +9929,7 @@ body {
   grid-area: overview;
   min-width: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 2.2fr) repeat(2, minmax(220px, 0.9fr));
   gap: 14px;
   align-items: stretch;
 }
@@ -9945,6 +9946,14 @@ body {
       "overview overview overview"
       "table table rail";
   }
+
+  .management-overview-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .management-overview-row > .panel-category-trend {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 1180px) {
@@ -9954,12 +9963,6 @@ body {
       "overview"
       "table"
       "rail";
-  }
-}
-
-@media (max-width: 900px) {
-  .management-overview-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

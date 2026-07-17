@@ -1875,8 +1875,7 @@ function managementTrendConfig() {
 
 function drawManagementCategoryTrend(canvas, series, categoryLabels, axisMax) {
   const parentWidth = Math.round(canvas.parentElement?.getBoundingClientRect().width || 520);
-  const labelWidth = categoryLabels.reduce((total, label) => total + Math.max(82, String(label).length * 12 + 28), 72);
-  const cssWidth = Math.max(260, parentWidth, labelWidth);
+  const cssWidth = Math.max(260, parentWidth);
   const cssHeight = 252;
   const left = cssWidth < 420 ? 48 : 56;
   const right = 12;
