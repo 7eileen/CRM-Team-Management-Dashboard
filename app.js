@@ -613,32 +613,67 @@ function normalizeTeamSalesMetrics(metrics = {}, defaults = {}) {
   }, {});
 }
 
+function defaultPersonMonthlyTargets(data = enrichedRecords(state.records, { ignoreTimeRange: true })) {
+  return PERSONS.reduce((acc, person) => {
+    const sales = sumBy(data.filter((record) => record.person === person), (record) => record.sales);
+    acc[person] = sales ? Math.round((sales / 0.82) / 1000) * 1000 : 0;
+    return acc;
+  }, {});
+}
+
+function normalizePersonMonthlyTargets(targets = {}, defaults = {}) {
+  const source = targets && typeof targets === "object" ? targets : {};
+  const fallback = defaults && typeof defaults === "object" ? defaults : {};
+  const monthKeys = new Set([...Object.keys(fallback), ...Object.keys(source)]);
+  return [...monthKeys].reduce((acc, month) => {
+    const savedMonth = source[month] && typeof source[month] === "object" ? source[month] : {};
+    const fallbackMonth = fallback[month] && typeof fallback[month] === "object" ? fallback[month] : {};
+    acc[month] = PERSONS.reduce((monthTargets, person) => {
+      monthTargets[person] = moneyInputValue(savedMonth[person], fallbackMonth[person] || 0);
+      return monthTargets;
+    }, {});
+    return acc;
+  }, {});
+}
+
+function personMonthlyTarget(person, metrics = getSalesMetrics(), month = metrics.month) {
+  const savedTarget = metrics.personMonthlyTargets?.[month]?.[person];
+  if (Number.isFinite(Number(savedTarget))) return Math.max(0, Math.round(Number(savedTarget)));
+  return defaultPersonMonthlyTargets()[person] || 0;
+}
+
 function defaultSalesMetrics() {
   const data = enrichedRecords(state.records, { ignoreTimeRange: true });
   const currentMonthSales = sumBy(data, (record) => record.sales);
   const previousMonthSales = sumBy(data, (record) => record.lastMonthSales);
   const annualTarget = 6800000;
   const annualCompletedSales = Math.round((currentMonthSales * 6.4) / 100) * 100;
+  const month = currentMonthKey();
   return {
-    month: currentMonthKey(),
+    month,
     currentMonthSales,
     previousMonthSales,
     annualTarget,
     annualCompletedSales,
     teamSales: defaultTeamSalesMetrics(data, annualTarget, annualCompletedSales),
+    personMonthlyTargets: {
+      [month]: defaultPersonMonthlyTargets(data),
+    },
   };
 }
 
 function normalizeSalesMetrics(metrics = {}, defaults = defaultSalesMetrics()) {
+  const month = String(metrics.month || defaults.month);
   const annualTarget = Math.max(1, moneyInputValue(metrics.annualTarget, defaults.annualTarget));
   const annualCompletedSales = moneyInputValue(metrics.annualCompletedSales, defaults.annualCompletedSales);
   return {
-    month: String(metrics.month || defaults.month),
+    month,
     currentMonthSales: moneyInputValue(metrics.currentMonthSales, defaults.currentMonthSales),
     previousMonthSales: moneyInputValue(metrics.previousMonthSales, defaults.previousMonthSales),
     annualTarget,
     annualCompletedSales,
     teamSales: normalizeTeamSalesMetrics(metrics.teamSales, defaults.teamSales),
+    personMonthlyTargets: normalizePersonMonthlyTargets(metrics.personMonthlyTargets, defaults.personMonthlyTargets),
   };
 }
 
@@ -2914,6 +2949,11 @@ function openSalesMetricsDrawer() {
     metric: teamSalesMetric(team.label, metrics),
   }));
   const teamAnnualTargetTotal = sumBy(teamMetricRows, (row) => row.metric.annualTarget || 0);
+  const personTargetRows = BUSINESS_PEOPLE.map((person, index) => ({
+    ...person,
+    index,
+    target: personMonthlyTarget(person.name, metrics),
+  }));
 
   openDrawer({
     kicker: "销售指标",
@@ -2962,6 +3002,41 @@ function openSalesMetricsDrawer() {
                     <input name="team_${escapeHtml(row.label)}_annualTarget" type="number" min="0" step="1" value="${row.metric.annualTarget || 0}" required />
                   </label>
                 </section>
+              `).join("")}
+            </div>
+          </section>
+          <section class="metric-team-editor metric-person-editor full">
+            <div class="metric-section-head">
+              <div>
+                <h4>商务月度销售指标</h4>
+                <p>按所选月份维护每位商务的销售目标，保存后可继续切换月份单独设置。</p>
+              </div>
+              <span>${personTargetRows.length} 位商务</span>
+            </div>
+            <div class="metric-person-grid">
+              ${personTargetRows.map((row) => `
+                <label class="metric-person-row">
+                  <span class="metric-person-identity">
+                    <i>${escapeHtml(row.name.slice(0, 1))}</i>
+                    <span>
+                      <strong>${escapeHtml(row.name)}</strong>
+                      <small>${escapeHtml(row.group)}</small>
+                    </span>
+                  </span>
+                  <span class="metric-person-target">
+                    <small>当月目标（元）</small>
+                    <input
+                      name="personTarget_${row.index}"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value="${row.target}"
+                      data-person-month-target
+                      data-person="${escapeHtml(row.name)}"
+                      required
+                    />
+                  </span>
+                </label>
               `).join("")}
             </div>
           </section>
@@ -3021,6 +3096,8 @@ function saveRecord(form) {
 function saveSalesMetrics(form) {
   const data = new FormData(form);
   const defaults = defaultSalesMetrics();
+  const currentMetrics = getSalesMetrics();
+  const month = String(data.get("month") || defaults.month);
   const teamSales = SALES_TEAM_META.reduce((acc, team) => {
     const prefix = `team_${team.label}_`;
     const existing = teamSalesMetric(team.label);
@@ -3032,13 +3109,22 @@ function saveSalesMetrics(form) {
     };
     return acc;
   }, {});
+  const personTargetsForMonth = BUSINESS_PEOPLE.reduce((acc, person, index) => {
+    acc[person.name] = moneyInputValue(data.get(`personTarget_${index}`), personMonthlyTarget(person.name, currentMetrics, month));
+    return acc;
+  }, {});
+  const personMonthlyTargets = {
+    ...(currentMetrics.personMonthlyTargets || {}),
+    [month]: personTargetsForMonth,
+  };
   const nextMetrics = normalizeSalesMetrics({
-    month: data.get("month"),
+    month,
     currentMonthSales: data.get("currentMonthSales"),
     previousMonthSales: data.get("previousMonthSales"),
     annualTarget: data.get("annualTarget"),
     annualCompletedSales: data.get("annualCompletedSales"),
     teamSales,
+    personMonthlyTargets,
   }, defaults);
 
   state.salesMetrics = nextMetrics;
@@ -3401,6 +3487,15 @@ function bindEvents() {
   });
 
   els.drawerBody.addEventListener("change", (event) => {
+    if (event.target.form?.id === "salesMetricsForm" && event.target.name === "month") {
+      const metrics = getSalesMetrics();
+      const month = String(event.target.value || metrics.month);
+      els.drawerBody.querySelectorAll("[data-person-month-target]").forEach((input) => {
+        input.value = personMonthlyTarget(input.dataset.person, metrics, month);
+      });
+      return;
+    }
+
     if (event.target.name === "person") {
       const groupSelect = event.target.form?.elements.group;
       if (groupSelect && BUSINESS_GROUP_BY_PERSON[event.target.value]) {

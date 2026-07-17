@@ -4279,6 +4279,96 @@ svg {
   box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent-soft, #fff3eb) 72%, transparent);
 }
 
+.metric-person-editor {
+  gap: 10px;
+}
+
+.metric-person-grid {
+  max-height: 430px;
+  display: grid;
+  gap: 7px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.metric-person-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(132px, 0.9fr);
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #edf0f4;
+  border-radius: 12px;
+  padding: 8px 9px;
+  background: #ffffff;
+}
+
+.metric-person-identity,
+.metric-person-target {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.metric-person-identity {
+  gap: 9px;
+}
+
+.metric-person-identity > i {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #fff3eb;
+  color: var(--color-primary);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.metric-person-identity > span,
+.metric-person-target {
+  display: grid;
+  gap: 3px;
+}
+
+.metric-person-identity strong {
+  overflow: hidden;
+  color: #2f3338;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric-person-identity small,
+.metric-person-target small {
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.metric-person-target input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  border: 1px solid #dfe5ec;
+  border-radius: 9px;
+  padding: 0 9px;
+  background: #fbfcfe;
+  color: #17233a;
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-person-target input:focus {
+  outline: 2px solid color-mix(in srgb, var(--color-primary) 22%, transparent);
+  border-color: var(--color-primary);
+}
+
 .toast {
   position: fixed;
   right: 18px;
