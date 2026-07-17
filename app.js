@@ -436,7 +436,7 @@ function currency(value) {
 
 function compactCurrency(value) {
   const amount = Number(value);
-  if (Number.isFinite(amount) && Math.abs(amount) >= 10000) return `¥${(amount / 10000).toFixed(1)}万`;
+  if (Number.isFinite(amount) && Math.abs(amount) >= 10000) return `¥${(amount / 10000).toFixed(1)}w`;
   return currency(amount);
 }
 
