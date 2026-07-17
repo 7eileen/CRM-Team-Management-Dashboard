@@ -1821,13 +1821,106 @@ function managementTrendSeries(total, pointCount, productIndex, rangeIndex) {
   return weights.map((weight) => Math.round((total * weight) / weightTotal / 100) * 100);
 }
 
-function managementTrendPath(points) {
-  if (!points.length) return "";
-  return points.slice(1).reduce((path, point, index) => {
-    const previous = points[index];
-    const middleX = (previous.x + point.x) / 2;
-    return `${path} C ${middleX.toFixed(1)} ${previous.y.toFixed(1)}, ${middleX.toFixed(1)} ${point.y.toFixed(1)}, ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
-  }, `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`);
+function drawManagementCategoryTrend(canvas, series, rangeLabels, axisMax) {
+  const cssWidth = Math.max(260, Math.round(canvas.getBoundingClientRect().width || 520));
+  const cssHeight = 238;
+  const left = cssWidth < 420 ? 48 : 56;
+  const right = 12;
+  const top = 20;
+  const bottom = 36;
+  const chartWidth = cssWidth - left - right;
+  const chartHeight = cssHeight - top - bottom;
+  const pixelRatio = Math.max(1, window.devicePixelRatio || 1);
+  const points = series.map((value, index) => ({
+    value,
+    label: rangeLabels[index],
+    x: left + (chartWidth * index) / Math.max(1, series.length - 1),
+    y: top + chartHeight - (value / axisMax) * chartHeight,
+  }));
+
+  canvas.width = Math.round(cssWidth * pixelRatio);
+  canvas.height = Math.round(cssHeight * pixelRatio);
+  canvas.style.width = `${cssWidth}px`;
+  canvas.style.height = `${cssHeight}px`;
+
+  const context = canvas.getContext("2d");
+  if (!context || !points.length) return;
+  context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  context.clearRect(0, 0, cssWidth, cssHeight);
+  context.lineCap = "round";
+  context.lineJoin = "round";
+
+  const drawCurve = () => {
+    context.moveTo(points[0].x, points[0].y);
+    points.slice(1).forEach((point, index) => {
+      const previous = points[index];
+      const middleX = (previous.x + point.x) / 2;
+      context.bezierCurveTo(middleX, previous.y, middleX, point.y, point.x, point.y);
+    });
+  };
+
+  context.font = '600 11px "Microsoft YaHei UI", "PingFang SC", sans-serif';
+  context.textAlign = "right";
+  context.textBaseline = "middle";
+  Array.from({ length: 5 }, (_, index) => {
+    const ratio = index / 4;
+    return { y: top + chartHeight * ratio, value: axisMax * (1 - ratio) };
+  }).forEach((row) => {
+    context.beginPath();
+    context.strokeStyle = "#e8eef5";
+    context.lineWidth = 1;
+    context.setLineDash([4, 5]);
+    context.moveTo(left, Math.round(row.y) + 0.5);
+    context.lineTo(cssWidth - right, Math.round(row.y) + 0.5);
+    context.stroke();
+    context.setLineDash([]);
+    context.fillStyle = "#52637a";
+    context.fillText(compactCurrency(row.value).replace("¥", ""), left - 9, row.y);
+  });
+
+  const baseline = top + chartHeight;
+  const gradient = context.createLinearGradient(0, top, 0, baseline);
+  gradient.addColorStop(0, "rgba(255, 138, 76, 0.22)");
+  gradient.addColorStop(0.72, "rgba(255, 176, 128, 0.08)");
+  gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+  context.beginPath();
+  drawCurve();
+  context.lineTo(points[points.length - 1].x, baseline);
+  context.lineTo(points[0].x, baseline);
+  context.closePath();
+  context.fillStyle = gradient;
+  context.fill();
+
+  context.save();
+  context.shadowColor = "rgba(255, 122, 61, 0.14)";
+  context.shadowBlur = 7;
+  context.shadowOffsetY = 4;
+  context.beginPath();
+  drawCurve();
+  context.strokeStyle = "#ff7a3d";
+  context.lineWidth = 2.5;
+  context.stroke();
+  context.restore();
+
+  points.forEach((point) => {
+    context.beginPath();
+    context.arc(point.x, point.y, 3.5, 0, Math.PI * 2);
+    context.fillStyle = "#ffffff";
+    context.fill();
+    context.strokeStyle = "#ff7a3d";
+    context.lineWidth = 2;
+    context.stroke();
+  });
+
+  context.font = '600 11px "Microsoft YaHei UI", "PingFang SC", sans-serif';
+  context.fillStyle = "#52637a";
+  context.textAlign = "center";
+  context.textBaseline = "top";
+  points.forEach((point, index) => {
+    if (index === 0 || index === points.length - 1 || index % 2 === 0) {
+      context.fillText(point.label, point.x, baseline + 13);
+    }
+  });
 }
 
 function renderManagementCategoryTrend(data) {
@@ -1854,75 +1947,27 @@ function renderManagementCategoryTrend(data) {
   els.managementTrendSummary.hidden = true;
   els.managementTrendSummary.innerHTML = "";
 
-  const width = 520;
-  const height = 238;
-  const left = 58;
-  const right = 16;
-  const top = 26;
-  const bottom = 38;
-  const chartWidth = width - left - right;
-  const chartHeight = height - top - bottom;
   const maxValue = Math.max(...series, 1000);
   const axisMax = Math.ceil((maxValue * 1.18) / 1000) * 1000;
-  const points = series.map((value, index) => ({
-    value,
-    label: rangeLabels[index],
-    x: left + (chartWidth * index) / Math.max(1, series.length - 1),
-    y: top + chartHeight - (value / axisMax) * chartHeight,
-  }));
-  const linePath = managementTrendPath(points);
-  const areaPath = `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${(top + chartHeight).toFixed(1)} L ${points[0].x.toFixed(1)} ${(top + chartHeight).toFixed(1)} Z`;
-  const gridRows = Array.from({ length: 5 }, (_, index) => {
-    const ratio = index / 4;
-    return {
-      y: top + chartHeight * ratio,
-      value: axisMax * (1 - ratio),
-    };
-  });
   const chartTitle = selectedProduct === "全部" ? "全部品类" : selectedProduct;
 
   els.managementTrendChart.innerHTML = `
     <div class="category-chart-scroll">
-      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(chartTitle)}${range.label}销售趋势折线图" preserveAspectRatio="xMidYMid meet">
-        <defs>
-          <linearGradient id="categoryTrendArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#ff8a4c" stop-opacity="0.22"></stop>
-            <stop offset="72%" stop-color="#ffb080" stop-opacity="0.08"></stop>
-            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>
-          </linearGradient>
-        </defs>
-        ${gridRows.map((row) => `
-          <g class="category-chart-gridline">
-            <line x1="${left}" y1="${row.y.toFixed(1)}" x2="${width - right}" y2="${row.y.toFixed(1)}"></line>
-            <text x="${left - 12}" y="${(row.y + 4).toFixed(1)}" text-anchor="end">${compactCurrency(row.value).replace("¥", "")}</text>
-          </g>
-        `).join("")}
-        <path class="category-chart-area" d="${areaPath}"></path>
-        <path class="category-chart-line" d="${linePath}"></path>
-        ${points.map((point) => {
-          const tooltipX = clamp(point.x - 48, 8, width - 126);
-          const tooltipY = Math.max(8, point.y - 66);
-          return `
-            <g class="category-chart-point" tabindex="0" aria-label="${escapeHtml(point.label)} ${currency(point.value)}">
-              <line class="category-chart-guide" x1="${point.x.toFixed(1)}" y1="${point.y.toFixed(1)}" x2="${point.x.toFixed(1)}" y2="${(top + chartHeight).toFixed(1)}"></line>
-              <circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="5"></circle>
-              <g class="category-chart-tooltip" transform="translate(${tooltipX.toFixed(1)} ${tooltipY.toFixed(1)})">
-                <rect width="118" height="50" rx="7"></rect>
-                <text x="10" y="19">${escapeHtml(point.label)}</text>
-                <text class="value" x="10" y="39">${currency(point.value)}</text>
-              </g>
-            </g>
-          `;
-        }).join("")}
-        ${points.map((point, index) => {
-          const showLabel = index === 0 || index === points.length - 1 || index % 2 === 0;
-          return showLabel
-            ? `<text class="category-chart-axis-label" x="${point.x.toFixed(1)}" y="${height - 12}" text-anchor="middle">${escapeHtml(point.label)}</text>`
-            : "";
-        }).join("")}
-      </svg>
+      <canvas class="management-category-chart" role="img" aria-label="${escapeHtml(chartTitle)}${range.label}销售趋势折线图"></canvas>
+      <ul class="management-category-chart-data">
+        ${series.map((value, index) => `<li>${escapeHtml(rangeLabels[index])} ${currency(value)}</li>`).join("")}
+      </ul>
     </div>
   `;
+  const canvas = els.managementTrendChart.querySelector(".management-category-chart");
+  const drawChart = () => drawManagementCategoryTrend(canvas, series, rangeLabels, axisMax);
+  drawChart();
+  if (document.fonts?.ready) document.fonts.ready.then(drawChart);
+  state.managementTrendResizeObserver?.disconnect();
+  if (window.ResizeObserver) {
+    state.managementTrendResizeObserver = new ResizeObserver(drawChart);
+    state.managementTrendResizeObserver.observe(canvas.parentElement);
+  }
 }
 
 const MANAGEMENT_RANK_CHANNELS = ["抖音", "快手", "小红书", "视频号"];
