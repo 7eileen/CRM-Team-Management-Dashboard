@@ -1753,7 +1753,7 @@ function renderManagementTeamDetail(data) {
           <div><span>环比上期</span><strong class="${selected.mom < 0 ? "danger" : "success"}">${signedPercent(selected.mom * 100)}</strong></div>
           <div><span>团队商务</span><strong>${selected.personCount} 人</strong></div>
           <div><span>合作转化</span><strong>${percent(selected.conversion)}</strong></div>
-          <div><span>卡点数量</span><strong class="${selected.bottleneckCount ? "danger" : ""}">${selected.bottleneckCount}</strong></div>
+          <div><span>释放达人数量</span><strong class="${selected.bottleneckCount ? "danger" : ""}">${selected.bottleneckCount}</strong></div>
         </div>
         <div class="team-stage-strip">
           ${selected.stageRows.map((row) => `
