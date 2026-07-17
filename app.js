@@ -299,7 +299,6 @@ const els = {
   personalProductSales: document.getElementById("personalProductSales"),
   personalTalentRank: document.getElementById("personalTalentRank"),
   personalGroupRank: document.getElementById("personalGroupRank"),
-  personalGroupRankBadge: document.getElementById("personalGroupRankBadge"),
   personalKanbanColumns: document.getElementById("personalKanbanColumns"),
   personalPipelineBadge: document.getElementById("personalPipelineBadge"),
   personalProductPeriod: document.getElementById("personalProductPeriod"),
@@ -2144,12 +2143,8 @@ function renderPersonalGroupRank(person) {
     .sort((a, b) => b.sales - a.sales || a.person.localeCompare(b.person, "zh-CN"));
   const previousRows = [...rows].sort((a, b) => b.lastMonthSales - a.lastMonthSales || a.person.localeCompare(b.person, "zh-CN"));
   const previousRankByPerson = new Map(previousRows.map((row, index) => [row.person, index + 1]));
-  const currentRank = Math.max(1, rows.findIndex((row) => row.person === person) + 1);
   const podiumRows = [rows[1], rows[0], rows[2]].filter(Boolean);
 
-  if (els.personalGroupRankBadge) {
-    els.personalGroupRankBadge.textContent = `${teamLabel} · 我的排名 第 ${currentRank}`;
-  }
 
   els.personalGroupRank.innerHTML = `
     <div class="group-ranking-podium" style="--team-color:${teamMeta.color}; --team-soft:${teamMeta.soft}">
