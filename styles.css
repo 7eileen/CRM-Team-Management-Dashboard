@@ -9877,3 +9877,31 @@ body {
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }
+
+/* Balance the personal ranking and collaborator list like the reference layout. */
+@media (min-width: 1181px) {
+  .personal-compact-row {
+    grid-template-columns: minmax(0, 35fr) minmax(0, 65fr);
+  }
+}
+
+.personal-compact-row > .personal-group-ranking-panel,
+.personal-compact-row > .personal-talent-panel {
+  background: linear-gradient(180deg, #fff8d9 0%, #fffbee 42%, #fffdf7 72%, #ffffff 100%);
+}
+
+.personal-compact-row .personal-group-ranking,
+.personal-compact-row .personal-talent-panel .talent-sales-list,
+.personal-compact-row .personal-talent-panel .talent-sales-row {
+  background: transparent;
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-row {
+  border-bottom-color: #f4ead2;
+}
+
+@media (max-width: 1180px) {
+  .personal-compact-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
