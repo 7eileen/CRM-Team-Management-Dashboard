@@ -686,5 +686,16 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="./app.js" defer></script>
+  <script>
+    (() => {
+      const tabs = Array.from(document.querySelectorAll("#managementPersonRankTabs > button"));
+      const channelTab = tabs.find((tab) => tab.textContent.trim() === "渠道");
+      if (!channelTab) return;
+
+      const wasActive = channelTab.classList.contains("active");
+      channelTab.remove();
+      if (wasActive) tabs.find((tab) => tab !== channelTab)?.click();
+    })();
+  </script>
 </body>
 </html>
