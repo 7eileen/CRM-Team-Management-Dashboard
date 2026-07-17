@@ -1690,7 +1690,7 @@ svg {
   display: grid;
   place-items: center;
   justify-self: center;
-  border: 5px solid #ffffff;
+  border: 3px solid #ffffff;
   border-radius: 50%;
   background: var(--team-product-pie, #eef2f6);
   box-shadow: 0 14px 30px rgba(74, 102, 140, 0.12);
@@ -1698,8 +1698,8 @@ svg {
 
 .team-product-pie::before {
   position: absolute;
-  inset: 23%;
-  border: 5px solid rgba(255, 255, 255, 0.72);
+  inset: 13px;
+  border: 3px solid rgba(255, 255, 255, 0.84);
   border-radius: 50%;
   background: #ffffff;
   content: "";
