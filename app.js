@@ -1686,7 +1686,7 @@ function renderManagementTeamDetail(data) {
         <div class="team-focus-head">
           <div>
             <span class="panel-kicker">Selected Team</span>
-            <h3>${escapeHtml(selected.label)} 完成概览</h3>
+            <h3>${escapeHtml(selected.label)}</h3>
           </div>
           <strong>${compactCurrency(selected.sales)}</strong>
         </div>
