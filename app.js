@@ -2178,15 +2178,12 @@ function renderPersonalGroupRank(person) {
     <div class="group-ranking-podium" style="--team-color:${teamMeta.color}; --team-soft:${teamMeta.soft}">
       ${podiumRows.map((row) => {
         const rank = rows.indexOf(row) + 1;
-        const movement = groupRankMovement(rank, previousRankByPerson.get(row.person) || rank);
         return `
           <button class="group-podium-card rank-${rank} ${row.person === person ? "current" : ""}" type="button" data-person-filter="${escapeHtml(row.person)}">
             <span class="group-rank-avatar"><span>${escapeHtml(row.person.slice(0, 1))}</span></span>
             <span class="group-rank-medal" aria-label="第 ${rank} 名"><i aria-hidden="true"></i></span>
             <strong>${escapeHtml(row.person)}</strong>
-            <span class="group-rank-metric-label">当月GMV</span>
             <b>${compactCurrency(row.sales)}</b>
-            <em class="group-rank-change ${movement.className}">${movement.label}</em>
           </button>
         `;
       }).join("")}
