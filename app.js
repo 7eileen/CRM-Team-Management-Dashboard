@@ -2744,6 +2744,35 @@ function renderFormatGrid() {
       </div>
     `;
   }).join("");
+
+  if (state.view === "personal") {
+    const rows = personSalesRows(enrichedRecords(state.records));
+    const person = selectedPerson();
+    const row = rows.find((item) => item.person === person) || rows[0];
+    const completed = row?.sales || 0;
+    const target = 1761000;
+    const ratio = target ? completed / target : 0;
+    const progressWidth = clamp(ratio * 100, 0, 100);
+    const formatW = (value) => `¥${(value / 10000).toFixed(1)}w`;
+
+    els.kpiGrid.insertAdjacentHTML("beforeend", `
+      <article class="personal-progress-card">
+        <div class="personal-progress-summary">
+          <span class="personal-progress-icon">${icon("target")}</span>
+          <div>
+            <span>当月GMV完成进度</span>
+            <strong>${percent(ratio)}</strong>
+          </div>
+        </div>
+        <div class="personal-progress-meter">
+          <div class="personal-progress-track" role="progressbar" aria-label="当月GMV完成进度" aria-valuenow="${Math.round(ratio * 100)}" aria-valuemin="0" aria-valuemax="100">
+            <i style="width:${progressWidth}%"></i>
+          </div>
+          <small>已完成 ${formatW(completed)} / 目标 ${formatW(target)}</small>
+        </div>
+      </article>
+    `);
+  }
 }
 
 function talentPoolMatchesFilter(assessment) {
