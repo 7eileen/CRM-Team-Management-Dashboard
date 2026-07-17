@@ -1167,7 +1167,6 @@ function renderKpis() {
           <div class="kpi-progress-meter">
             <div class="kpi-progress-copy">
               <span>${card.progressLabel || ""}</span>
-              <strong>${percent(card.progress)}</strong>
             </div>
             <div class="kpi-progress-track" aria-label="${card.label} ${percent(card.progress)}">
               <i style="--kpi-progress:${progressWidth}%"></i>
