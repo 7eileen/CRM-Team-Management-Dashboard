@@ -1349,10 +1349,6 @@ function renderTeamProductPie(rows, total) {
   return `
     <div class="team-product-pie-layout">
       <div class="team-product-pie" style="--team-product-pie:conic-gradient(${gradient})" role="img" aria-label="品类GMV圆环图">
-        <div class="team-product-pie-center">
-          <span>品类GMV</span>
-          <strong>${compactCurrency(total)}</strong>
-        </div>
       </div>
       <div class="team-product-pie-legend">
         ${visibleRows.map((row) => `
