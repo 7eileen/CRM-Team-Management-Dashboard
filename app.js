@@ -1843,9 +1843,9 @@ function managementTrendConfig() {
 
 function drawManagementCategoryTrend(canvas, series, categoryLabels, axisMax) {
   const parentWidth = Math.round(canvas.parentElement?.getBoundingClientRect().width || 520);
-  const labelWidth = categoryLabels.reduce((total, label) => total + Math.max(64, String(label).length * 12 + 22), 72);
+  const labelWidth = categoryLabels.reduce((total, label) => total + Math.max(82, String(label).length * 12 + 28), 72);
   const cssWidth = Math.max(260, parentWidth, labelWidth);
-  const cssHeight = 238;
+  const cssHeight = 252;
   const left = cssWidth < 420 ? 48 : 56;
   const right = 12;
   const top = 20;
@@ -1944,22 +1944,17 @@ function drawManagementCategoryTrend(canvas, series, categoryLabels, axisMax) {
 }
 
 function renderManagementCategoryTrend(data) {
-  if (!els.managementTrendProduct || !els.managementTrendRange || !els.managementTrendSummary || !els.managementTrendChart) return;
+  if (!els.managementTrendRange || !els.managementTrendSummary || !els.managementTrendChart) return;
 
-  const selectedProduct = state.managementTrendProduct || "全部";
   const range = managementTrendConfig();
-  const categoryLabels = selectedProduct === "全部" ? PRODUCTS : [selectedProduct];
+  const categoryLabels = PRODUCTS;
   const series = categoryLabels.map((product) => {
     const productSales = sumBy(data.filter((record) => record.product === product), (record) => record.sales);
     return Math.max(0, Math.round((productSales * range.factor) / 100) * 100);
   });
 
-  els.managementTrendProduct.innerHTML = ["全部", ...PRODUCTS].map((product) => `
-    <option value="${escapeHtml(product)}" ${product === selectedProduct ? "selected" : ""}>${product === "全部" ? "全部品类" : escapeHtml(product)}</option>
-  `).join("");
-
   els.managementTrendRange.innerHTML = MANAGEMENT_TREND_RANGES.map((item) => `
-    <button class="${item.id === range.id ? "active" : ""}" type="button" data-management-trend-range="${item.id}" aria-pressed="${item.id === range.id}">${item.label}</button>
+    <option value="${item.id}" ${item.id === range.id ? "selected" : ""}>${item.label}</option>
   `).join("");
 
   els.managementTrendSummary.hidden = true;
@@ -1967,7 +1962,7 @@ function renderManagementCategoryTrend(data) {
 
   const maxValue = Math.max(...series, 1000);
   const axisMax = Math.ceil((maxValue * 1.18) / 1000) * 1000;
-  const chartTitle = selectedProduct === "全部" ? "全部品类" : selectedProduct;
+  const chartTitle = "全部品类";
 
   els.managementTrendChart.innerHTML = `
     <div class="category-chart-scroll">
@@ -3492,6 +3487,11 @@ function bindEvents() {
 
   els.managementTrendProduct?.addEventListener("change", (event) => {
     state.managementTrendProduct = event.target.value;
+    renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
+  });
+
+  els.managementTrendRange?.addEventListener("change", (event) => {
+    state.managementTrendRange = event.target.value;
     renderManagementCategoryTrend(enrichedRecords(filteredRecords(), { ignoreTimeRange: true }));
   });
 
