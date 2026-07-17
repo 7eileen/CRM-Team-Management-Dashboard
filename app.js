@@ -1787,42 +1787,10 @@ function managementTrendConfig() {
   return MANAGEMENT_TREND_RANGES.find((range) => range.id === state.managementTrendRange) || MANAGEMENT_TREND_RANGES[3];
 }
 
-function managementTrendLabels(range) {
-  if (range.labels) return range.labels;
-  const match = String(getSalesMetrics().month || currentMonthKey()).match(/^(\d{4})-(\d{2})$/);
-  const year = match ? Number(match[1]) : new Date().getFullYear();
-  const month = match ? Number(match[2]) : new Date().getMonth() + 1;
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const now = new Date();
-  const endDay = now.getFullYear() === year && now.getMonth() + 1 === month ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
-  const pointCount = range.pointCount || 7;
-  if (range.id === "7d") {
-    const endDate = new Date(year, month - 1, endDay);
-    return Array.from({ length: pointCount }, (_, index) => {
-      const date = new Date(endDate);
-      date.setDate(endDate.getDate() - pointCount + index + 1);
-      return `${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
-    });
-  }
-  return Array.from({ length: pointCount }, (_, index) => {
-    const day = 1 + Math.round(((daysInMonth - 1) * index) / Math.max(1, pointCount - 1));
-    return `${String(month).padStart(2, "0")}/${String(day).padStart(2, "0")}`;
-  });
-}
-
-function managementTrendSeries(total, pointCount, productIndex, rangeIndex) {
-  const weights = Array.from({ length: pointCount }, (_, index) => {
-    const rise = 0.72 + index * 0.065;
-    const wave = Math.sin((index + 1) * 1.18 + productIndex * 0.42) * 0.16;
-    const pulse = ((index + productIndex + rangeIndex) % 4 === 2 ? 0.13 : 0);
-    return Math.max(0.36, rise + wave + pulse);
-  });
-  const weightTotal = weights.reduce((sum, value) => sum + value, 0) || 1;
-  return weights.map((weight) => Math.round((total * weight) / weightTotal / 100) * 100);
-}
-
-function drawManagementCategoryTrend(canvas, series, rangeLabels, axisMax) {
-  const cssWidth = Math.max(260, Math.round(canvas.getBoundingClientRect().width || 520));
+function drawManagementCategoryTrend(canvas, series, categoryLabels, axisMax) {
+  const parentWidth = Math.round(canvas.parentElement?.getBoundingClientRect().width || 520);
+  const labelWidth = categoryLabels.reduce((total, label) => total + Math.max(64, String(label).length * 12 + 22), 72);
+  const cssWidth = Math.max(260, parentWidth, labelWidth);
   const cssHeight = 238;
   const left = cssWidth < 420 ? 48 : 56;
   const right = 12;
@@ -1833,8 +1801,8 @@ function drawManagementCategoryTrend(canvas, series, rangeLabels, axisMax) {
   const pixelRatio = Math.max(1, window.devicePixelRatio || 1);
   const points = series.map((value, index) => ({
     value,
-    label: rangeLabels[index],
-    x: left + (chartWidth * index) / Math.max(1, series.length - 1),
+    label: categoryLabels[index],
+    x: series.length === 1 ? left + chartWidth / 2 : left + (chartWidth * index) / (series.length - 1),
     y: top + chartHeight - (value / axisMax) * chartHeight,
   }));
 
@@ -1916,10 +1884,8 @@ function drawManagementCategoryTrend(canvas, series, rangeLabels, axisMax) {
   context.fillStyle = "#52637a";
   context.textAlign = "center";
   context.textBaseline = "top";
-  points.forEach((point, index) => {
-    if (index === 0 || index === points.length - 1 || index % 2 === 0) {
-      context.fillText(point.label, point.x, baseline + 13);
-    }
+  points.forEach((point) => {
+    context.fillText(point.label, point.x, baseline + 13);
   });
 }
 
@@ -1928,13 +1894,11 @@ function renderManagementCategoryTrend(data) {
 
   const selectedProduct = state.managementTrendProduct || "全部";
   const range = managementTrendConfig();
-  const rangeLabels = managementTrendLabels(range);
-  const rangeIndex = Math.max(0, MANAGEMENT_TREND_RANGES.findIndex((item) => item.id === range.id));
-  const productIndex = Math.max(0, PRODUCTS.indexOf(selectedProduct));
-  const selectedRows = selectedProduct === "全部" ? data : data.filter((record) => record.product === selectedProduct);
-  const baseSales = sumBy(selectedRows, (record) => record.sales);
-  const rangeSales = Math.max(0, Math.round((baseSales * range.factor) / 100) * 100);
-  const series = managementTrendSeries(rangeSales, rangeLabels.length, productIndex, rangeIndex);
+  const categoryLabels = selectedProduct === "全部" ? PRODUCTS : [selectedProduct];
+  const series = categoryLabels.map((product) => {
+    const productSales = sumBy(data.filter((record) => record.product === product), (record) => record.sales);
+    return Math.max(0, Math.round((productSales * range.factor) / 100) * 100);
+  });
 
   els.managementTrendProduct.innerHTML = ["全部", ...PRODUCTS].map((product) => `
     <option value="${escapeHtml(product)}" ${product === selectedProduct ? "selected" : ""}>${product === "全部" ? "全部品类" : escapeHtml(product)}</option>
@@ -1953,14 +1917,14 @@ function renderManagementCategoryTrend(data) {
 
   els.managementTrendChart.innerHTML = `
     <div class="category-chart-scroll">
-      <canvas class="management-category-chart" role="img" aria-label="${escapeHtml(chartTitle)}${range.label}销售趋势折线图"></canvas>
+      <canvas class="management-category-chart" role="img" aria-label="${escapeHtml(range.label)}${escapeHtml(chartTitle)}销售额折线图，横轴为品类，纵轴为销售额"></canvas>
       <ul class="management-category-chart-data">
-        ${series.map((value, index) => `<li>${escapeHtml(rangeLabels[index])} ${currency(value)}</li>`).join("")}
+        ${series.map((value, index) => `<li>${escapeHtml(categoryLabels[index])} ${currency(value)}</li>`).join("")}
       </ul>
     </div>
   `;
   const canvas = els.managementTrendChart.querySelector(".management-category-chart");
-  const drawChart = () => drawManagementCategoryTrend(canvas, series, rangeLabels, axisMax);
+  const drawChart = () => drawManagementCategoryTrend(canvas, series, categoryLabels, axisMax);
   drawChart();
   if (document.fonts?.ready) document.fonts.ready.then(drawChart);
   state.managementTrendResizeObserver?.disconnect();
