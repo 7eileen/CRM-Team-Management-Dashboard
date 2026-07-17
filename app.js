@@ -249,6 +249,8 @@ const state = {
   talentPoolSearch: "",
   talentPoolLabels: loadTalentPoolLabels(),
   personalPerson: PERSONS[0],
+  personalProductRange: "30d",
+  personalProductTrendObserver: null,
   personalScheduleDate: "",
   personalScheduleRangeDate: "",
   rankSort: {
@@ -301,8 +303,7 @@ const els = {
   personalGroupRank: document.getElementById("personalGroupRank"),
   personalKanbanColumns: document.getElementById("personalKanbanColumns"),
   personalPipelineBadge: document.getElementById("personalPipelineBadge"),
-  personalProductPeriod: document.getElementById("personalProductPeriod"),
-  personalProductPeriodLabel: document.getElementById("personalProductPeriodLabel"),
+  personalProductRange: document.getElementById("personalProductRange"),
   personalSchedule: document.getElementById("personalSchedule"),
   personalSchedulePeriod: document.getElementById("personalSchedulePeriod"),
   personalSchedulePeriodLabel: document.getElementById("personalSchedulePeriodLabel"),
@@ -838,12 +839,11 @@ function renderTimeRangePopover() {
     els.managementTeamPeriod.setAttribute("aria-expanded", String(state.timeRangePopoverOpen));
     els.managementTeamPeriod.classList.toggle("active", state.timeRangePopoverOpen);
   }
-  [els.personalProductPeriod, els.personalSchedulePeriod].forEach((control) => {
+  [els.personalSchedulePeriod].forEach((control) => {
     if (!control) return;
     control.setAttribute("aria-expanded", String(state.timeRangePopoverOpen));
     control.classList.toggle("active", state.timeRangePopoverOpen);
   });
-  if (els.personalProductPeriodLabel) els.personalProductPeriodLabel.textContent = range.label;
   if (els.personalSchedulePeriodLabel) els.personalSchedulePeriodLabel.textContent = formatMetricMonth(metrics.month);
   els.timeRangePopover.hidden = !state.timeRangePopoverOpen;
   if (!state.timeRangePopoverOpen) return;
@@ -1454,23 +1454,64 @@ function renderTeamDetailLines(rows, max, options = {}) {
   }).join("");
 }
 
-function drawPersonalProductTrend(canvas, rows) {
-  const width = 1120;
-  const height = 340;
-  const left = 86;
-  const right = 28;
-  const top = 28;
-  const bottom = 62;
+const personalProductLineColors = ["#ff6b35", "#ffb13b", "#4f8df7", "#32bfa4", "#8976e8", "#f27aa6"];
+
+function personalProductTimeline(rows, rangeId = "30d") {
+  const days = rangeId === "7d" ? 7 : 30;
+  const metrics = getSalesMetrics();
+  const monthMatch = String(metrics.month || currentMonthKey()).match(/^(\d{4})-(\d{2})$/);
+  const today = new Date();
+  const year = monthMatch ? Number(monthMatch[1]) : today.getFullYear();
+  const month = monthMatch ? Number(monthMatch[2]) : today.getMonth() + 1;
+  const lastDay = new Date(year, month, 0).getDate();
+  const endDay = year === today.getFullYear() && month === today.getMonth() + 1
+    ? Math.min(today.getDate(), lastDay)
+    : lastDay;
+  const endDate = new Date(year, month - 1, endDay);
+  const labels = Array.from({ length: days }, (_, index) => {
+    const date = new Date(endDate);
+    date.setDate(endDate.getDate() - (days - 1 - index));
+    return `${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
+  });
+  const visibleRows = [...rows]
+    .filter((row) => row.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 6);
+  const rangeFactor = days / 30;
+  const series = visibleRows.map((row, seriesIndex) => {
+    const raw = labels.map((_, index) => {
+      const wave = Math.sin((index + seriesIndex * 1.6) * 0.58) * 0.22;
+      const shortWave = Math.cos((index * 0.43) + seriesIndex * 0.9) * 0.12;
+      const trend = ((index / Math.max(1, days - 1)) - 0.5) * (0.08 + seriesIndex * 0.015);
+      return Math.max(0.22, 1 + wave + shortWave + trend);
+    });
+    const targetTotal = row.value * rangeFactor;
+    const rawTotal = raw.reduce((sum, value) => sum + value, 0) || 1;
+    return {
+      label: row.label,
+      color: personalProductLineColors[seriesIndex % personalProductLineColors.length],
+      total: targetTotal,
+      values: raw.map((value) => (value / rawTotal) * targetTotal),
+    };
+  });
+  return { days, labels, series };
+}
+
+function drawPersonalProductTrend(canvas, timeline) {
+  if (!canvas || !timeline.series.length) return;
+  const width = Math.max(760, Math.round(canvas.parentElement?.clientWidth || 900));
+  const height = 304;
+  const left = 72;
+  const right = 22;
+  const top = 18;
+  const bottom = 44;
   const chartWidth = width - left - right;
   const chartHeight = height - top - bottom;
   const pixelRatio = Math.max(1, window.devicePixelRatio || 1);
-  const maxValue = Math.max(...rows.map((row) => row.value), 1000);
-  const axisMax = Math.ceil((maxValue * 1.18) / 10000) * 10000;
-  const points = rows.map((row, index) => ({
-    ...row,
-    x: left + (chartWidth * index) / Math.max(1, rows.length - 1),
-    y: top + chartHeight - (row.value / axisMax) * chartHeight,
-  }));
+  const allValues = timeline.series.flatMap((item) => item.values);
+  const maxValue = Math.max(...allValues, 1000);
+  const stepBase = maxValue >= 100000 ? 10000 : 1000;
+  const axisMax = Math.ceil((maxValue * 1.16) / stepBase) * stepBase;
 
   canvas.width = Math.round(width * pixelRatio);
   canvas.height = Math.round(height * pixelRatio);
@@ -1484,113 +1525,101 @@ function drawPersonalProductTrend(canvas, rows) {
   context.lineCap = "round";
   context.lineJoin = "round";
 
-  const drawSmoothLine = (moveToStart = true) => {
-    if (moveToStart) context.moveTo(points[0].x, points[0].y);
-    for (let index = 1; index < points.length - 1; index += 1) {
-      const current = points[index];
-      const next = points[index + 1];
-      context.quadraticCurveTo(
-        current.x,
-        current.y,
-        (current.x + next.x) / 2,
-        (current.y + next.y) / 2,
-      );
-    }
-    if (points.length > 1) {
-      const penultimate = points[points.length - 2];
-      const last = points[points.length - 1];
-      context.quadraticCurveTo(penultimate.x, penultimate.y, last.x, last.y);
-    }
-  };
-
-  const gridRows = Array.from({ length: 4 }, (_, index) => {
-    const ratio = index / 3;
+  const gridRows = Array.from({ length: 5 }, (_, index) => {
+    const ratio = index / 4;
     return { y: top + chartHeight * ratio, value: axisMax * (1 - ratio) };
   });
-  context.font = '600 12px "Microsoft YaHei UI", "PingFang SC", sans-serif';
+  context.font = '600 11px "Microsoft YaHei UI", "PingFang SC", sans-serif';
   context.textAlign = "right";
   context.textBaseline = "middle";
   gridRows.forEach((row) => {
     context.beginPath();
-    context.strokeStyle = "#e7edf5";
+    context.strokeStyle = "#e8eef6";
     context.lineWidth = 1;
     context.moveTo(left, Math.round(row.y) + 0.5);
     context.lineTo(width - right, Math.round(row.y) + 0.5);
     context.stroke();
-    context.fillStyle = "#43546b";
-    context.fillText(compactCurrency(row.value), left - 12, row.y);
+    context.fillStyle = "#64748b";
+    context.fillText(row.value ? `¥${(row.value / 10000).toFixed(1)}w` : "¥0", left - 10, row.y);
   });
 
-  const baseline = top + chartHeight;
-  const areaGradient = context.createLinearGradient(0, top, 0, baseline);
-  areaGradient.addColorStop(0, "rgba(66, 165, 245, 0.42)");
-  areaGradient.addColorStop(0.68, "rgba(139, 201, 251, 0.16)");
-  areaGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-  context.beginPath();
-  context.moveTo(points[0].x, baseline);
-  context.lineTo(points[0].x, points[0].y);
-  drawSmoothLine(false);
-  context.lineTo(points[points.length - 1].x, baseline);
-  context.closePath();
-  context.fillStyle = areaGradient;
-  context.fill();
-
-  context.save();
-  context.shadowColor = "rgba(50, 154, 240, 0.16)";
-  context.shadowBlur = 7;
-  context.shadowOffsetY = 5;
-  context.beginPath();
-  drawSmoothLine();
-  context.strokeStyle = "#329af0";
-  context.lineWidth = 3.5;
-  context.stroke();
-  context.restore();
-
-  points.forEach((point) => {
-    context.beginPath();
-    context.arc(point.x, point.y, 4.5, 0, Math.PI * 2);
-    context.fillStyle = "#329af0";
-    context.fill();
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2.5;
-    context.stroke();
-  });
-
-  const fitLabel = (label, maxWidth) => {
-    if (context.measureText(label).width <= maxWidth) return label;
-    let fitted = label;
-    while (fitted.length > 1 && context.measureText(`${fitted}...`).width > maxWidth) {
-      fitted = fitted.slice(0, -1);
-    }
-    return `${fitted}...`;
-  };
-  context.font = '600 13px "Microsoft YaHei UI", "PingFang SC", sans-serif';
-  context.fillStyle = "#43546b";
+  const xForIndex = (index) => left + (chartWidth * index) / Math.max(1, timeline.labels.length - 1);
+  const yForValue = (value) => top + chartHeight - (value / axisMax) * chartHeight;
+  const labelIndexes = timeline.days === 7
+    ? timeline.labels.map((_, index) => index)
+    : [0, 5, 10, 15, 20, 25, timeline.labels.length - 1];
+  context.font = '600 11px "Microsoft YaHei UI", "PingFang SC", sans-serif';
+  context.fillStyle = "#64748b";
   context.textAlign = "center";
   context.textBaseline = "top";
-  points.forEach((point) => {
-    context.fillText(fitLabel(point.label, 78), point.x, baseline + 18);
+  [...new Set(labelIndexes)].forEach((index) => {
+    context.fillText(timeline.labels[index], xForIndex(index), top + chartHeight + 15);
+  });
+
+  timeline.series.forEach((item, seriesIndex) => {
+    const points = item.values.map((value, index) => ({ x: xForIndex(index), y: yForValue(value) }));
+    context.save();
+    context.globalAlpha = seriesIndex === 0 ? 1 : 0.9;
+    context.beginPath();
+    context.moveTo(points[0].x, points[0].y);
+    for (let index = 1; index < points.length; index += 1) {
+      const previous = points[index - 1];
+      const point = points[index];
+      const middleX = (previous.x + point.x) / 2;
+      context.bezierCurveTo(middleX, previous.y, middleX, point.y, point.x, point.y);
+    }
+    context.strokeStyle = item.color;
+    context.lineWidth = seriesIndex === 0 ? 2.8 : 2.2;
+    context.stroke();
+    context.restore();
+
+    const pointIndexes = timeline.days === 7 ? [0, 1, 2, 3, 4, 5, 6] : [0, 5, 10, 15, 20, 25, 29];
+    pointIndexes.forEach((index) => {
+      const point = points[index];
+      if (!point) return;
+      context.beginPath();
+      context.arc(point.x, point.y, seriesIndex === 0 ? 3.2 : 2.6, 0, Math.PI * 2);
+      context.fillStyle = "#ffffff";
+      context.fill();
+      context.strokeStyle = item.color;
+      context.lineWidth = 1.8;
+      context.stroke();
+    });
   });
 }
 
 function renderPersonalProductTrend(container, rows) {
   if (!container) return;
+  state.personalProductTrendObserver?.disconnect();
+  state.personalProductTrendObserver = null;
   if (!rows.length) {
     container.innerHTML = "";
     return;
   }
+  const timeline = personalProductTimeline(rows, state.personalProductRange);
   container.innerHTML = `
+    <div class="personal-product-legend" aria-label="品类图例">
+      ${timeline.series.map((item) => `
+        <span><i style="--legend-color:${item.color}"></i>${escapeHtml(item.label)}<b>${compactCurrency(item.total)}</b></span>
+      `).join("")}
+    </div>
     <div class="category-chart-scroll">
       <canvas class="personal-product-chart" role="img" aria-label="个人各品类GMV折线图"></canvas>
       <ul class="personal-product-chart-data">
-        ${rows.map((row) => `<li>${escapeHtml(row.label)} ${currency(row.value)}</li>`).join("")}
+        ${timeline.series.map((item) => `<li>${escapeHtml(item.label)} ${compactCurrency(item.total)}</li>`).join("")}
       </ul>
     </div>
   `;
   const canvas = container.querySelector(".personal-product-chart");
-  drawPersonalProductTrend(canvas, rows);
+  const drawChart = () => drawPersonalProductTrend(canvas, timeline);
+  drawChart();
   if (document.fonts?.ready) {
-    document.fonts.ready.then(() => drawPersonalProductTrend(canvas, rows));
+    document.fonts.ready.then(drawChart);
+  }
+  if (window.ResizeObserver) {
+    const observer = new ResizeObserver(drawChart);
+    observer.observe(container);
+    state.personalProductTrendObserver = observer;
   }
 }
 
@@ -3274,6 +3303,16 @@ function bindEvents() {
       state.quarterPopoverOpen = false;
       renderTimeRangePopover();
       renderQuarterPopover();
+      return;
+    }
+
+    const personalProductRange = event.target.closest("[data-personal-product-range]");
+    if (personalProductRange) {
+      state.personalProductRange = personalProductRange.dataset.personalProductRange === "7d" ? "7d" : "30d";
+      els.personalProductRange?.querySelectorAll("[data-personal-product-range]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.personalProductRange === state.personalProductRange);
+      });
+      renderPersonalDashboard();
       return;
     }
 
