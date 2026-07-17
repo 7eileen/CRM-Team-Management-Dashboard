@@ -7976,7 +7976,7 @@ body {
 /* Preserve full-width monthly progress cards after KPI compaction. */
 .kpi-grid > .kpi-card.kpi-progress-card {
   grid-column: 1 / -1;
-  grid-template-columns: 44px minmax(190px, 0.34fr) minmax(260px, 1fr);
+  grid-template-columns: 44px minmax(112px, 0.18fr) minmax(0, 1fr);
   align-items: center;
   min-height: 108px;
 }
