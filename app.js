@@ -1349,7 +1349,12 @@ function renderTeamProductPie(rows, total) {
 
   return `
     <div class="team-product-pie-layout">
-      <div class="team-product-pie" style="--team-product-pie:conic-gradient(${gradient})" role="img" aria-label="品类GMV饼图"></div>
+      <div class="team-product-pie" style="--team-product-pie:conic-gradient(${gradient})" role="img" aria-label="品类GMV圆环图">
+        <div class="team-product-pie-center">
+          <span>品类GMV</span>
+          <strong>${compactCurrency(total)}</strong>
+        </div>
+      </div>
       <div class="team-product-pie-legend">
         ${visibleRows.map((row) => `
           <div>
@@ -1768,7 +1773,6 @@ function renderManagementTeamDetail(data) {
         <section class="team-detail-section">
           <div class="team-section-head">
             <span>小组完成</span>
-            <strong>${selected.groupRows.length} 组</strong>
           </div>
           ${renderTeamDetailLines(selected.groupRows, maxGroupSales, {
             meta: (row) => `${row.personCount} 商务 · ${row.talentCount} 达人`,
@@ -1777,7 +1781,6 @@ function renderManagementTeamDetail(data) {
         <section class="team-detail-section">
           <div class="team-section-head">
             <span>商务贡献</span>
-            <strong>Top ${Math.min(selected.personRows.length, 6)}</strong>
           </div>
           ${renderTeamDetailLines(selected.personRows, maxPersonSales, {
             meta: (row) => `${row.talentCount} 达人 · ${row.specialCount} 专场`,
@@ -1786,7 +1789,6 @@ function renderManagementTeamDetail(data) {
         <section class="team-detail-section">
           <div class="team-section-head">
             <span>品类结构</span>
-            <strong>${percent(selected.share)}</strong>
           </div>
           ${renderTeamProductPie(selected.productRows, selected.sales)}
         </section>

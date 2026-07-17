@@ -1684,13 +1684,48 @@ svg {
 }
 
 .team-product-pie {
+  position: relative;
   width: min(100%, 152px);
   aspect-ratio: 1;
+  display: grid;
+  place-items: center;
   justify-self: center;
-  border: 7px solid #ffffff;
+  border: 5px solid #ffffff;
   border-radius: 50%;
   background: var(--team-product-pie, #eef2f6);
   box-shadow: 0 14px 30px rgba(74, 102, 140, 0.12);
+}
+
+.team-product-pie::before {
+  position: absolute;
+  inset: 23%;
+  border: 5px solid rgba(255, 255, 255, 0.72);
+  border-radius: 50%;
+  background: #ffffff;
+  content: "";
+}
+
+.team-product-pie-center {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.team-product-pie-center span {
+  color: #8292a8;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.team-product-pie-center strong {
+  color: #17213a;
+  font-size: 17px;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .team-product-pie-legend {
