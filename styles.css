@@ -9922,7 +9922,7 @@ body {
 
 .personal-compact-row > .personal-group-ranking-panel,
 .personal-compact-row > .personal-talent-panel {
-  background: linear-gradient(180deg, #fff8d9 0%, #fffbee 42%, #fffdf7 72%, #ffffff 100%);
+  background: #ffffff;
 }
 
 .personal-compact-row .personal-group-ranking,
@@ -9931,8 +9931,87 @@ body {
   background: transparent;
 }
 
+.personal-compact-row .personal-group-ranking {
+  background: linear-gradient(180deg, #fffdf9 0%, #ffffff 42%);
+}
+
+.personal-compact-row .personal-group-ranking .group-podium-card {
+  border-color: transparent;
+  box-shadow: 0 8px 22px rgba(53, 69, 94, 0.06);
+}
+
+.personal-compact-row .personal-group-ranking .group-podium-card.rank-1 {
+  background: linear-gradient(180deg, #fffaf0 0%, #fff5df 100%);
+}
+
+.personal-compact-row .personal-group-ranking .group-podium-card.rank-2 {
+  background: linear-gradient(180deg, #fbfcfe 0%, #f2f5f9 100%);
+}
+
+.personal-compact-row .personal-group-ranking .group-podium-card.rank-3 {
+  background: linear-gradient(180deg, #fffaf7 0%, #fff2e9 100%);
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-list {
+  gap: 6px;
+  padding: 10px 12px 14px;
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-row,
+.personal-compact-row .group-ranking-row {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: #ffffff;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
 .personal-compact-row .personal-talent-panel .talent-sales-row {
-  border-bottom-color: #f4ead2;
+  border-bottom: 0;
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-row:nth-child(1) {
+  background: #fff9ee;
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-row:nth-child(2) {
+  background: #f7f8fb;
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-row:nth-child(3) {
+  background: #fff8f4;
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-row::before,
+.personal-compact-row .group-ranking-row::before {
+  content: "";
+  position: absolute;
+  inset: 7px auto 7px 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #ff7a3d;
+  opacity: 0;
+  transform: scaleY(0.35);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-row:hover,
+.personal-compact-row .group-ranking-row:hover {
+  background: #fff8f3;
+  box-shadow: 0 5px 16px rgba(255, 122, 61, 0.08);
+  transform: translateX(2px);
+}
+
+.personal-compact-row .personal-talent-panel .talent-sales-row:hover::before,
+.personal-compact-row .group-ranking-row:hover::before,
+.personal-compact-row .group-ranking-row.current::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.personal-compact-row .group-ranking-row.current {
+  background: #fff5ee;
 }
 
 @media (max-width: 1180px) {
