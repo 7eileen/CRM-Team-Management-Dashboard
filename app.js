@@ -78,6 +78,8 @@ const SALES_TEAM_META = [
 
 const chartPalette = ["#ff7138", "#ff9566", "#ffb184", "#ffc24a", "#5594f7", "#7eacf8", "#a8c7f8", "#c7daf7"];
 const SALES_METRICS_STORAGE_KEY = "crm-sales-metrics-v1";
+const TEAM_SALES_SCENARIO_VERSION = "a500-b600-v1";
+const TEAM_CURRENT_MONTH_SCENARIO = { "A组": 5000000, "B组": 6000000 };
 const TALENT_POOL_STORAGE_KEY = "crm-talent-pool-labels-v1";
 const TALENT_POOL_LABELS = {
   follow: { label: "重点跟进", shortLabel: "重点跟进", tone: "focus", icon: "target" },
@@ -580,12 +582,12 @@ function sumBy(data, selector) {
 }
 
 function defaultTeamSalesMetrics(data, annualTarget, annualCompletedSales) {
-  const totalCurrent = sumBy(data, (record) => record.sales);
+  const totalCurrent = sumBy(SALES_TEAM_META, (team) => TEAM_CURRENT_MONTH_SCENARIO[team.label] || 0);
   const safeAnnualTarget = Math.max(0, moneyInputValue(annualTarget, 6800000));
   const safeAnnualCompleted = moneyInputValue(annualCompletedSales, Math.round((totalCurrent * 6.4) / 100) * 100);
   return SALES_TEAM_META.reduce((acc, team) => {
     const records = data.filter((record) => teamLabelForGroup(record.group) === team.label);
-    const currentMonthSales = sumBy(records, (record) => record.sales);
+    const currentMonthSales = TEAM_CURRENT_MONTH_SCENARIO[team.label] || 0;
     const previousMonthSales = sumBy(records, (record) => record.lastMonthSales);
     const share = totalCurrent ? currentMonthSales / totalCurrent : 1 / SALES_TEAM_META.length;
     acc[team.label] = {
@@ -644,7 +646,7 @@ function personMonthlyTarget(person, metrics = getSalesMetrics(), month = metric
 
 function defaultSalesMetrics() {
   const data = enrichedRecords(state.records, { ignoreTimeRange: true });
-  const currentMonthSales = sumBy(data, (record) => record.sales);
+  const currentMonthSales = sumBy(SALES_TEAM_META, (team) => TEAM_CURRENT_MONTH_SCENARIO[team.label] || 0);
   const previousMonthSales = sumBy(data, (record) => record.lastMonthSales);
   const annualTarget = 6800000;
   const annualCompletedSales = Math.round((currentMonthSales * 6.4) / 100) * 100;
@@ -655,6 +657,7 @@ function defaultSalesMetrics() {
     previousMonthSales,
     annualTarget,
     annualCompletedSales,
+    teamSalesScenarioVersion: TEAM_SALES_SCENARIO_VERSION,
     teamSales: defaultTeamSalesMetrics(data, annualTarget, annualCompletedSales),
     personMonthlyTargets: {
       [month]: defaultPersonMonthlyTargets(data),
@@ -672,6 +675,7 @@ function normalizeSalesMetrics(metrics = {}, defaults = defaultSalesMetrics()) {
     previousMonthSales: moneyInputValue(metrics.previousMonthSales, defaults.previousMonthSales),
     annualTarget,
     annualCompletedSales,
+    teamSalesScenarioVersion: String(metrics.teamSalesScenarioVersion || defaults.teamSalesScenarioVersion || ""),
     teamSales: normalizeTeamSalesMetrics(metrics.teamSales, defaults.teamSales),
     personMonthlyTargets: normalizePersonMonthlyTargets(metrics.personMonthlyTargets, defaults.personMonthlyTargets),
   };
@@ -681,6 +685,22 @@ function loadSalesMetrics() {
   const defaults = defaultSalesMetrics();
   try {
     const saved = JSON.parse(localStorage.getItem(SALES_METRICS_STORAGE_KEY) || "null");
+    if (saved && saved.teamSalesScenarioVersion !== TEAM_SALES_SCENARIO_VERSION) {
+      const migrated = normalizeSalesMetrics({
+        ...saved,
+        currentMonthSales: defaults.currentMonthSales,
+        teamSalesScenarioVersion: TEAM_SALES_SCENARIO_VERSION,
+        teamSales: SALES_TEAM_META.reduce((acc, team) => {
+          acc[team.label] = {
+            ...(saved.teamSales?.[team.label] || defaults.teamSales[team.label]),
+            currentMonthSales: TEAM_CURRENT_MONTH_SCENARIO[team.label] || 0,
+          };
+          return acc;
+        }, {}),
+      }, defaults);
+      localStorage.setItem(SALES_METRICS_STORAGE_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
     return normalizeSalesMetrics(saved || defaults, defaults);
   } catch {
     return defaults;
