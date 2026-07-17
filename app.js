@@ -1254,8 +1254,10 @@ function personalKpiCards() {
   const gap = previous ? previous.sales - row.sales : 0;
   const specialGap = nextSpecialLeader ? nextSpecialLeader.specialCount - row.specialCount : 0;
   const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
+  const todaySales = scaleMoney(row.sales, MANAGEMENT_TREND_RANGES[0].factor);
   return [
-    { label: `${rangeLabel}GMV`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "今日GMV", value: compactCurrency(todaySales), sub: `${row.person} · 今日`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: "本月GMV", value: compactCurrency(row.sales), sub: `${row.person} · 本月`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff8f62", soft: "#fff6f1", path: "M2 32 C11 28 18 25 27 20 C36 14 44 18 52 12 C60 7 66 10 70 5" },
     { label: `${rangeLabel}GMV排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#ffc24a", soft: "#fff9e9", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
     { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#ff9566", soft: "#fff7f2", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
     { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#5594f7", soft: "#eef5ff", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },

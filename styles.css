@@ -9870,3 +9870,10 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Personal dashboard exposes daily and monthly GMV as separate KPIs. */
+@media (min-width: 1581px) {
+  .kpi-grid.personal-kpis {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
