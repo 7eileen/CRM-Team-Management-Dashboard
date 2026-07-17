@@ -1192,15 +1192,15 @@ function managementKpiCards() {
   const mom = lastMonthSales ? (monthlySales - lastMonthSales) / lastMonthSales : 0;
   const todaySales = scaleMoney(monthlySales, MANAGEMENT_TREND_RANGES[0].factor);
   return [
-    { kind: "kpi-stat-card", label: "当天销售额", value: compactCurrency(todaySales), icon: "chart", color: "#ff7138", soft: "#fff4ed" },
-    { kind: "kpi-stat-card", label: "当月销售额", value: compactCurrency(monthlySales), icon: "chart", color: "#ff8f62", soft: "#fff6f1" },
-    { kind: "kpi-stat-card", label: "当月目标销售额", value: compactCurrency(monthlyTarget), icon: "calendar", color: "#ff9f4a", soft: "#fff8ed" },
-    { kind: "kpi-stat-card", label: "年度目标销售额", value: compactCurrency(annualTarget), icon: "target", color: "#f5ad2f", soft: "#fff9e9" },
+    { kind: "kpi-stat-card", label: "当天GMV", value: compactCurrency(todaySales), icon: "chart", color: "#ff7138", soft: "#fff4ed" },
+    { kind: "kpi-stat-card", label: "当月GMV", value: compactCurrency(monthlySales), icon: "chart", color: "#ff8f62", soft: "#fff6f1" },
+    { kind: "kpi-stat-card", label: "当月目标GMV", value: compactCurrency(monthlyTarget), icon: "calendar", color: "#ff9f4a", soft: "#fff8ed" },
+    { kind: "kpi-stat-card", label: "年度目标GMV", value: compactCurrency(annualTarget), icon: "target", color: "#f5ad2f", soft: "#fff9e9" },
     { kind: "kpi-stat-card", label: "年度目标进度", value: percent(progress), icon: "pie", color: "#5594f7", soft: "#eef5ff" },
     { kind: "kpi-stat-card", label: "环比上一周期", value: signedPercent(mom * 100), icon: "arrow-up", color: mom >= 0 ? "#f2a928" : "#e45b65", soft: mom >= 0 ? "#fff8e8" : "#fff1f2" },
     {
       kind: "kpi-progress-card",
-      label: "当月销售额完成进度",
+      label: "当月GMV完成进度",
       value: percent(monthlyProgress),
       icon: "target",
       color: "#ff7138",
@@ -1256,8 +1256,8 @@ function personalKpiCards() {
   const specialGap = nextSpecialLeader ? nextSpecialLeader.specialCount - row.specialCount : 0;
   const mom = row.lastMonthSales ? (row.sales - row.lastMonthSales) / row.lastMonthSales : 0;
   return [
-    { label: `${rangeLabel}销售额`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
-    { label: `${rangeLabel}销售额排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#ffc24a", soft: "#fff9e9", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
+    { label: `${rangeLabel}GMV`, value: compactCurrency(row.sales), sub: `${row.person} · ${rangeLabel}`, trend: signedPercent(mom * 100), trendValue: mom, icon: "chart", color: "#ff7138", soft: "#fff4ed", path: "M2 34 C12 22 18 30 27 18 C36 6 43 24 51 15 C59 6 64 18 70 8" },
+    { label: `${rangeLabel}GMV排名`, value: `第 ${rank}`, sub: `共 ${rows.length} 位商务`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "star", color: "#ffc24a", soft: "#fff9e9", path: "M2 30 C12 24 20 28 29 18 C38 8 45 16 53 11 C61 7 66 9 70 5" },
     { label: "距离上一名差距", value: rank === 1 ? "领先" : compactCurrency(gap), sub: rank === 1 ? "当前第一名" : `上一名 ${previous.person}`, trend: "", trendValue: rank === 1 ? 1 : -1, icon: "target", color: "#ff9566", soft: "#fff7f2", path: "M2 28 C14 22 21 25 30 17 C40 8 48 21 57 13 C64 7 68 10 70 6" },
     { label: "专场数量", value: row.specialCount, sub: `${row.talentCount} 位达人`, trend: "", trendValue: row.specialCount, icon: "calendar", color: "#5594f7", soft: "#eef5ff", path: "M2 32 C11 28 18 24 27 21 C36 18 43 13 52 11 C60 9 66 7 70 5" },
     { label: "专场数量差距", value: specialGap ? `${specialGap} 场` : "领先", sub: specialGap ? "距更高专场数" : "专场数领先", trend: "", trendValue: specialGap ? -1 : 1, icon: "file", color: "#8aa0bd", soft: "#f4f8fd", path: "M2 20 C12 22 20 16 28 21 C38 28 45 18 54 22 C62 26 66 20 70 24" },
@@ -1348,7 +1348,7 @@ function renderTeamProductPie(rows, total) {
 
   return `
     <div class="team-product-pie-layout">
-      <div class="team-product-pie" style="--team-product-pie:conic-gradient(${gradient})" role="img" aria-label="品类销售额饼图"></div>
+      <div class="team-product-pie" style="--team-product-pie:conic-gradient(${gradient})" role="img" aria-label="品类GMV饼图"></div>
       <div class="team-product-pie-legend">
         ${visibleRows.map((row) => `
           <div>
@@ -1576,7 +1576,7 @@ function renderPersonalProductTrend(container, rows) {
   }
   container.innerHTML = `
     <div class="category-chart-scroll">
-      <canvas class="personal-product-chart" role="img" aria-label="个人各品类销售额折线图"></canvas>
+      <canvas class="personal-product-chart" role="img" aria-label="个人各品类GMV折线图"></canvas>
       <ul class="personal-product-chart-data">
         ${rows.map((row) => `<li>${escapeHtml(row.label)} ${currency(row.value)}</li>`).join("")}
       </ul>
@@ -1746,7 +1746,7 @@ function renderManagementTeamDetail(data) {
           <strong>${compactCurrency(selected.sales)}</strong>
         </div>
         <div class="team-focus-progress">
-          <span>当月销售额进度</span>
+          <span>当月GMV进度</span>
           <div class="team-progress-track"><i style="--line-width:${selected.completion}%"></i></div>
           <em>${Math.round(selected.completion)}%</em>
         </div>
@@ -1972,7 +1972,7 @@ function renderManagementCategoryTrend(data) {
 
   els.managementTrendChart.innerHTML = `
     <div class="category-chart-scroll">
-      <canvas class="management-category-chart" role="img" aria-label="${escapeHtml(range.label)}${escapeHtml(chartTitle)}销售额折线图，横轴为品类，纵轴为销售额"></canvas>
+      <canvas class="management-category-chart" role="img" aria-label="${escapeHtml(range.label)}${escapeHtml(chartTitle)}GMV折线图，横轴为品类，纵轴为GMV"></canvas>
       <ul class="management-category-chart-data">
         ${series.map((value, index) => `<li>${escapeHtml(categoryLabels[index])} ${currency(value)}</li>`).join("")}
       </ul>
@@ -2111,7 +2111,7 @@ function renderManagementPersonRank(data) {
       : rank;
     const thirdLabel = row.person ? "专场数量" : "关联达人数";
     const thirdValue = row.person ? `${row.specialCount} 场` : `${row.talentCount} 人`;
-    const fourthLabel = row.person ? "合作达人数" : "销售额占比";
+    const fourthLabel = row.person ? "合作达人数" : "GMV占比";
     const fourthValue = row.person ? `${row.talentCount} 人` : percent(totalValue ? row.value / totalValue : 0);
     return `
       <${element} class="person-rank-row leaderboard-row ${topClass} ${row.person ? "" : "static"}" ${interaction}>
@@ -2121,7 +2121,7 @@ function renderManagementPersonRank(data) {
           <span><strong>${escapeHtml(row.label)}</strong><em>${escapeHtml(row.meta)}${row.dimension ? ` · ${escapeHtml(metric.dimensionLabel)}：${escapeHtml(row.dimension)}` : ""}</em></span>
         </span>
         <span class="leaderboard-metric primary"><em>${metric.label}及环比</em><strong>${compactCurrency(row.value)} <i class="${mom < 0 ? "down" : ""}">${signedPercent(mom * 100)}</i></strong></span>
-        <span class="leaderboard-metric"><em>上期销售额</em><strong>${compactCurrency(row.previousValue)}</strong></span>
+        <span class="leaderboard-metric"><em>上期GMV</em><strong>${compactCurrency(row.previousValue)}</strong></span>
         <span class="leaderboard-metric"><em>${thirdLabel}</em><strong>${thirdValue}</strong></span>
         <span class="leaderboard-metric"><em>${fourthLabel}</em><strong>${fourthValue}</strong></span>
       </${element}>
@@ -2163,7 +2163,7 @@ function renderPersonalGroupRank(person) {
             <span class="group-rank-avatar"><span>${escapeHtml(row.person.slice(0, 1))}</span></span>
             <span class="group-rank-medal" aria-label="第 ${rank} 名"><i aria-hidden="true"></i></span>
             <strong>${escapeHtml(row.person)}</strong>
-            <span class="group-rank-metric-label">当月销售额</span>
+            <span class="group-rank-metric-label">当月GMV</span>
             <b>${compactCurrency(row.sales)}</b>
             <em class="group-rank-change ${movement.className}">${movement.label}</em>
           </button>
@@ -2180,7 +2180,7 @@ function renderPersonalGroupRank(person) {
             <span class="group-row-avatar">${escapeHtml(row.person.slice(0, 1))}</span>
             <span class="rank-info"><strong>${escapeHtml(row.person)}</strong><em>${row.talentCount} 位达人 · ${row.specialCount} 场专场</em></span>
             <span class="group-rank-change ${movement.className}">${movement.label}</span>
-            <span class="group-row-value"><em>当月销售额</em><b>${compactCurrency(row.sales)}</b></span>
+            <span class="group-row-value"><em>当月GMV</em><b>${compactCurrency(row.sales)}</b></span>
           </button>
         `;
       }).join("") || `<div class="group-ranking-empty">本组其余名次暂无数据</div>`}
@@ -2977,7 +2977,7 @@ function openSalesMetricsDrawer() {
 
   openDrawer({
     kicker: "销售指标",
-    title: "月度销售额维护",
+    title: "月度GMV维护",
     body: `
       <div class="detail-stack">
         <form class="form-grid two-col metric-form" id="salesMetricsForm">
@@ -2986,26 +2986,26 @@ function openSalesMetricsDrawer() {
             <input name="month" type="month" value="${escapeHtml(metrics.month)}" required />
           </label>
           <label class="form-field">
-            <span>当月销售额（元）</span>
+            <span>当月GMV（元）</span>
             <input name="currentMonthSales" type="number" min="0" step="1" value="${metrics.currentMonthSales}" required />
           </label>
           <label class="form-field">
-            <span>上月销售额（元）</span>
+            <span>上月GMV（元）</span>
             <input name="previousMonthSales" type="number" min="0" step="1" value="${metrics.previousMonthSales}" required />
           </label>
           <label class="form-field">
-            <span>全年已完成销售额（元）</span>
+            <span>全年已完成GMV（元）</span>
             <input name="annualCompletedSales" type="number" min="0" step="1" value="${metrics.annualCompletedSales}" required />
           </label>
           <label class="form-field full">
-            <span>全年销售额目标（元）</span>
+            <span>全年GMV目标（元）</span>
             <input name="annualTarget" type="number" min="1" step="1" value="${metrics.annualTarget}" required />
           </label>
           <section class="metric-team-editor full">
             <div class="metric-section-head">
               <div>
-                <h4>分组销售额指标</h4>
-                <p>A/B/C 组销售额会同步到分团队销售额、团队完成情况和年度视图。</p>
+                <h4>分组GMV指标</h4>
+                <p>A/B/C 组GMV会同步到分团队GMV、团队完成情况和年度视图。</p>
               </div>
               <span>目标合计 ${compactCurrency(teamAnnualTargetTotal)}</span>
             </div>
@@ -3014,7 +3014,7 @@ function openSalesMetricsDrawer() {
                 <section class="metric-team-card" style="--accent:${row.color}; --accent-soft:${row.soft}">
                   <h5><i></i>${escapeHtml(row.label)}</h5>
                   <label class="form-field">
-                    <span>本月销售额目标（元）</span>
+                    <span>本月GMV目标（元）</span>
                     <input name="team_${escapeHtml(row.label)}_currentMonthSales" type="number" min="0" step="1" value="${row.metric.currentMonthSales || 0}" required />
                   </label>
                   <label class="form-field">
