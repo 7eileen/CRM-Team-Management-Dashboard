@@ -9922,7 +9922,7 @@ body {
 
 .personal-compact-row > .personal-group-ranking-panel,
 .personal-compact-row > .personal-talent-panel {
-  background: #ffffff;
+  background: linear-gradient(180deg, #fff8dc 0%, #fffdf3 38%, #ffffff 82%);
 }
 
 .personal-compact-row .personal-group-ranking,
@@ -9932,7 +9932,7 @@ body {
 }
 
 .personal-compact-row .personal-group-ranking {
-  background: linear-gradient(180deg, #fffdf9 0%, #ffffff 42%);
+  background: transparent;
 }
 
 .personal-compact-row .personal-group-ranking .group-podium-card {
