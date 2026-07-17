@@ -9812,3 +9812,56 @@ body {
 .personal-schedule-side .schedule-entry-footer {
   padding-top: 7px;
 }
+
+/* Sales insight cards sit directly below the team dashboard. */
+#dashboardPage .dashboard-grid {
+  grid-template-areas:
+    "team-detail team-detail team-detail team-detail"
+    "overview overview overview overview"
+    "table table table rail";
+}
+
+.management-overview-row {
+  grid-area: overview;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.management-overview-row > .panel {
+  min-width: 0;
+  height: 100%;
+}
+
+@media (max-width: 1480px) {
+  #dashboardPage .dashboard-grid {
+    grid-template-areas:
+      "team-detail team-detail team-detail"
+      "overview overview overview"
+      "table table rail";
+  }
+}
+
+@media (max-width: 1180px) {
+  #dashboardPage .dashboard-grid {
+    grid-template-areas:
+      "team-detail"
+      "overview"
+      "table"
+      "rail";
+  }
+}
+
+@media (max-width: 900px) {
+  .management-overview-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .management-overview-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
