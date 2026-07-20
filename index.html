@@ -697,5 +697,440 @@
       if (wasActive) tabs.find((tab) => tab !== channelTab)?.click();
     })();
   </script>
+  <style id="business-ranking-v2-styles">
+    #managementPersonRankTabs.business-ranking-tabs {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      min-height: 48px;
+      padding: 0 18px;
+      border-bottom: 1px solid #edf1f7;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    #managementPersonRankTabs.business-ranking-tabs::-webkit-scrollbar,
+    #managementPersonRankSubTabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    #managementPersonRankTabs .business-ranking-tab {
+      position: relative;
+      flex: 0 0 auto;
+      height: 48px;
+      padding: 0 4px;
+      border: 0;
+      background: transparent;
+      color: #64748b;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #managementPersonRankTabs .business-ranking-tab::after {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: #ff6b35;
+      content: "";
+      opacity: 0;
+      transform: scaleX(.45);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    #managementPersonRankTabs .business-ranking-tab:hover,
+    #managementPersonRankTabs .business-ranking-tab.active {
+      color: #f4511e;
+    }
+
+    #managementPersonRankTabs .business-ranking-tab.active::after {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+
+    #managementPersonRankSubTabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 8px 18px;
+      border-bottom: 1px solid #edf1f7;
+      background: #fff;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    #managementPersonRankSubTabs[hidden] {
+      display: none;
+    }
+
+    #managementPersonRankSubTabs .business-ranking-subtab {
+      flex: 0 0 auto;
+      min-width: 56px;
+      height: 30px;
+      padding: 0 13px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: #fff;
+      color: #5f6f86;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+      transition: color .16s ease, background .16s ease, border-color .16s ease;
+    }
+
+    #managementPersonRankSubTabs .business-ranking-subtab:hover {
+      border-color: #ffd8c9;
+      color: #f4511e;
+      background: #fff8f4;
+    }
+
+    #managementPersonRankSubTabs .business-ranking-subtab.active {
+      border-color: #ff6b35;
+      color: #fff;
+      background: #ff6b35;
+      box-shadow: 0 5px 12px rgba(255, 107, 53, .16);
+    }
+
+    #managementPersonRank.business-ranking-list {
+      max-height: 620px;
+      overflow: auto;
+      scrollbar-color: #cbd5e1 transparent;
+      scrollbar-width: thin;
+    }
+
+    #managementPersonRank .business-ranking-inner {
+      min-width: 900px;
+      padding: 8px 14px 14px;
+    }
+
+    #managementPersonRank .business-rank-row {
+      display: grid;
+      grid-template-columns: minmax(240px, 1.35fr) repeat(4, minmax(130px, 1fr));
+      align-items: center;
+      min-height: 76px;
+      margin-bottom: 7px;
+      padding: 10px 18px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      color: #111c35;
+      transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+
+    #managementPersonRank .business-rank-row:nth-child(3n + 1) {
+      background: #fff8f4;
+      border-color: #ffe6dc;
+    }
+
+    #managementPersonRank .business-rank-row:nth-child(3n + 2) {
+      background: #f5f9ff;
+      border-color: #e5eef9;
+    }
+
+    #managementPersonRank .business-rank-row:nth-child(3n) {
+      background: #fff;
+      border-color: #edf1f7;
+    }
+
+    #managementPersonRank .business-rank-row:hover {
+      z-index: 1;
+      border-color: #ffc5ae;
+      box-shadow: 0 8px 22px rgba(72, 91, 126, .09);
+      transform: translateY(-1px);
+    }
+
+    #managementPersonRank .business-rank-person {
+      display: grid;
+      grid-template-columns: 32px 42px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    #managementPersonRank .business-rank-index {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border-radius: 50%;
+      background: #edf3fa;
+      color: #64809f;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    #managementPersonRank .business-rank-row:nth-child(1) .business-rank-index {
+      background: #ffc54f;
+      color: #7b4a00;
+    }
+
+    #managementPersonRank .business-rank-row:nth-child(2) .business-rank-index {
+      background: #dce8f5;
+      color: #526f91;
+    }
+
+    #managementPersonRank .business-rank-row:nth-child(3) .business-rank-index {
+      background: #ffd8bf;
+      color: #a94920;
+    }
+
+    #managementPersonRank .business-rank-avatar {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border-radius: 9px;
+      background: #fff0e8;
+      color: #f4511e;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    #managementPersonRank .business-rank-name {
+      min-width: 0;
+    }
+
+    #managementPersonRank .business-rank-name strong,
+    #managementPersonRank .business-rank-name small {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #managementPersonRank .business-rank-name strong {
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    #managementPersonRank .business-rank-name small {
+      margin-top: 2px;
+      color: #7b8ca4;
+      font-size: 11px;
+    }
+
+    #managementPersonRank .business-rank-metric {
+      min-width: 0;
+      padding-left: 14px;
+    }
+
+    #managementPersonRank .business-rank-metric span,
+    #managementPersonRank .business-rank-metric strong {
+      display: block;
+      white-space: nowrap;
+    }
+
+    #managementPersonRank .business-rank-metric span {
+      margin-bottom: 4px;
+      color: #8191a7;
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    #managementPersonRank .business-rank-metric strong {
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    #managementPersonRank .business-rank-metric--primary strong {
+      color: #f4511e;
+    }
+
+    #managementPersonRank .business-rank-trend {
+      margin-left: 5px;
+      color: #00a870;
+      font-size: 11px;
+      font-style: normal;
+      font-weight: 750;
+    }
+
+    #managementPersonRank .business-rank-trend.down {
+      color: #ef4444;
+    }
+
+    @media (max-width: 900px) {
+      #managementPersonRankTabs.business-ranking-tabs {
+        gap: 24px;
+      }
+
+      #managementPersonRank .business-ranking-inner {
+        min-width: 820px;
+      }
+    }
+  </style>
+
+  <script id="business-ranking-v2-script">
+    (() => {
+      const categories = ["定型", "定妆", "粉底", "防晒喷雾", "气垫", "遮瑕", "防晒素颜霜", "防晒定妆喷雾", "双头修容", "四色修容盘", "防晒水", "其他"];
+      const formats = ["专场", "单品直播间", "混播", "短视频挂车", "美垂日播", "切片号", "其他"];
+      const businesses = [
+        ["戴娜", "A3组", 144.4, 130.3, 19, 18],
+        ["徐怀玉", "B2组", 17.4, 14.6, 0, 1],
+        ["刘则宁黄娇", "达人合作", 14.9, 14.4, 5, 1],
+        ["俞梦薇", "B2组", 10.1, 9.0, 0, 1],
+        ["欧阳婉怡", "A1组", 9.0, 8.8, 0, 1],
+        ["谭燕琳", "专场B组", 8.8, 8.4, 4, 1],
+        ["邓斯婕", "B2组", 6.4, 5.3, 0, 1],
+        ["寇婉婷", "A3组", 6.0, 5.9, 1, 2],
+        ["池维杞", "B1组", 5.6, 5.1, 1, 1],
+        ["张如茵", "A3组", 5.3, 4.9, 2, 2],
+        ["郎嘉欣", "A1组", 3.9, 3.4, 2, 1],
+        ["黄欣瑜", "专场A组", 3.1, 2.8, 1, 1],
+        ["曹艳娟", "B1组", 2.8, 2.5, 1, 1],
+        ["陈思奇", "A2组", 2.4, 2.2, 0, 1],
+        ["许嘉敏", "A2组", 2.0, 1.8, 0, 1],
+        ["杨洁", "B2组", 1.8, 1.6, 0, 1],
+        ["马雯", "专场B组", 1.6, 1.5, 1, 1],
+        ["周鸿美", "A3组", 1.4, 1.3, 1, 1],
+        ["窦婉婷", "B1组", 1.2, 1.1, 0, 1],
+        ["郭洁玲", "A1组", 1.1, 1.0, 0, 1],
+        ["卫露青", "A2组", .9, .8, 0, 1],
+        ["赵磊", "专场C组", .8, .7, 0, 1],
+        ["刘涛", "B2组", .7, .65, 0, 1],
+        ["邹雅楠", "A3组", .6, .55, 0, 1],
+        ["王莹媛", "B1组", .5, .46, 0, 1],
+        ["陈可欣", "A1组", .4, .38, 0, 1]
+      ].map(([name, team, current, previous, sessions, talents]) => ({ name, team, current, previous, sessions, talents }));
+
+      const state = { mode: "GMV", subtype: "" };
+
+      const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+      })[char]);
+
+      const affinity = (name, subtype, index) => {
+        let hash = 17 + index * 29;
+        for (const char of `${name}:${subtype}`) hash = (hash * 33 + char.charCodeAt(0)) % 9973;
+        return .2 + (hash % 76) / 100;
+      };
+
+      const getRows = () => businesses.map((business, index) => {
+        if (state.mode === "GMV") return { ...business };
+        const factor = affinity(business.name, state.subtype, index);
+        const current = Math.max(.05, business.current * factor);
+        const previousFactor = Math.max(.16, factor * (.86 + ((index + state.subtype.length) % 7) * .04));
+        const previous = Math.max(.04, business.previous * previousFactor);
+        const sessions = state.mode === "玩法"
+          ? Math.max(0, Math.round(business.sessions * factor + ((index + state.subtype.length) % 2)))
+          : Math.max(0, Math.round(business.sessions * factor));
+        const talents = Math.max(1, Math.round(business.talents * (.35 + factor * .65)));
+        return { ...business, current, previous, sessions, talents };
+      }).sort((a, b) => b.current - a.current);
+
+      const formatMoney = (value) => value >= .1 ? `¥${value.toFixed(1)}w` : `¥${Math.round(value * 10000).toLocaleString("zh-CN")}`;
+
+      const renderRows = (container) => {
+        container.classList.add("business-ranking-list");
+        container.innerHTML = `<div class="business-ranking-inner">${getRows().map((row, index) => {
+          const trend = row.previous > 0 ? ((row.current / row.previous - 1) * 100) : 0;
+          const trendClass = trend < 0 ? "down" : "";
+          const trendText = `${trend >= 0 ? "+" : ""}${trend.toFixed(1)}%`;
+          const detail = state.mode === "GMV"
+            ? `${row.team} · ${row.talents} 位达人`
+            : `${row.team} · ${row.talents} 位达人 · ${state.subtype}`;
+          return `
+            <div class="business-rank-row" data-rank="${index + 1}">
+              <div class="business-rank-person">
+                <span class="business-rank-index">${index + 1}</span>
+                <span class="business-rank-avatar">${escapeHtml(row.name.slice(0, 1))}</span>
+                <span class="business-rank-name">
+                  <strong>${escapeHtml(row.name)}</strong>
+                  <small title="${escapeHtml(detail)}">${escapeHtml(detail)}</small>
+                </span>
+              </div>
+              <div class="business-rank-metric business-rank-metric--primary">
+                <span>GMV及环比</span>
+                <strong>${formatMoney(row.current)} <em class="business-rank-trend ${trendClass}">${trendText}</em></strong>
+              </div>
+              <div class="business-rank-metric">
+                <span>上期GMV</span>
+                <strong>${formatMoney(row.previous)}</strong>
+              </div>
+              <div class="business-rank-metric">
+                <span>专场数量</span>
+                <strong>${row.sessions} 场</strong>
+              </div>
+              <div class="business-rank-metric">
+                <span>合作达人数</span>
+                <strong>${row.talents} 人</strong>
+              </div>
+            </div>`;
+        }).join("")}</div>`;
+      };
+
+      const renderSubtabs = (subtabs, rows) => {
+        const values = state.mode === "品类" ? categories : state.mode === "玩法" ? formats : [];
+        if (!values.length) {
+          subtabs.hidden = true;
+          subtabs.innerHTML = "";
+          state.subtype = "";
+          renderRows(rows);
+          return;
+        }
+
+        if (!values.includes(state.subtype)) state.subtype = values[0];
+        subtabs.hidden = false;
+        subtabs.setAttribute("aria-label", `${state.mode}细分筛选`);
+        subtabs.innerHTML = values.map((value) => `
+          <button class="business-ranking-subtab ${value === state.subtype ? "active" : ""}"
+            type="button" role="tab" aria-selected="${value === state.subtype}" data-subtype="${escapeHtml(value)}">${escapeHtml(value)}</button>
+        `).join("");
+        subtabs.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            state.subtype = button.dataset.subtype || values[0];
+            renderSubtabs(subtabs, rows);
+          });
+        });
+        renderRows(rows);
+      };
+
+      const mount = () => {
+        const tabs = document.querySelector("#managementPersonRankTabs");
+        const rows = document.querySelector("#managementPersonRank");
+        if (!tabs || !rows) return;
+        const alreadyMounted = tabs.dataset.businessRankingV2 === "true" && rows.querySelector(".business-ranking-inner");
+        if (alreadyMounted) return;
+
+        tabs.dataset.businessRankingV2 = "true";
+        tabs.classList.add("business-ranking-tabs");
+        tabs.setAttribute("role", "tablist");
+        tabs.setAttribute("aria-label", "商务排行榜维度");
+        tabs.innerHTML = ["GMV", "品类", "玩法"].map((mode) => `
+          <button class="business-ranking-tab ${mode === state.mode ? "active" : ""}"
+            type="button" role="tab" aria-selected="${mode === state.mode}" data-mode="${mode}">${mode}</button>
+        `).join("");
+
+        let subtabs = document.querySelector("#managementPersonRankSubTabs");
+        if (!subtabs) {
+          subtabs = document.createElement("div");
+          subtabs.id = "managementPersonRankSubTabs";
+          tabs.insertAdjacentElement("afterend", subtabs);
+        }
+
+        tabs.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            state.mode = button.dataset.mode || "GMV";
+            state.subtype = "";
+            tabs.dataset.businessRankingV2 = "";
+            mount();
+          });
+        });
+        renderSubtabs(subtabs, rows);
+      };
+
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount, { once: true });
+      else mount();
+      window.setInterval(mount, 900);
+    })();
+  </script>
 </body>
 </html>
