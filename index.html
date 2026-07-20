@@ -1224,5 +1224,20 @@
   })();
 </script>
 <script src="./gmv-labels.js"></script>
+  <script>
+    (() => {
+      const badge = document.getElementById("personalPipelineBadge");
+      if (!badge) return;
+      const updateBadge = () => {
+        if (badge.textContent !== "去跟进") badge.textContent = "去跟进";
+      };
+      updateBadge();
+      new MutationObserver(updateBadge).observe(badge, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+    })();
+  </script>
 </body>
 </html>
