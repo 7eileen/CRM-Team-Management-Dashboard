@@ -80,16 +80,17 @@ const chartPalette = ["#ff7138", "#ff9566", "#ffb184", "#ffc24a", "#5594f7", "#7
 const SALES_METRICS_STORAGE_KEY = "crm-sales-metrics-v1";
 const TEAM_SALES_SCENARIO_VERSION = "a500-b600-v1";
 const TEAM_CURRENT_MONTH_SCENARIO = { "A组": 5000000, "B组": 6000000 };
-const TALENT_POOL_STORAGE_KEY = "crm-talent-pool-labels-v1";
-const TALENT_POOL_LABELS = {
-  follow: { label: "重点跟进", shortLabel: "重点跟进", tone: "focus", icon: "target" },
+const TALENT_POOL_STORAGE_KEY = "crm-talent-pool-labels-v2";
+const TALENT_HEALTH_LABELS = {
+  pending: { label: "待判断", shortLabel: "待判断", tone: "pending", icon: "clock" },
   stable: { label: "稳定合作", shortLabel: "稳定合作", tone: "stable", icon: "user-check" },
-  risk_stolen: { label: "有流失风险（被抢）", shortLabel: "风险：被抢", tone: "risk", icon: "alert" },
-  risk_decline: { label: "有流失风险（坑产下滑）", shortLabel: "风险：坑产下滑", tone: "risk", icon: "alert" },
+  risk: { label: "有流失风险", shortLabel: "有流失风险", tone: "risk", icon: "alert" },
   lost: { label: "已流失", shortLabel: "已流失", tone: "lost", icon: "alert" },
 };
+const TALENT_RISK_REASONS = ["被竞品抢走", "坑产下滑", "长期未播", "价格问题", "达人意愿下降", "其他"];
 const TALENT_POOL_FILTERS = [
-  { id: "all", label: "全部" },
+  { id: "all", label: "全量达人" },
+  { id: "partnered", label: "已合作达人" },
   { id: "follow", label: "重点跟进" },
   { id: "stable", label: "稳定合作" },
   { id: "risk", label: "流失风险" },
@@ -715,7 +716,15 @@ function getSalesMetrics() {
 function loadTalentPoolLabels() {
   try {
     const saved = JSON.parse(localStorage.getItem(TALENT_POOL_STORAGE_KEY) || "{}");
-    return saved && typeof saved === "object" ? saved : {};
+    if (saved && typeof saved === "object" && Object.keys(saved).length) return saved;
+    const legacy = JSON.parse(localStorage.getItem("crm-talent-pool-labels-v1") || "{}");
+    return Object.fromEntries(Object.entries(legacy).map(([id, key]) => {
+      if (key === "follow") return [id, { priority: "focus" }];
+      if (key === "stable" || key === "lost") return [id, { health: key }];
+      if (key === "risk_stolen") return [id, { health: "risk", riskReason: "被竞品抢走" }];
+      if (key === "risk_decline") return [id, { health: "risk", riskReason: "坑产下滑" }];
+      return [id, {}];
+    }));
   } catch {
     return {};
   }
@@ -753,29 +762,30 @@ function talentPoolSuggestion(record) {
     return { key: "lost", reason: `${lastLiveDays} 天未播`, lastLiveDays, yieldTrend };
   }
   if (!isPartnered) {
-    const priority = ["S", "A"].includes(record.tier) ? "高潜目标" : "待转化目标";
-    return { key: "follow", reason: `${priority} · ${stage}`, lastLiveDays, yieldTrend };
+    return { key: "pending", reason: `${stage} · 暂无合作数据`, lastLiveDays, yieldTrend };
   }
   if (record.bottleneck.includes("竞品") || record.id % 7 === 0) {
-    return { key: "risk_stolen", reason: record.bottleneck || "竞品合作信号", lastLiveDays, yieldTrend };
+    return { key: "risk", reason: record.bottleneck || "竞品合作信号", riskReason: "被竞品抢走", lastLiveDays, yieldTrend };
   }
   if (yieldTrend <= -0.12 || lastLiveDays >= 45) {
     const reason = lastLiveDays >= 45 ? `${lastLiveDays} 天未播` : `坑产下降 ${Math.abs(yieldTrend * 100).toFixed(0)}%`;
-    return { key: "risk_decline", reason, lastLiveDays, yieldTrend };
+    return { key: "risk", reason, riskReason: lastLiveDays >= 45 ? "长期未播" : "坑产下滑", lastLiveDays, yieldTrend };
   }
   return { key: "stable", reason: `${stage} · 近期开播稳定`, lastLiveDays, yieldTrend };
 }
 
 function talentPoolAssessment(record) {
   const suggested = talentPoolSuggestion(record);
-  const overrideKey = state.talentPoolLabels[String(record.id)];
-  const key = TALENT_POOL_LABELS[overrideKey] ? overrideKey : suggested.key;
+  const profile = state.talentPoolLabels[String(record.id)] || {};
+  const key = TALENT_HEALTH_LABELS[profile.health] ? profile.health : suggested.key;
   return {
     ...suggested,
     key,
-    meta: TALENT_POOL_LABELS[key],
+    meta: TALENT_HEALTH_LABELS[key],
     suggestedKey: suggested.key,
-    isManual: key !== suggested.key,
+    isManual: Boolean(profile.health),
+    isFocus: profile.priority === "focus",
+    riskReason: profile.riskReason || suggested.riskReason || "",
   };
 }
 
@@ -2771,50 +2781,57 @@ function renderFormatGrid() {
   }
 }
 
-function talentPoolMatchesFilter(assessment) {
+function talentPoolIsPartnered(record) {
+  return ["已合作", "深度合作"].includes(displayStageLabelForRecord(record));
+}
+
+function talentPoolMatchesFilter(record, assessment) {
   if (state.talentPoolFilter === "all") return true;
-  if (state.talentPoolFilter === "risk") return assessment.key.startsWith("risk_");
+  if (state.talentPoolFilter === "partnered") return talentPoolIsPartnered(record);
+  if (state.talentPoolFilter === "follow") return assessment.isFocus;
   return assessment.key === state.talentPoolFilter;
 }
 
 function renderTalentPool() {
   if (!els.talentPoolBody) return;
   const rows = state.records.map((record) => ({ record, assessment: talentPoolAssessment(record) }));
-  const riskCount = rows.filter(({ assessment }) => assessment.key.startsWith("risk_")).length;
+  const riskCount = rows.filter(({ assessment }) => assessment.key === "risk").length;
+  const partneredCount = rows.filter(({ record }) => talentPoolIsPartnered(record)).length;
+  const focusCount = rows.filter(({ assessment }) => assessment.isFocus).length;
   const manualCount = rows.filter(({ assessment }) => assessment.isManual).length;
   const summary = [
-    { label: "全量达人", value: rows.length, note: `${manualCount} 位人工标记`, tone: "all", icon: "users" },
-    { label: "重点跟进", value: rows.filter(({ assessment }) => assessment.key === "follow").length, note: "目标达人", tone: "focus", icon: "target" },
-    { label: "稳定合作", value: rows.filter(({ assessment }) => assessment.key === "stable").length, note: "合作健康", tone: "stable", icon: "user-check" },
-    { label: "流失风险", value: riskCount, note: "需要介入", tone: "risk", icon: "alert" },
-    { label: "已流失", value: rows.filter(({ assessment }) => assessment.key === "lost").length, note: "停止合作", tone: "lost", icon: "alert" },
+    { id: "all", label: "全量达人", value: rows.length, note: "统一达人主数据", tone: "all", icon: "users" },
+    { id: "partnered", label: "已合作达人", value: partneredCount, note: "跟进合作深度", tone: "partnered", icon: "user-check" },
+    { id: "follow", label: "重点跟进", value: focusCount, note: "人工星标客户", tone: "focus", icon: "target" },
+    { id: "risk", label: "流失风险", value: riskCount, note: "需要及时介入", tone: "risk", icon: "alert" },
+    { id: "lost", label: "已流失", value: rows.filter(({ assessment }) => assessment.key === "lost").length, note: "待重新激活", tone: "lost", icon: "alert" },
   ];
 
   els.talentPoolStats.innerHTML = summary.map((item) => `
-    <div class="talent-pool-stat talent-pool-tone-${item.tone}">
+    <button type="button" class="talent-pool-stat talent-pool-tone-${item.tone}${state.talentPoolFilter === item.id ? " active" : ""}" data-talent-pool-filter="${item.id}">
       <span class="talent-pool-stat-icon">${icon(item.icon)}</span>
       <div><span>${item.label}</span><strong>${item.value}</strong><small>${item.note}</small></div>
-    </div>
+    </button>
   `).join("");
 
   els.talentPoolFilters.innerHTML = TALENT_POOL_FILTERS.map((filter) => {
     const count = filter.id === "all"
       ? rows.length
-      : filter.id === "risk"
-        ? riskCount
-        : rows.filter(({ assessment }) => assessment.key === filter.id).length;
+      : filter.id === "partnered" ? partneredCount
+        : filter.id === "follow" ? focusCount
+          : rows.filter(({ assessment }) => assessment.key === filter.id).length;
     const active = state.talentPoolFilter === filter.id;
     return `<button type="button" role="tab" aria-selected="${active}" class="${active ? "active" : ""}" data-talent-pool-filter="${filter.id}">${filter.label}<span>${count}</span></button>`;
   }).join("");
 
   const keyword = normalize(state.talentPoolSearch);
-  const priority = { risk_stolen: 0, risk_decline: 0, lost: 1, follow: 2, stable: 3 };
+  const priority = { risk: 0, lost: 1, pending: 2, stable: 3 };
   const visibleRows = rows
     .filter(({ record, assessment }) => {
       const searchText = normalize([record.name, record.person, record.group, record.product, record.type, assessment.meta.label].join(" "));
-      return talentPoolMatchesFilter(assessment) && (!keyword || searchText.includes(keyword));
+      return talentPoolMatchesFilter(record, assessment) && (!keyword || searchText.includes(keyword));
     })
-    .sort((a, b) => (priority[a.assessment.key] - priority[b.assessment.key]) || (recordSales(b.record) - recordSales(a.record)));
+    .sort((a, b) => Number(b.assessment.isFocus) - Number(a.assessment.isFocus) || (priority[a.assessment.key] - priority[b.assessment.key]) || (recordSales(b.record) - recordSales(a.record)));
 
   els.talentPoolCount.textContent = `${visibleRows.length} 位达人${manualCount ? ` · ${manualCount} 人工标记` : ""}`;
   els.talentPoolBody.innerHTML = visibleRows.length
@@ -2823,7 +2840,7 @@ function renderTalentPool() {
 }
 
 function renderTalentPoolStatus(key, reason, isManual = false) {
-  const meta = TALENT_POOL_LABELS[key];
+  const meta = TALENT_HEALTH_LABELS[key];
   return `
     <div class="talent-pool-judgement">
       <span class="talent-pool-status talent-pool-tone-${meta.tone}">${icon(meta.icon)}${meta.shortLabel}${isManual ? " · 人工" : ""}</span>
@@ -2837,18 +2854,23 @@ function renderTalentPoolRow(record, assessment) {
   const suggestion = talentPoolSuggestion(record);
   const trendDown = assessment.yieldTrend < 0;
   const lastLiveLabel = assessment.lastLiveDays <= 1 ? "今天" : `${assessment.lastLiveDays} 天未播`;
-  const options = Object.entries(TALENT_POOL_LABELS).map(([key, meta]) => `<option value="${key}"${assessment.key === key ? " selected" : ""}>${meta.label}</option>`).join("");
+  const healthOptions = [
+    `<option value="">跟随系统建议</option>`,
+    ...Object.entries(TALENT_HEALTH_LABELS).filter(([key]) => key !== "pending").map(([key, meta]) => `<option value="${key}"${assessment.isManual && assessment.key === key ? " selected" : ""}>${meta.label}</option>`),
+  ].join("");
+  const riskOptions = [`<option value="">选择风险原因</option>`, ...TALENT_RISK_REASONS.map((reason) => `<option value="${reason}"${assessment.riskReason === reason ? " selected" : ""}>${reason}</option>`)].join("");
   return `
     <tr class="${assessment.isManual ? "talent-pool-row-manual" : ""}">
-      <td>${recordNameCell(record)}</td>
+      <td><div class="talent-pool-name-cell"><button type="button" class="talent-focus-toggle${assessment.isFocus ? " active" : ""}" data-talent-pool-focus="${record.id}" aria-pressed="${assessment.isFocus}" title="${assessment.isFocus ? "取消重点跟进" : "标为重点跟进"}">${assessment.isFocus ? "★" : "☆"}</button>${recordNameCell(record)}</div></td>
       <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span></td>
       <td><strong>${escapeHtml(record.person)}</strong><span class="talent-pool-cell-note">${escapeHtml(record.group)}</span></td>
       <td><strong class="talent-pool-live ${assessment.lastLiveDays >= 45 ? "warning" : ""}">${lastLiveLabel}</strong><span class="talent-pool-cell-note">${escapeHtml(record.format)}</span></td>
       <td><strong class="talent-pool-trend ${trendDown ? "down" : "up"}">${trendDown ? "↓" : "↑"} ${Math.abs(assessment.yieldTrend * 100).toFixed(1)}%</strong><span class="talent-pool-cell-note">坑产${trendDown ? "下滑" : "提升"}</span></td>
       <td>${renderTalentPoolStatus(suggestion.key, suggestion.reason)}</td>
       <td>
-        <div class="talent-pool-label-control">
-          <select class="talent-pool-label-select talent-pool-tone-${assessment.meta.tone}" data-talent-pool-label="${record.id}" aria-label="设置 ${escapeHtml(record.name)} 的达人标签">${options}</select>
+        <div class="talent-pool-label-control talent-pool-label-stack">
+          <select class="talent-pool-label-select talent-pool-tone-${assessment.meta.tone}" data-talent-pool-health="${record.id}" aria-label="设置 ${escapeHtml(record.name)} 的合作健康度">${healthOptions}</select>
+          ${assessment.key === "risk" ? `<select class="talent-pool-reason-select" data-talent-pool-risk-reason="${record.id}" aria-label="设置 ${escapeHtml(record.name)} 的风险原因">${riskOptions}</select>` : ""}
           <button class="icon-button talent-pool-reset" type="button" data-talent-pool-reset="${record.id}" title="恢复系统建议" aria-label="恢复 ${escapeHtml(record.name)} 的系统建议"${assessment.isManual ? "" : " hidden"}>${icon("rotate")}</button>
         </div>
       </td>
@@ -3471,10 +3493,29 @@ function bindEvents() {
 
     const talentPoolReset = event.target.closest("[data-talent-pool-reset]");
     if (talentPoolReset) {
-      delete state.talentPoolLabels[String(talentPoolReset.dataset.talentPoolReset)];
+      const id = String(talentPoolReset.dataset.talentPoolReset);
+      const profile = state.talentPoolLabels[id] || {};
+      delete profile.health;
+      delete profile.riskReason;
+      if (profile.priority) state.talentPoolLabels[id] = profile;
+      else delete state.talentPoolLabels[id];
       saveTalentPoolLabels();
       renderTalentPool();
       showToast("已恢复系统判断");
+      return;
+    }
+
+    const talentPoolFocus = event.target.closest("[data-talent-pool-focus]");
+    if (talentPoolFocus) {
+      const id = String(talentPoolFocus.dataset.talentPoolFocus);
+      const profile = state.talentPoolLabels[id] || {};
+      if (profile.priority === "focus") delete profile.priority;
+      else profile.priority = "focus";
+      if (Object.keys(profile).length) state.talentPoolLabels[id] = profile;
+      else delete state.talentPoolLabels[id];
+      saveTalentPoolLabels();
+      renderTalentPool();
+      showToast(profile.priority === "focus" ? "已标为重点跟进" : "已取消重点跟进");
       return;
     }
 
@@ -3515,16 +3556,36 @@ function bindEvents() {
   });
 
   document.addEventListener("change", (event) => {
-    const select = event.target.closest("[data-talent-pool-label]");
-    if (!select) return;
-    const record = state.records.find((item) => item.id === Number(select.dataset.talentPoolLabel));
-    if (!record || !TALENT_POOL_LABELS[select.value]) return;
-    const suggestedKey = talentPoolSuggestion(record).key;
-    if (select.value === suggestedKey) delete state.talentPoolLabels[String(record.id)];
-    else state.talentPoolLabels[String(record.id)] = select.value;
+    const healthSelect = event.target.closest("[data-talent-pool-health]");
+    if (healthSelect) {
+      const record = state.records.find((item) => item.id === Number(healthSelect.dataset.talentPoolHealth));
+      if (!record) return;
+      const id = String(record.id);
+      const profile = state.talentPoolLabels[id] || {};
+      if (healthSelect.value) profile.health = healthSelect.value;
+      else {
+        delete profile.health;
+        delete profile.riskReason;
+      }
+      if (profile.health !== "risk") delete profile.riskReason;
+      if (Object.keys(profile).length) state.talentPoolLabels[id] = profile;
+      else delete state.talentPoolLabels[id];
+      saveTalentPoolLabels();
+      renderTalentPool();
+      showToast(`已更新 ${record.name} 的合作健康度`);
+      return;
+    }
+    const reasonSelect = event.target.closest("[data-talent-pool-risk-reason]");
+    if (!reasonSelect) return;
+    const record = state.records.find((item) => item.id === Number(reasonSelect.dataset.talentPoolRiskReason));
+    if (!record) return;
+    const id = String(record.id);
+    const profile = state.talentPoolLabels[id] || { health: "risk" };
+    profile.riskReason = reasonSelect.value;
+    state.talentPoolLabels[id] = profile;
     saveTalentPoolLabels();
     renderTalentPool();
-    showToast(`已更新 ${record.name} 的达人标签`);
+    showToast(`已更新 ${record.name} 的风险原因`);
   });
 
   els.resetFiltersBtn.addEventListener("click", resetFilters);
