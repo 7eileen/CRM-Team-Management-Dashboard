@@ -9494,6 +9494,52 @@ body {
   gap: 10px;
 }
 
+.talent-pool-scope-tabs {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid #e1e7f0;
+  border-radius: 8px;
+  background: #f5f7fa;
+}
+
+.talent-pool-scope-tabs button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #607088;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.talent-pool-scope-tabs button span {
+  min-width: 20px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: #e7ebf1;
+  color: #77869a;
+  font-size: 11px;
+}
+
+.talent-pool-scope-tabs button:hover,
+.talent-pool-scope-tabs button.active {
+  background: #fff;
+  color: #f05e25;
+  box-shadow: 0 2px 8px rgba(31, 50, 81, .08);
+}
+
+.talent-pool-scope-tabs button.active span {
+  background: #fff0e8;
+  color: #f05e25;
+}
+
 .talent-pool-filter {
   min-height: 42px;
   display: flex;
@@ -9762,6 +9808,15 @@ body {
 
   .talent-pool-filter {
     flex: 1 1 220px;
+  }
+
+  .talent-pool-scope-tabs {
+    width: 100%;
+  }
+
+  .talent-pool-scope-tabs button {
+    flex: 1;
+    justify-content: center;
   }
 
   .talent-pool-search {
