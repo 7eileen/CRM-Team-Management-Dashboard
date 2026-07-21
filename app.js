@@ -88,14 +88,6 @@ const TALENT_HEALTH_LABELS = {
   lost: { label: "已流失", shortLabel: "已流失", tone: "lost", icon: "alert" },
 };
 const TALENT_RISK_REASONS = ["被竞品抢走", "坑产下滑", "长期未播", "价格问题", "达人意愿下降", "其他"];
-const TALENT_POOL_FILTERS = [
-  { id: "all", label: "全量达人" },
-  { id: "partnered", label: "已合作达人" },
-  { id: "follow", label: "重点跟进" },
-  { id: "stable", label: "稳定合作" },
-  { id: "risk", label: "流失风险" },
-  { id: "lost", label: "已流失" },
-];
 const TIME_RANGE_OPTIONS = [
   { id: "7d", label: "近7天", desc: "最近一周成交节奏", factor: 0.28, previousFactor: 0.26, targetFactor: 0.23, specialFactor: 0.34 },
   { id: "30d", label: "近30天", desc: "默认滚动月口径", factor: 1, previousFactor: 1, targetFactor: 1, specialFactor: 1 },
@@ -246,7 +238,9 @@ const state = {
   managementTrendProduct: "全部",
   managementTrendRange: "30d",
   managementPersonMetric: "gmv",
-  talentPoolFilter: "all",
+  talentPoolScope: "all",
+  talentPoolPriority: "all",
+  talentPoolHealth: "all",
   talentPoolSearch: "",
   talentPoolLabels: loadTalentPoolLabels(),
   personalPerson: PERSONS[0],
@@ -313,7 +307,6 @@ const els = {
   kanbanColumns: document.getElementById("kanbanColumns"),
   ownerList: document.getElementById("ownerList"),
   formatGrid: document.getElementById("formatGrid"),
-  talentPoolStats: document.getElementById("talentPoolStats"),
   talentPoolFilters: document.getElementById("talentPoolFilters"),
   talentPoolSearch: document.getElementById("talentPoolSearch"),
   talentPoolCount: document.getElementById("talentPoolCount"),
@@ -2786,10 +2779,10 @@ function talentPoolIsPartnered(record) {
 }
 
 function talentPoolMatchesFilter(record, assessment) {
-  if (state.talentPoolFilter === "all") return true;
-  if (state.talentPoolFilter === "partnered") return talentPoolIsPartnered(record);
-  if (state.talentPoolFilter === "follow") return assessment.isFocus;
-  return assessment.key === state.talentPoolFilter;
+  if (state.talentPoolScope === "partnered" && !talentPoolIsPartnered(record)) return false;
+  if (state.talentPoolPriority === "focus" && !assessment.isFocus) return false;
+  if (state.talentPoolHealth !== "all" && assessment.key !== state.talentPoolHealth) return false;
+  return true;
 }
 
 function renderTalentPool() {
@@ -2799,30 +2792,13 @@ function renderTalentPool() {
   const partneredCount = rows.filter(({ record }) => talentPoolIsPartnered(record)).length;
   const focusCount = rows.filter(({ assessment }) => assessment.isFocus).length;
   const manualCount = rows.filter(({ assessment }) => assessment.isManual).length;
-  const summary = [
-    { id: "all", label: "全量达人", value: rows.length, note: "统一达人主数据", tone: "all", icon: "users" },
-    { id: "partnered", label: "已合作达人", value: partneredCount, note: "跟进合作深度", tone: "partnered", icon: "user-check" },
-    { id: "follow", label: "重点跟进", value: focusCount, note: "人工星标客户", tone: "focus", icon: "target" },
-    { id: "risk", label: "流失风险", value: riskCount, note: "需要及时介入", tone: "risk", icon: "alert" },
-    { id: "lost", label: "已流失", value: rows.filter(({ assessment }) => assessment.key === "lost").length, note: "待重新激活", tone: "lost", icon: "alert" },
-  ];
-
-  els.talentPoolStats.innerHTML = summary.map((item) => `
-    <button type="button" class="talent-pool-stat talent-pool-tone-${item.tone}${state.talentPoolFilter === item.id ? " active" : ""}" data-talent-pool-filter="${item.id}">
-      <span class="talent-pool-stat-icon">${icon(item.icon)}</span>
-      <div><span>${item.label}</span><strong>${item.value}</strong><small>${item.note}</small></div>
-    </button>
-  `).join("");
-
-  els.talentPoolFilters.innerHTML = TALENT_POOL_FILTERS.map((filter) => {
-    const count = filter.id === "all"
-      ? rows.length
-      : filter.id === "partnered" ? partneredCount
-        : filter.id === "follow" ? focusCount
-          : rows.filter(({ assessment }) => assessment.key === filter.id).length;
-    const active = state.talentPoolFilter === filter.id;
-    return `<button type="button" role="tab" aria-selected="${active}" class="${active ? "active" : ""}" data-talent-pool-filter="${filter.id}">${filter.label}<span>${count}</span></button>`;
-  }).join("");
+  const stableCount = rows.filter(({ assessment }) => assessment.key === "stable").length;
+  const lostCount = rows.filter(({ assessment }) => assessment.key === "lost").length;
+  els.talentPoolFilters.innerHTML = `
+    <label class="talent-pool-filter"><span>达人范围</span><select data-talent-pool-filter-field="talentPoolScope" aria-label="筛选达人范围"><option value="all"${state.talentPoolScope === "all" ? " selected" : ""}>全量达人（${rows.length}）</option><option value="partnered"${state.talentPoolScope === "partnered" ? " selected" : ""}>已合作达人（${partneredCount}）</option></select></label>
+    <label class="talent-pool-filter"><span>跟进优先级</span><select data-talent-pool-filter-field="talentPoolPriority" aria-label="筛选跟进优先级"><option value="all"${state.talentPoolPriority === "all" ? " selected" : ""}>全部优先级</option><option value="focus"${state.talentPoolPriority === "focus" ? " selected" : ""}>重点跟进（${focusCount}）</option></select></label>
+    <label class="talent-pool-filter"><span>合作健康度</span><select data-talent-pool-filter-field="talentPoolHealth" aria-label="筛选合作健康度"><option value="all"${state.talentPoolHealth === "all" ? " selected" : ""}>全部健康度</option><option value="stable"${state.talentPoolHealth === "stable" ? " selected" : ""}>稳定合作（${stableCount}）</option><option value="risk"${state.talentPoolHealth === "risk" ? " selected" : ""}>流失风险（${riskCount}）</option><option value="lost"${state.talentPoolHealth === "lost" ? " selected" : ""}>已流失（${lostCount}）</option></select></label>
+  `;
 
   const keyword = normalize(state.talentPoolSearch);
   const priority = { risk: 0, lost: 1, pending: 2, stable: 3 };
@@ -3492,13 +3468,6 @@ function bindEvents() {
       return;
     }
 
-    const talentPoolFilter = event.target.closest("[data-talent-pool-filter]");
-    if (talentPoolFilter) {
-      state.talentPoolFilter = talentPoolFilter.dataset.talentPoolFilter;
-      renderTalentPool();
-      return;
-    }
-
     const talentPoolReset = event.target.closest("[data-talent-pool-reset]");
     if (talentPoolReset) {
       const id = String(talentPoolReset.dataset.talentPoolReset);
@@ -3564,6 +3533,12 @@ function bindEvents() {
   });
 
   document.addEventListener("change", (event) => {
+    const filterSelect = event.target.closest("[data-talent-pool-filter-field]");
+    if (filterSelect) {
+      state[filterSelect.dataset.talentPoolFilterField] = filterSelect.value;
+      renderTalentPool();
+      return;
+    }
     const healthSelect = event.target.closest("[data-talent-pool-health]");
     if (healthSelect) {
       const record = state.records.find((item) => item.id === Number(healthSelect.dataset.talentPoolHealth));
