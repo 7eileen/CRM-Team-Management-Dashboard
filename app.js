@@ -2795,7 +2795,10 @@ function renderTalentPool() {
   const stableCount = rows.filter(({ assessment }) => assessment.key === "stable").length;
   const lostCount = rows.filter(({ assessment }) => assessment.key === "lost").length;
   els.talentPoolFilters.innerHTML = `
-    <label class="talent-pool-filter"><span>达人范围</span><select data-talent-pool-filter-field="talentPoolScope" aria-label="筛选达人范围"><option value="all"${state.talentPoolScope === "all" ? " selected" : ""}>全量达人（${rows.length}）</option><option value="partnered"${state.talentPoolScope === "partnered" ? " selected" : ""}>已合作达人（${partneredCount}）</option></select></label>
+    <div class="talent-pool-scope-tabs" role="tablist" aria-label="达人列表视图">
+      <button type="button" role="tab" aria-selected="${state.talentPoolScope === "all"}" class="${state.talentPoolScope === "all" ? "active" : ""}" data-talent-pool-scope="all">全量达人<span>${rows.length}</span></button>
+      <button type="button" role="tab" aria-selected="${state.talentPoolScope === "partnered"}" class="${state.talentPoolScope === "partnered" ? "active" : ""}" data-talent-pool-scope="partnered">已合作达人<span>${partneredCount}</span></button>
+    </div>
     <label class="talent-pool-filter"><span>跟进优先级</span><select data-talent-pool-filter-field="talentPoolPriority" aria-label="筛选跟进优先级"><option value="all"${state.talentPoolPriority === "all" ? " selected" : ""}>全部优先级</option><option value="focus"${state.talentPoolPriority === "focus" ? " selected" : ""}>重点跟进（${focusCount}）</option></select></label>
     <label class="talent-pool-filter"><span>合作健康度</span><select data-talent-pool-filter-field="talentPoolHealth" aria-label="筛选合作健康度"><option value="all"${state.talentPoolHealth === "all" ? " selected" : ""}>全部健康度</option><option value="stable"${state.talentPoolHealth === "stable" ? " selected" : ""}>稳定合作（${stableCount}）</option><option value="risk"${state.talentPoolHealth === "risk" ? " selected" : ""}>流失风险（${riskCount}）</option><option value="lost"${state.talentPoolHealth === "lost" ? " selected" : ""}>已流失（${lostCount}）</option></select></label>
   `;
@@ -3465,6 +3468,13 @@ function bindEvents() {
       const key = rankSort.dataset.rankSort;
       state.rankSort[key] = rankSortDirection(key) === "asc" ? "desc" : "asc";
       renderAll();
+      return;
+    }
+
+    const talentPoolScope = event.target.closest("[data-talent-pool-scope]");
+    if (talentPoolScope) {
+      state.talentPoolScope = talentPoolScope.dataset.talentPoolScope;
+      renderTalentPool();
       return;
     }
 
