@@ -2805,7 +2805,7 @@ function renderTalentPool() {
   const priority = { risk: 0, lost: 1, pending: 2, stable: 3 };
   const visibleRows = rows
     .filter(({ record, assessment }) => {
-      const searchText = normalize([record.name, record.tier, record.type, record.product, record.group, record.format, displayStageLabelForRecord(record), record.person, record.bottleneck, assessment.meta.label].join(" "));
+      const searchText = normalize([record.name, record.tier, record.type, record.product, record.group, record.format, displayStageLabelForRecord(record), record.person, assessment.meta.label].join(" "));
       return talentPoolMatchesFilter(record, assessment) && (!keyword || searchText.includes(keyword));
     })
     .sort((a, b) => Number(b.assessment.isFocus) - Number(a.assessment.isFocus) || (priority[a.assessment.key] - priority[b.assessment.key]) || (recordSales(b.record) - recordSales(a.record)));
@@ -2813,7 +2813,7 @@ function renderTalentPool() {
   els.talentPoolCount.textContent = `${visibleRows.length} 位达人${manualCount ? ` · ${manualCount} 人工标记` : ""}`;
   els.talentPoolBody.innerHTML = visibleRows.length
     ? visibleRows.map(({ record, assessment }) => renderTalentPoolRow(record, assessment)).join("")
-    : `<tr><td colspan="14"><div class="empty-state">暂无匹配达人</div></td></tr>`;
+    : `<tr><td colspan="13"><div class="empty-state">暂无匹配达人</div></td></tr>`;
 }
 
 function renderTalentPoolStatus(key, reason, isManual = false) {
@@ -2847,7 +2847,6 @@ function renderTalentPoolRow(record, assessment) {
       <td>${escapeHtml(record.format)}</td>
       <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span></td>
       <td><strong>${escapeHtml(record.person)}</strong></td>
-      <td>${record.bottleneck ? `<span class="risk-pill" title="${escapeHtml(record.bottleneck)}">${icon("alert")}有卡点</span>` : `<span class="muted">无</span>`}</td>
       <td><strong class="gmv-value">${currency(recordGmv(record))}</strong></td>
       <td><strong class="talent-pool-live ${assessment.lastLiveDays >= 45 ? "warning" : ""}">${lastLiveLabel}</strong></td>
       <td><strong class="talent-pool-trend ${trendDown ? "down" : "up"}">${trendDown ? "↓" : "↑"} ${Math.abs(assessment.yieldTrend * 100).toFixed(1)}%</strong><span class="talent-pool-cell-note">坑产${trendDown ? "下滑" : "提升"}</span></td>
