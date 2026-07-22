@@ -311,8 +311,6 @@ const els = {
   talentPoolSearch: document.getElementById("talentPoolSearch"),
   talentPoolCount: document.getElementById("talentPoolCount"),
   talentPoolBody: document.getElementById("talentPoolBody"),
-  tableCount: document.getElementById("tableCount"),
-  recordTableBody: document.getElementById("recordTableBody"),
   drawer: document.getElementById("detailDrawer"),
   drawerBackdrop: document.getElementById("drawerBackdrop"),
   drawerCloseBtn: document.getElementById("drawerCloseBtn"),
@@ -2865,31 +2863,6 @@ function renderTalentPoolRow(record, assessment) {
   `;
 }
 
-function renderDirectory() {
-  const data = filteredRecords();
-  els.tableCount.textContent = `${data.length} 条记录`;
-  els.recordTableBody.innerHTML = data.length ? data.map(renderDirectoryRow).join("") : `<tr><td colspan="10"><div class="empty-state">暂无匹配记录</div></td></tr>`;
-}
-
-function renderDirectoryRow(record) {
-  const stage = displayStageForRecord(record);
-  const tier = tierMeta[record.tier];
-  return `
-    <tr>
-      <td>${recordNameCell(record)}</td>
-      <td><span class="tier-pill" style="--tier-color:${tier.color}; --tier-soft:${tier.soft}">${record.tier}级</span></td>
-      <td>${escapeHtml(record.type)}</td>
-      <td>${escapeHtml(record.product)}</td>
-      <td>${escapeHtml(record.group)}</td>
-      <td>${escapeHtml(record.format)}</td>
-      <td><span class="stage-pill" style="--stage-color:${stage.color}; --stage-soft:${stage.soft}">${stage.label}</span></td>
-      <td>${escapeHtml(record.person)}</td>
-      <td>${record.bottleneck ? `<span class="risk-pill">${icon("alert")}有卡点</span>` : `<span class="muted">无</span>`}</td>
-      <td><strong class="gmv-value">${currency(recordGmv(record))}</strong></td>
-    </tr>
-  `;
-}
-
 function renderAll() {
   renderKpis();
   renderQuarterPopover();
@@ -2901,7 +2874,6 @@ function renderAll() {
   renderOwners();
   renderFormatGrid();
   renderTalentPool();
-  renderDirectory();
   renderSortToggles();
 }
 
